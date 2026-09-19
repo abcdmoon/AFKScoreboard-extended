@@ -80,7 +80,7 @@ public class RankingManager {
         // 現在放置中の上位10人を取得
         List<Map.Entry<UUID, Integer>> sortedTop10 = scoreManager.getSortedList();
         sortedTop10 = sortedTop10.stream()
-                .filter(e->isHidden(e.getKey()))
+                .filter(e->!isHidden(e.getKey()))
                 .limit(10)
                 .toList();
 
