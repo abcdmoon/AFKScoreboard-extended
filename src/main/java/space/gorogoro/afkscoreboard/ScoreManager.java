@@ -52,18 +52,25 @@ public class ScoreManager {
 
     public void onPlayerConnect(Player player){
         UUID uuid = player.getUniqueId();
-        currentAFKPlayers.add(uuid);
-        long quitTime = disconnectTimes.getOrDefault(uuid,0L);
-        if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
-            currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
-            disconnectTimes.remove(uuid);
+        Integer disconnectedSessionTime = disconnectedSessionTimes.get(uuid);
+        if(disconnectedSessionTime != null){
+            long quitTime = disconnectTimes.getOrDefault(uuid,0L);
+            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
+                currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
+                disconnectTimes.remove(uuid);
+            }
         }
     }
 
     public void onPlayerDisconnect(Player player){
-        currentAFKPlayers.remove(player.getUniqueId());
-        disconnectedSessionTimes.put(player.getUniqueId(),currentSessionTimes.remove(player.getUniqueId()));
-        disconnectTimes.put(player.getUniqueId(),System.currentTimeMillis());
+        UUID uuid = player.getUniqueId();
+        currentAFKPlayers.remove(uuid);
+        Integer sessionTime = currentSessionTimes.remove(uuid);
+
+        if (sessionTime != null) {
+            disconnectedSessionTimes.put(uuid, sessionTime);
+            disconnectTimes.put(uuid, System.currentTimeMillis());
+        }
     }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {
