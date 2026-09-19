@@ -76,4 +76,5 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+
 }

@@ -3,7 +3,6 @@ package space.gorogoro.afkscoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -111,9 +110,6 @@ public class ZoneManager {
 
         public ZoneArea(String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
             this.world = world;
-            //this.minX = minX - 0.5; this.maxX = maxX + 0.5;
-            //this.minY = minY - 0.5; this.maxY = maxY + 0.5;
-            //this.minZ = minZ - 0.5; this.maxZ = maxZ + 0.5;
             this.minX = minX; this.maxX = maxX+1;
             this.minY = minY; this.maxY = maxY+1;
             this.minZ = minZ; this.maxZ = maxZ+1;
