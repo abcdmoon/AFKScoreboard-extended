@@ -19,3 +19,13 @@ Please place the .jar file in the Paper plugins folder.
 
 # Disclaimer
 Do not assume any responsibility by use. Please use it at your own risk.
+
+# 上記から改変したこと
+## コマンド
+```
+/afkhide or /afkscore hide   放置ランキングから自分を表示/非表示できます (権限必要なし)
+/afkscore reload ゲーム内で放置エリアを編集などして変わったファイルを再読込する
+```
+## 仕様
+・/afkhideをしても記録自体はとられ、表示すると密かに記録していた値が出るようになりました  
+・領域が直方体であることを前提にコードを書き換えたためもし直方体以外の領域があると機能しません
