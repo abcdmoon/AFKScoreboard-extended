@@ -11,25 +11,28 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import space.gorogoro.afkscoreboard.ScoreManager;
 
 import java.util.List;
 
 public class CommandManager {
     private CommandManager(){}
 
-    public static void registerCommands(Commands registrar){
-        registrar.register(build());
+    public static void registerCommands(Commands registrar, ScoreManager scoreManager){
+        HideExecuter hideExecuter = new HideExecuter(scoreManager);
+        registrar.register(build(hideExecuter));
+        registrar.register(oldbuild(hideExecuter));
     }
 
-    public static LiteralCommandNode<CommandSourceStack> build(){
+    public static LiteralCommandNode<CommandSourceStack> build(HideExecuter hideExecuter){
         return Commands.literal("afkscore")
-                .then(HideExecuter.create())
+                .then(HideExecuter.create(hideExecuter))
                 .build();
 
     }
 
-    public static LiteralCommandNode<CommandSourceStack> oldbuild(){
-        return HideExecuter.oldCreate().build();
+    public static LiteralCommandNode<CommandSourceStack> oldbuild(HideExecuter hideExecuter){
+        return HideExecuter.oldCreate(hideExecuter).build();
     }
 
 }

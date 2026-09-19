@@ -131,7 +131,7 @@ public class AFKScoreboard extends JavaPlugin {
 
         //コマンドをpaperのコマンドAPIを用いる
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
-            CommandManager.registerCommands(registrarEvent.registrar());
+            CommandManager.registerCommands(registrarEvent.registrar(),scoreManager);
         });
     }
 
