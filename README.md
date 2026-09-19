@@ -23,7 +23,7 @@ Do not assume any responsibility by use. Please use it at your own risk.
 # 上記から改変したこと
 ## コマンド
 ```
-/afkhide or/afkscore hide   放置ランキングから自分を表示/非表示できます (権限必要なし)
+/afkhide or /afkscore hide   放置ランキングから自分を表示/非表示できます (権限必要なし)
 /afkscore reload ゲーム内で放置エリアを編集などして変わったファイルを再読込する
 ```
 ## 仕様
