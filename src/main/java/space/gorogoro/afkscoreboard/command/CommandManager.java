@@ -23,13 +23,13 @@ public class CommandManager {
 
     public static LiteralCommandNode<CommandSourceStack> build(){
         return Commands.literal("afkscore")
-                .then(Commands.literal("hide").executes(ctx->{
-
-                            return Command.SINGLE_SUCCESS;
-                        }
-                ))
+                .then(HideExecuter.create())
                 .build();
 
+    }
+
+    public static LiteralCommandNode<CommandSourceStack> oldbuild(){
+        return HideExecuter.oldCreate().build();
     }
 
 }

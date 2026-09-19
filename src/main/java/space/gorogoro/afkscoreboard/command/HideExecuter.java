@@ -19,10 +19,17 @@ public class HideExecuter {
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(){
-        return Commands.literal("debug").executes(HideExecuter::execute);
+        return Commands.literal("hide").executes(HideExecuter::execute);
     }
 
-    private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    /**
+     * 既存プラグインと同様のコマンドの実装を返す
+     */
+    static LiteralArgumentBuilder<CommandSourceStack> oldCreate(){
+        return Commands.literal("afkhide").executes(HideExecuter::execute);
+    }
+
+    static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(!(ctx.getSource().getSender() instanceof Player)){
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
             throw new SimpleCommandExceptionType(message).create();

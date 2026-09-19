@@ -9,12 +9,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -28,23 +30,24 @@ import space.gorogoro.afkscoreboard.command.CommandManager;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class AFKScoreboard extends JavaPlugin implements Listener {
+public class AFKScoreboard extends JavaPlugin {
 
     private Scoreboard afkScoreboard;
     private Objective afkObjective;
 
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
-    private final Map<String, ZoneArea> loadedZones = new HashMap<>();
+    //private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
     // プレイヤーの「現在の連続放置時間（秒）」を保持するマップ
-    private final Map<UUID, Integer> currentSessionTimes = new HashMap<>();
+    //private final Map<UUID, Integer> currentSessionTimes = new HashMap<>();
 
     // ログアウトしたプレイヤーのデータを一時保存するマップ（UUID -> 放置秒数）
-    private final Map<UUID, Integer> disconnectedSessionTimes = new HashMap<>();
+    //private final Map<UUID, Integer> disconnectedSessionTimes = new HashMap<>();
     // ログアウトした時刻を保存するマップ（UUID -> エポックミリ秒）
-    private final Map<UUID, Long> disconnectTimes = new HashMap<>();
+    //private final Map<UUID, Long> disconnectTimes = new HashMap<>();
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
     //private final Set<UUID> hiddenPlayers = new HashSet<>();
@@ -56,14 +59,14 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
 
 
+    private static AFKScoreboard instance;
+
     private ConfigManager configManager;
-    public ConfigManager getConfigManager() {return configManager;}
+    private EventManager eventManager;
     private ZoneManager zoneManager;
-    public ZoneManager getZoneManager() {return zoneManager;}
     private MessageManager messageManager;
-    public MessageManager getMessageManager() {return messageManager;}
     private RankingManager rankingManager;
-    public RankingManager getRankingManager() {return rankingManager;}
+    private ScoreManager scoreManager;
 
 
 
@@ -75,18 +78,21 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         zoneManager = new ZoneManager(this);
         messageManager = new MessageManager(this);
         rankingManager = new RankingManager(this);
+        scoreManager = new ScoreManager();
+        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager);
         // config.ymlの保存・読み込み処理
 
+        //saveDefaultConfig(); -> ConfigManagerが行っています
+        //各種クラスが必要なデータだけConfigManagerで読み込み、書き込みます
+        //loadWelcomedPlayers();
+        //loadHiddenPlayers();
+
+        // スコアボードの初期化 -> RankingManagerが行っています
+        //ScoreboardManager manager = Bukkit.getScoreboardManager();
+        //this.afkScoreboard = manager.getNewScoreboard();
+
         /*
-        saveDefaultConfig();
-        loadWelcomedPlayers();
-        loadHiddenPlayers();
-
-         */
-
-        // スコアボードの初期化
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        this.afkScoreboard = manager.getNewScoreboard();
+        RankingManagerに移しました
 
         // タイトル (Paper推奨の形式に修正)
         this.afkObjective = afkScoreboard.registerNewObjective(
@@ -100,8 +106,10 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
         this.afkObjective.numberFormat(NumberFormat.blank());
 
+         */
+
         // AxAFKZone の zones フォルダから座標定義を自動読み込み
-        reloadAxAFKZones();
+        //reloadAxAFKZones(); ->ZoneManagerが行っています
 
         // スコアボードの更新頻度（5秒ごと = 100ティックス）
         Bukkit.getScheduler().runTaskTimer(this, this::updateLeaderboard, 0L, 100L);
@@ -127,14 +135,14 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         });
     }
 
-    private List<Runnable> onDisableTasks = new ArrayList<>();
+    private final List<Runnable> onDisableTasks = new ArrayList<>();
 
     /**
      * プラグインの機能終了時に実行するタスクを追加します
      * @param runnable 呼び出されるタスク
      */
-    public void addOnDisableTask(Runnable runnable) {
-        onDisableTasks.add(runnable);
+    public static void addOnDisableTask(Runnable runnable) {
+        instance.onDisableTasks.add(runnable);
     }
 
     @Override
@@ -142,6 +150,10 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         for(Runnable runnable : onDisableTasks) {
             runnable.run();
         }
+        onDisableTasks.clear();
+
+        Bukkit.getScheduler().cancelTasks(this);
+        HandlerList.unregisterAll(this);
 
         /*
         // サーバー終了時、既読プレイヤーデータをconfig.ymlに確実に保存
@@ -150,6 +162,23 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         getLogger().info("The Plugin Has Been Disabled!");
 
          */
+    }
+
+    /**
+     * プラグイン名義で非同期でタスクを実行します
+     * @param bukkitTaskConsumer
+     */
+    public static void runTaskAsynchronously(Consumer<BukkitTask> bukkitTaskConsumer){
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTaskAsynchronously(instance,bukkitTaskConsumer);
+    }
+
+    /**
+     * プラグイン名義でタスクを定期実行します
+     */
+    public static void registerTaskTimer(Runnable runnable, long delay, long period) {
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTaskTimer(instance,runnable,delay,period);
     }
 
     /*
@@ -213,10 +242,11 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
      */
 
-    /**
+
+    /*
+    元あった/afkhideは HideExecuterクラスに機能を移しました
      * コマンドの処理ルーチン
      * /afkhide コマンドでランキングの表示/非表示を切り替えます
-     */
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String label, String @NonNull [] args) {
         if (!(sender instanceof Player player)) {
@@ -229,6 +259,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         if (command.getName().equalsIgnoreCase("afkhide")) {
             // エリア内にいるかどうかの判定
             boolean isInZone = isPlayerInAnyZone(player.getLocation());
+
 
             if (hiddenPlayers.contains(uuid)) {
                 // 非表示（除外）リストから削除 ＝ 通常モードに戻す
@@ -270,9 +301,12 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return false;
     }
 
-    /**
-     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
      */
+
+    /*
+    ZoneManagerに機能を移しました
+
+     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
     private boolean isPlayerInAnyZone(Location loc) {
         for (ZoneArea zone : loadedZones.values()) {
             if (zone.isInArea(loc)) {
@@ -281,6 +315,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
         return false;
     }
+
+     */
 
     /*
     一旦ZoneManagerに移しました
@@ -431,7 +467,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             if (!player.getScoreboard().equals(afkScoreboard)) {
                 player.setScoreboard(afkScoreboard);
             }
-
+            //機能をMessageManagerに移しました
             // 初めていずれかの放置エリアに足を踏み入れたプレイヤーへの通知
             if (!welcomedPlayers.contains(uuid)) {
                 welcomedPlayers.add(uuid);

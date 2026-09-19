@@ -1,13 +1,45 @@
 package space.gorogoro.afkscoreboard;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class MessageManager {
+
+    private final ConfigManager configManager;
+
     // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
     private final Set<UUID> welcomedPlayers = new HashSet<>();
 
-    public MessageManager(AFKScoreboard afkScoreboard) {
+
+    public MessageManager(ConfigManager configManager) {
+        this.configManager = configManager;
+        init();
+    }
+
+    private void init(){
+        welcomedPlayers.clear();
+        welcomedPlayers.addAll(configManager.loadWelcomedPlayers());
+    }
+
+    public void onPlayerEnterZone(Player player) {
+        // 放置エリアに足を踏み入れたプレイヤーへの通知
+
+        if (!welcomedPlayers.contains(player.getUniqueId())) {
+            //初めて入った場合
+
+            welcomedPlayers.add(player.getUniqueId());
+            // メッセージを送信
+            player.sendMessage(Component.text("/afkhide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
+            // 既読情報を即座に config.yml へ非同期保存（安全対策）
+            AFKScoreboard.runTaskAsynchronously(t->configManager.saveWelcomedPlayers(welcomedPlayers));
+        }else{
+            //入ったことがある場合
+        }
     }
 }

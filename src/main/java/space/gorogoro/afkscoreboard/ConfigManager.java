@@ -18,28 +18,16 @@ public class ConfigManager {
         this.plugin = plugin;
         config = plugin.getConfig();
         initialProcess();
-        plugin.addOnDisableTask(this::finalProcess);
     }
-
-
-
-
 
     private void initialProcess(){
         plugin.saveDefaultConfig();
-        loadWelcomedPlayers();
-        loadHiddenPlayers();
-    }
-
-    private void finalProcess(){
-        saveWelcomedPlayers();
-        saveHiddenPlayers();
     }
 
     /**
      * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
      */
-    private Set<UUID> loadWelcomedPlayers(){
+    public Set<UUID> loadWelcomedPlayers(){
         Set<UUID> welcomedPlayers = new HashSet<>();
         List<String> uuidStrings = config.getStringList("welcomed-players");
         for (String s : uuidStrings) {
@@ -54,8 +42,7 @@ public class ConfigManager {
     /**
      * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
      */
-    private void saveWelcomedPlayers() {
-        Set<UUID> welcomedPlayers
+    public void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
         List<String> uuidStrings = welcomedPlayers.stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
@@ -66,7 +53,7 @@ public class ConfigManager {
     /**
      * config.yml から非表示プレイヤーのUUIDを読み込む
      */
-    private void loadHiddenPlayers() {
+    public Set<UUID> loadHiddenPlayers() {
         Set<UUID> hiddenPlayers = new HashSet<>();
         List<String> uuidStrings = config.getStringList("hidden-players");
         for (String s : uuidStrings) {
@@ -74,12 +61,13 @@ public class ConfigManager {
                 hiddenPlayers.add(UUID.fromString(s));
             } catch (IllegalArgumentException ignored) {}
         }
+        return hiddenPlayers;
     }
 
     /**
      * 非表示プレイヤーのUUIDを config.yml へ保存する
      */
-    private void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
+    public void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
 
         List<String> uuidStrings = hiddenPlayers.stream()
                 .map(UUID::toString)

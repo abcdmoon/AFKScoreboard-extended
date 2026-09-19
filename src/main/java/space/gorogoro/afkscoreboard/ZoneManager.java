@@ -3,6 +3,7 @@ package space.gorogoro.afkscoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -16,21 +17,21 @@ public class ZoneManager {
 
     public ZoneManager(AFKScoreboard plugin) {
         this.plugin = plugin;
-        initialProcess();
+        init();
     }
 
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
-    public void initialProcess() {
-
+    public void init() {
+        reloadAxAFKZones();
     }
 
 
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public void reloadAxAFKZones() {
+    private void reloadAxAFKZones() {
         loadedZones.clear();
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
@@ -90,7 +91,7 @@ public class ZoneManager {
     /**
      * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
      */
-    public boolean isPlayerInAnyZone(Location loc) {
+    public boolean isLocInAnyZone(Location loc) {
         for (ZoneArea zone : loadedZones.values()) {
             if (zone.isInArea(loc)) {
                 return true;
