@@ -1,5 +1,6 @@
 package space.gorogoro.afkscoreboard;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,6 +24,7 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import org.jspecify.annotations.NonNull;
+import space.gorogoro.afkscoreboard.command.CommandManager;
 
 import java.io.File;
 import java.util.*;
@@ -45,20 +47,42 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     private final Map<UUID, Long> disconnectTimes = new HashMap<>();
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
-    private final Set<UUID> hiddenPlayers = new HashSet<>();
+    //private final Set<UUID> hiddenPlayers = new HashSet<>();
 
     // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
-    private final Set<UUID> welcomedPlayers = new HashSet<>();
+    //private final Set<UUID> welcomedPlayers = new HashSet<>();
 
     // 救済猶予時間（5分 = 300,000ミリ秒）
     private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
 
+
+    private ConfigManager configManager;
+    public ConfigManager getConfigManager() {return configManager;}
+    private ZoneManager zoneManager;
+    public ZoneManager getZoneManager() {return zoneManager;}
+    private MessageManager messageManager;
+    public MessageManager getMessageManager() {return messageManager;}
+    private RankingManager rankingManager;
+    public RankingManager getRankingManager() {return rankingManager;}
+
+
+
+
     @Override
     public void onEnable() {
+
+        configManager = new ConfigManager(this);
+        zoneManager = new ZoneManager(this);
+        messageManager = new MessageManager(this);
+        rankingManager = new RankingManager(this);
         // config.ymlの保存・読み込み処理
+
+        /*
         saveDefaultConfig();
         loadWelcomedPlayers();
         loadHiddenPlayers();
+
+         */
 
         // スコアボードの初期化
         ScoreboardManager manager = Bukkit.getScoreboardManager();
@@ -96,19 +120,42 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
 
         getServer().getPluginManager().registerEvents(this, this);
+
+        //コマンドをpaperのコマンドAPIを用いる
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
+            CommandManager.registerCommands(registrarEvent.registrar());
+        });
+    }
+
+    private List<Runnable> onDisableTasks = new ArrayList<>();
+
+    /**
+     * プラグインの機能終了時に実行するタスクを追加します
+     * @param runnable 呼び出されるタスク
+     */
+    public void addOnDisableTask(Runnable runnable) {
+        onDisableTasks.add(runnable);
     }
 
     @Override
     public void onDisable() {
+        for(Runnable runnable : onDisableTasks) {
+            runnable.run();
+        }
+
+        /*
         // サーバー終了時、既読プレイヤーデータをconfig.ymlに確実に保存
         saveWelcomedPlayers();
         saveHiddenPlayers();
         getLogger().info("The Plugin Has Been Disabled!");
+
+         */
     }
 
-    /**
-     * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
-     */
+    /*
+    ConfigManagerクラスの機能に移しました
+
+      config.yml からメッセージ既読プレイヤーのUUIDを読み込む
     private void loadWelcomedPlayers() {
         welcomedPlayers.clear();
         List<String> uuidStrings = getConfig().getStringList("welcomed-players");
@@ -119,9 +166,13 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
     }
 
-    /**
-     * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
      */
+
+
+    /*
+    ConfigManagerに機能を移しました
+
+     * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
     private void saveWelcomedPlayers() {
         List<String> uuidStrings = welcomedPlayers.stream()
                 .map(UUID::toString)
@@ -130,9 +181,12 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         saveConfig();
     }
 
-    /**
-     * config.yml から非表示プレイヤーのUUIDを読み込む
      */
+
+    /*
+    ConfigManagerに機能を移しました
+
+      config.yml から非表示プレイヤーのUUIDを読み込む
     private void loadHiddenPlayers() {
         hiddenPlayers.clear();
         List<String> uuidStrings = getConfig().getStringList("hidden-players");
@@ -143,9 +197,12 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
     }
 
-    /**
-     * 非表示プレイヤーのUUIDを config.yml へ保存する
      */
+
+    /*
+    ConfigManagerに機能を移しました
+
+     * 非表示プレイヤーのUUIDを config.yml へ保存する
     private void saveHiddenPlayers() {
         List<String> uuidStrings = hiddenPlayers.stream()
                 .map(UUID::toString)
@@ -153,6 +210,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         getConfig().set("hidden-players", uuidStrings);
         saveConfig();
     }
+
+     */
 
     /**
      * コマンドの処理ルーチン
@@ -223,9 +282,10 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return false;
     }
 
-    /**
+    /*
+    一旦ZoneManagerに移しました
+
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
-     */
     public void reloadAxAFKZones() {
         loadedZones.clear();
 
@@ -282,6 +342,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             }
         }
     }
+
+     */
 
     /**
      * ランキングを計算してスコアボードを更新
@@ -464,9 +526,11 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return days + "d" + hours + "h" + minutes + "m";
     }
 
-    /**
+
+    /*
+    ZoneManagerに移しました
+
      * ゾーンの立体範囲を表現・判定する内部データクラス
-     */
     private static class ZoneArea {
         private final String world;
         private final double minX, maxX;
@@ -487,4 +551,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
                     loc.getZ() >= minZ && loc.getZ() <= maxZ;
         }
     }
+
+     */
 }
