@@ -3,6 +3,7 @@ package space.gorogoro.afkscoreboard;
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
@@ -183,13 +184,12 @@ public class RankingManager {
         int rank = 1;
         for (Map.Entry<UUID, Integer> entry : sortedTop10) {
             UUID uuid = entry.getKey();
-            Player player = Bukkit.getPlayer(uuid);
-
-            if (player == null || !player.isOnline()) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+            String playerName = offlinePlayer.getName();
+            if(playerName == null){
                 continue;
             }
 
-            String playerName = player.getName();
             int sessionSeconds = entry.getValue();
 
             String currentStr = Util.formatTimeCompact(sessionSeconds);
