@@ -9,6 +9,8 @@ import java.util.*;
  */
 public class ScoreManager {
 
+    // 救済猶予時間（5分 = 300,000ミリ秒）
+    private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
 
     // プレイヤーの「現在の連続放置時間（秒）」を保持するマップ
     private final Map<UUID, Integer> currentSessionTimes = new HashMap<>();
@@ -48,21 +50,26 @@ public class ScoreManager {
         currentSessionTimes.remove(player.getUniqueId());
     }
 
+    public void onPlayerConnect(Player player){
+        UUID uuid = player.getUniqueId();
+        currentAFKPlayers.add(uuid);
+        long quitTime = disconnectTimes.getOrDefault(uuid,0L);
+        if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
+            currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
+            disconnectTimes.remove(uuid);
+        }
+    }
+
+    public void onPlayerDisconnect(Player player){
+        currentAFKPlayers.remove(player.getUniqueId());
+        disconnectedSessionTimes.put(player.getUniqueId(),currentSessionTimes.remove(player.getUniqueId()));
+        disconnectTimes.put(player.getUniqueId(),System.currentTimeMillis());
+    }
+
     public List<Map.Entry<UUID, Integer>> getSortedList() {
         return currentSessionTimes.entrySet().stream()
             .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
             .toList();
-    }
-
-    /**
-     * 指定された数のプレイヤーのスコア情報をスコアに昇順で返します
-     * @param limit リストのサイズ
-     */
-    public List<Map.Entry<UUID, Integer>> getSortedList(int limit) {
-        return currentSessionTimes.entrySet().stream()
-                .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
-                .limit(limit)
-                .toList();
     }
 
 }

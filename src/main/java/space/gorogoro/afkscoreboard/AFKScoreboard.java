@@ -36,8 +36,7 @@ public class AFKScoreboard extends JavaPlugin {
     // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
     //private final Set<UUID> welcomedPlayers = new HashSet<>();
 
-    // 救済猶予時間（5分 = 300,000ミリ秒）
-    private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
+
 
 
     private static AFKScoreboard instance;
@@ -54,6 +53,7 @@ public class AFKScoreboard extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
 
         configManager = new ConfigManager(this);
         zoneManager = new ZoneManager(this);
@@ -65,7 +65,6 @@ public class AFKScoreboard extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(eventManager, this);
 
-        //コマンドをpaperのコマンドAPIを用いる
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
             CommandManager.registerCommands(registrarEvent.registrar(),rankingManager);
         });
@@ -108,10 +107,5 @@ public class AFKScoreboard extends JavaPlugin {
         if(instance==null){return;}
         Bukkit.getScheduler().runTaskTimer(instance,runnable,delay,period);
     }
-
-
-
-
-
 
 }

@@ -78,7 +78,11 @@ public class RankingManager {
         }
 
         // 現在放置中の上位10人を取得
-        List<Map.Entry<UUID, Integer>> sortedTop10 = scoreManager.getSortedList(10);
+        List<Map.Entry<UUID, Integer>> sortedTop10 = scoreManager.getSortedList();
+        sortedTop10 = sortedTop10.stream()
+                .filter(e->isHidden(e.getKey()))
+                .limit(10)
+                .toList();
 
         // 初期値の動的計算: ヘッダー2行 ＋ ランクインしている人数
         // 誰もおらず「誰も放置していません」の1行を表示する場合は「2行 + 1行 = 3」になります

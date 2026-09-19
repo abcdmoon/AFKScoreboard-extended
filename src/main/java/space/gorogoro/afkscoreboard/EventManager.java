@@ -43,6 +43,7 @@ public class EventManager implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
+            scoreManager.onPlayerConnect(e.getPlayer());
             onPlayerEnterZone(e.getPlayer());
         }
     }
@@ -50,6 +51,7 @@ public class EventManager implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
+            scoreManager.onPlayerDisconnect(e.getPlayer());
             onPlayerLeaveZone(e.getPlayer());
         }
     }
