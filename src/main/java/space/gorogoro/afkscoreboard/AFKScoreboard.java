@@ -49,8 +49,6 @@ public class AFKScoreboard extends JavaPlugin {
     private ScoreManager scoreManager;
 
 
-
-
     @Override
     public void onEnable() {
         instance = this;
