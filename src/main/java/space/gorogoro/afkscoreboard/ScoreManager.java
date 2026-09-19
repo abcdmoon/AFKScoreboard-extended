@@ -39,7 +39,9 @@ public class ScoreManager {
     private void incrementTimeEverySecond() {
 
         for(UUID uuid : currentAFKPlayers) {
-            currentSessionTimes.put(uuid, currentSessionTimes.getOrDefault(uuid, 0) + 1);
+            int score = currentSessionTimes.getOrDefault(uuid,0)+1;
+            currentSessionTimes.put(uuid, score);
+            highScoreManager.setHighScore(uuid, score);
         }
     }
 
@@ -67,13 +69,21 @@ public class ScoreManager {
 
     public void onPlayerDisconnect(Player player){
         UUID uuid = player.getUniqueId();
-        currentAFKPlayers.remove(uuid);
-        Integer sessionTime = currentSessionTimes.remove(uuid);
+        Integer sessionTime = removeAFKPlayer(uuid);
 
         if (sessionTime != null) {
             disconnectedSessionTimes.put(uuid, sessionTime);
             disconnectTimes.put(uuid, System.currentTimeMillis());
         }
+    }
+
+    /**
+     *
+     * @return プレイヤーの現在の放置記録 記録がない場合 null
+     */
+    private Integer removeAFKPlayer(UUID uuid){
+        currentAFKPlayers.remove(uuid);
+        return currentSessionTimes.remove(uuid);
     }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {

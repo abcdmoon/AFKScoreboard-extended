@@ -21,6 +21,7 @@ public class AFKScoreboard extends JavaPlugin {
     private MessageManager messageManager;
     private RankingManager rankingManager;
     private ScoreManager scoreManager;
+    private HighScoreManager highScoreManager;
 
     @Override
     public void onEnable() {
@@ -29,14 +30,15 @@ public class AFKScoreboard extends JavaPlugin {
         configManager = new ConfigManager(this);
         zoneManager = new ZoneManager(this);
         messageManager = new MessageManager(configManager);
-        scoreManager = new ScoreManager();
-        rankingManager = new RankingManager(configManager,scoreManager);
+        highScoreManager = new HighScoreManager();
+        scoreManager = new ScoreManager(highScoreManager);
+        rankingManager = new RankingManager(configManager,scoreManager,highScoreManager);
         eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager);
 
         getServer().getPluginManager().registerEvents(eventManager, this);
 
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
-            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager);
+            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager,highScoreManager);
         });
     }
 
@@ -76,6 +78,11 @@ public class AFKScoreboard extends JavaPlugin {
     public static void registerTaskTimer(Runnable runnable, long delay, long period) {
         if(instance==null){return;}
         Bukkit.getScheduler().runTaskTimer(instance,runnable,delay,period);
+    }
+
+    public static void registerTaskLater(Runnable runnable, long delay) {
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTaskLater(instance,runnable,delay);
     }
 
 }
