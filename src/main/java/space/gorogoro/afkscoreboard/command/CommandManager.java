@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import space.gorogoro.afkscoreboard.RankingManager;
 import space.gorogoro.afkscoreboard.ScoreManager;
 
 import java.util.List;
@@ -18,8 +19,8 @@ import java.util.List;
 public class CommandManager {
     private CommandManager(){}
 
-    public static void registerCommands(Commands registrar, ScoreManager scoreManager){
-        HideExecuter hideExecuter = new HideExecuter(scoreManager);
+    public static void registerCommands(Commands registrar, RankingManager rankingManager){
+        HideExecuter hideExecuter = new HideExecuter(rankingManager);
         registrar.register(build(hideExecuter));
         registrar.register(oldbuild(hideExecuter));
     }
