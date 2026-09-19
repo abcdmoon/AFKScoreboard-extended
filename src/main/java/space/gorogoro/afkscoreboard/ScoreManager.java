@@ -22,7 +22,10 @@ public class ScoreManager {
     //領域内のプレイヤーのセット
     private final Set<UUID> currentAFKPlayers = new HashSet<>();
 
-    public ScoreManager() {
+    private final HighScoreManager highScoreManager;
+
+    public ScoreManager(HighScoreManager highScoreManager) {
+        this.highScoreManager = highScoreManager;
         init();
     }
     private void init(){
