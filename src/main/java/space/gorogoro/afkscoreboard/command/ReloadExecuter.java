@@ -1,0 +1,29 @@
+package space.gorogoro.afkscoreboard.command;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import space.gorogoro.afkscoreboard.ZoneManager;
+
+public class ReloadExecuter {
+
+    private final ZoneManager zoneManager;
+
+    public ReloadExecuter(ZoneManager zoneManager) {
+        this.zoneManager = zoneManager;
+    }
+
+    static LiteralArgumentBuilder<CommandSourceStack> create(ReloadExecuter reloadExecuter) {
+        return Commands.literal("reload")
+                .requires(ctx->ctx.getSender().isOp())
+                .executes(reloadExecuter::execute);
+    }
+
+    private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        zoneManager.reloadAxAFKZones();
+        return Command.SINGLE_SUCCESS;
+    }
+}

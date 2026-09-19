@@ -23,7 +23,7 @@ public class ZoneManager {
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
-    public void init() {
+    private void init() {
         reloadAxAFKZones();
     }
 
@@ -31,7 +31,7 @@ public class ZoneManager {
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    private void reloadAxAFKZones() {
+    public void reloadAxAFKZones() {
         loadedZones.clear();
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
@@ -111,9 +111,12 @@ public class ZoneManager {
 
         public ZoneArea(String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
             this.world = world;
-            this.minX = minX - 0.5; this.maxX = maxX + 0.5;
-            this.minY = minY - 0.5; this.maxY = maxY + 0.5;
-            this.minZ = minZ - 0.5; this.maxZ = maxZ + 0.5;
+            //this.minX = minX - 0.5; this.maxX = maxX + 0.5;
+            //this.minY = minY - 0.5; this.maxY = maxY + 0.5;
+            //this.minZ = minZ - 0.5; this.maxZ = maxZ + 0.5;
+            this.minX = minX; this.maxX = maxX+1;
+            this.minY = minY; this.maxY = maxY+1;
+            this.minZ = minZ; this.maxZ = maxZ+1;
         }
 
         public boolean isInArea(Location loc) {

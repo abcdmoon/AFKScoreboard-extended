@@ -66,7 +66,7 @@ public class AFKScoreboard extends JavaPlugin {
         getServer().getPluginManager().registerEvents(eventManager, this);
 
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
-            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager);
+            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager);
         });
     }
 

@@ -1,5 +1,6 @@
 package space.gorogoro.afkscoreboard;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -59,13 +60,16 @@ public class EventManager implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         // ブロックの境界線を越えて移動したときだけ判定（負荷対策）
-        if(!e.hasChangedBlock()){
+        if (!e.hasChangedBlock()) {
             return;
         }
 
         //ここから領域に入ったときと出たときに分岐
         boolean wasInAnyZone = zoneManager.isLocInAnyZone(e.getFrom());
         boolean isInAnyZone = zoneManager.isLocInAnyZone(e.getTo());
+
+        Bukkit.getServer().broadcast(Component.text("x:"+e.getFrom().getX()+",y:"+e.getFrom().getY()+",z:"+e.getFrom().getZ()+",x:"+e.getTo().getX()+",y:"+e.getTo().getY()+",z:"+e.getTo().getZ()));
+
 
         if(!wasInAnyZone && isInAnyZone) {
             onPlayerEnterZone(e.getPlayer());
