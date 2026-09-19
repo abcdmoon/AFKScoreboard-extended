@@ -1,11 +1,11 @@
-package space.gorogoro.afkscoreboard;
+package me.dragonwhale7.afkscoreboard;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import space.gorogoro.afkscoreboard.command.CommandManager;
+import me.dragonwhale7.afkscoreboard.command.CommandManager;
 
 import java.util.ArrayList;
 import java.util.List;

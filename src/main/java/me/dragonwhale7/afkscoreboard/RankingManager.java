@@ -1,4 +1,4 @@
-package space.gorogoro.afkscoreboard;
+package me.dragonwhale7.afkscoreboard;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;

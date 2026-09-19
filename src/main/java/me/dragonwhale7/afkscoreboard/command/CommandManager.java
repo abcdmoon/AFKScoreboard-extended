@@ -1,11 +1,11 @@
-package space.gorogoro.afkscoreboard.command;
+package me.dragonwhale7.afkscoreboard.command;
 
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import space.gorogoro.afkscoreboard.HighScoreManager;
-import space.gorogoro.afkscoreboard.RankingManager;
-import space.gorogoro.afkscoreboard.ZoneManager;
+import me.dragonwhale7.afkscoreboard.HighScoreManager;
+import me.dragonwhale7.afkscoreboard.RankingManager;
+import me.dragonwhale7.afkscoreboard.ZoneManager;
 
 public class CommandManager {
     private CommandManager(){}

@@ -1,4 +1,4 @@
-package space.gorogoro.afkscoreboard;
+package me.dragonwhale7.afkscoreboard;
 
 import java.util.HashMap;
 import java.util.List;

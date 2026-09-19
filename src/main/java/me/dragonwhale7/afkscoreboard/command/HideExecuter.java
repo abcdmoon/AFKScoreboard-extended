@@ -1,4 +1,4 @@
-package space.gorogoro.afkscoreboard.command;
+package me.dragonwhale7.afkscoreboard.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.Message;
@@ -12,7 +12,7 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import space.gorogoro.afkscoreboard.RankingManager;
+import me.dragonwhale7.afkscoreboard.RankingManager;
 
 public class HideExecuter {
 

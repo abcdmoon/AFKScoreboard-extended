@@ -1,4 +1,4 @@
-package space.gorogoro.afkscoreboard;
+package me.dragonwhale7.afkscoreboard;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

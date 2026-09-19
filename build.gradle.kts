@@ -6,11 +6,12 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven(url = "https://jitpack.io/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-
+    compileOnly("com.github.Gecolay.GSit:core:3.5.1")
 }
 
 java {
