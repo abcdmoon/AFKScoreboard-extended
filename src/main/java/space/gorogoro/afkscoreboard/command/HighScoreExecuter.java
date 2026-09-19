@@ -71,6 +71,7 @@ public class HighScoreExecuter {
                     rankingManager.showMainScoreBoard(player);
                 }
             }else{
+                rankingManager.updateHighScoreScoreBoard();
                 rankingManager.showHighScoreScoreBoard(player);
                 AFKScoreboard.registerTaskLater(()->{
                     if(rankingManager.isShownHighScoreScoreBoard(player)){

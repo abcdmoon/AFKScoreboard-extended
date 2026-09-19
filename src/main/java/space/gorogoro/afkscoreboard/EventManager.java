@@ -1,6 +1,5 @@
 package space.gorogoro.afkscoreboard;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
