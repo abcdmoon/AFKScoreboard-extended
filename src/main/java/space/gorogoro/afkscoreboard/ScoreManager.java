@@ -42,7 +42,7 @@ public class ScoreManager {
 
     public void onPlayerEnterZone(Player player){
         currentAFKPlayers.add(player.getUniqueId());
-        currentSessionTimes.put(player.getUniqueId(),0);
+        currentSessionTimes.putIfAbsent(player.getUniqueId(), 0);
 
     }
     public void onPlayerLeaveZone(Player player){
