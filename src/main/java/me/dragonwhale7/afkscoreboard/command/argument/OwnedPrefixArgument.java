@@ -46,8 +46,10 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         if(context.getSource() instanceof CommandSourceStack ctx){
             if(ctx.getSender() instanceof Player p){
-                for(Prefix prefix : prefixManager.getOwnedPrefixes(p.getUniqueId())){
-                    builder.suggest(prefix.prefixText());
+                if(prefixManager.getOwnedPrefixes(p.getUniqueId())!=null){
+                    for(Prefix prefix : prefixManager.getOwnedPrefixes(p.getUniqueId())){
+                        builder.suggest(prefix.prefixText());
+                    }
                 }
             }
         }
@@ -57,6 +59,6 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
 
     @Override
     public ArgumentType<String> getNativeType() {
-        return StringArgumentType.string();
+        return StringArgumentType.greedyString();
     }
 }

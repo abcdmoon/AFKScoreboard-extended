@@ -5,6 +5,7 @@ import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.scoreboard.Team;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +39,15 @@ public class PrefixManager {
         }
         hiddenPlayers.clear();
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
+    }
+
+    public void reload(){
+        for(Prefix prefix : prefixRegistry.getAllPrefixes()){
+            gameScoreBoardManager.addTeamToAll(prefix.key());
+            gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
+                team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
+            });
+        }
     }
 
     public void reloadPlayerHighScore(UUID uuid){
@@ -74,6 +84,7 @@ public class PrefixManager {
         }
         if(hiddenPlayers.contains(uuid)){
             gameScoreBoardManager.removePlayerFromAllTeam(name);
+            return;
         }
         if(prefix!=null){
             gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
