@@ -40,7 +40,7 @@ public class AFKScoreboard extends JavaPlugin {
         messageManager = new MessageManager(configManager);
         prefixRegistry = new PrefixRegistry(configManager);
         highScoreManager = new HighScoreManager();
-        prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry,highScoreManager);
+        prefixManager = new PrefixManager(configManager,gameScoreBoardManager, prefixRegistry,highScoreManager);
         scoreManager = new ScoreManager(highScoreManager,prefixManager);
         rankingManager = new RankingManager(configManager,scoreManager,highScoreManager,gameScoreBoardManager);
         eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,prefixManager);

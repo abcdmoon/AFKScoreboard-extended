@@ -83,6 +83,32 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    /**
+     * config.yml から肩書非表示プレイヤーのUUIDを読み込む
+     */
+    public Set<UUID> loadPrefixHiddenPlayers() {
+        Set<UUID> hiddenPlayers = new HashSet<>();
+        List<String> uuidStrings = config.getStringList("prefix-hidden-players");
+        for (String s : uuidStrings) {
+            try {
+                hiddenPlayers.add(UUID.fromString(s));
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return hiddenPlayers;
+    }
+
+    /**
+     * 肩書非表示プレイヤーのUUIDを config.yml へ保存する
+     */
+    public void savePrefixHiddenPlayers(Set<UUID> hiddenPlayers) {
+
+        List<String> uuidStrings = hiddenPlayers.stream()
+                .map(UUID::toString)
+                .collect(Collectors.toList());
+        config.set("prefix-hidden-players", uuidStrings);
+        plugin.saveConfig();
+    }
+
     public Set<Prefix> loadPrefixes(){
         Set<Prefix> prefixes = new HashSet<>();
         File file = new File(plugin.getDataFolder(), "prefix.yml");

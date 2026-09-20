@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
+import me.dragonwhale7.afkscoreboard.ConfigManager;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -17,7 +18,11 @@ public class PrefixManager {
     private final GameScoreBoardManager gameScoreBoardManager;
     private final HighScoreManager highScoreManager;
 
-    public PrefixManager(GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry,HighScoreManager highScoreManager) {
+    private final Set<UUID> hiddenPlayers = new HashSet<>();
+    private final ConfigManager configManager;
+
+    public PrefixManager(ConfigManager configManager,GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, HighScoreManager highScoreManager) {
+        this.configManager = configManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
         this.highScoreManager = highScoreManager;
         this.prefixRegistry = prefixRegistry;
@@ -31,6 +36,8 @@ public class PrefixManager {
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
+        hiddenPlayers.clear();
+        hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
     }
 
     public void reloadPlayerHighScore(UUID uuid){
@@ -65,6 +72,9 @@ public class PrefixManager {
         if(name == null){
             return;
         }
+        if(hiddenPlayers.contains(uuid)){
+            gameScoreBoardManager.removePlayerFromAllTeam(name);
+        }
         if(prefix!=null){
             gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
         }else{
@@ -74,5 +84,13 @@ public class PrefixManager {
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
         return ownedPrefixes.get(uuid);
+    }
+
+    public void toggleHidden(UUID uuid){
+        if(hiddenPlayers.contains(uuid)){
+            hiddenPlayers.remove(uuid);
+        }else {
+            hiddenPlayers.add(uuid);
+        }
     }
 }

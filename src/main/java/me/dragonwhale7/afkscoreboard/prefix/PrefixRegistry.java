@@ -10,6 +10,12 @@ public final class PrefixRegistry {
     private final ConfigManager configManager;
     public PrefixRegistry(ConfigManager configManager) {
         this.configManager = configManager;
+        loadPrefixes();
+    }
+
+    public void loadPrefixes(){
+        prefixes.clear();
+        conditionMap.clear();
         for(Prefix prefix : configManager.loadPrefixes()){
             prefixes.put(prefix.key(),  prefix);
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);

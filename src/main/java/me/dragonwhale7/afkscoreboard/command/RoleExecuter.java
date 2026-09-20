@@ -20,9 +20,11 @@ import org.bukkit.entity.Player;
 public class RoleExecuter {
 
     private final PrefixManager prefixManager;
+    private final PrefixRegistry prefixRegistry;
 
-    public RoleExecuter(PrefixManager prefixManager) {
+    public RoleExecuter(PrefixManager prefixManager,PrefixRegistry prefixRegistry) {
         this.prefixManager = prefixManager;
+        this.prefixRegistry = prefixRegistry;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(RoleExecuter roleExecuter, PrefixManager prefixManager, PrefixRegistry prefixRegistry) {
@@ -30,7 +32,10 @@ public class RoleExecuter {
                 .then(Commands.argument("text",new OwnedPrefixArgument(prefixManager,prefixRegistry))
                         .executes(roleExecuter::showRole))
                 .then(Commands.literal("hide")
-                        .executes(roleExecuter::hideRole));
+                        .executes(roleExecuter::hideRole))
+                .then(Commands.literal("load")
+                        .requires(ctx->ctx.getSender().isOp())
+                        .executes(roleExecuter::loadRole));
     }
 
     private int showRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -46,11 +51,16 @@ public class RoleExecuter {
 
     private int hideRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
-            prefixManager.changePrefix(player.getUniqueId(),null);
+            prefixManager.toggleHidden(player.getUniqueId());
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
             throw new SimpleCommandExceptionType(message).create();
         }
+    }
+
+    private int loadRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        prefixRegistry.loadPrefixes();
+        return Command.SINGLE_SUCCESS;
     }
 }

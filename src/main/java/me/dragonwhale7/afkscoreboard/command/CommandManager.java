@@ -17,7 +17,7 @@ public class CommandManager {
         HideExecuter hideExecuter = new HideExecuter(rankingManager);
         ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager,gameScoreBoardManager);
-        RoleExecuter roleExecuter = new RoleExecuter(prefixManager);
+        RoleExecuter roleExecuter = new RoleExecuter(prefixManager,prefixRegistry);
         registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter,roleExecuter,prefixManager,prefixRegistry));
         registrar.register(oldbuild(hideExecuter));
     }
