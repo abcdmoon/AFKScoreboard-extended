@@ -1,7 +1,5 @@
 package me.dragonwhale7.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,11 +8,9 @@ import java.util.UUID;
 public class HighScoreManager {
 
     private final Map<UUID,Integer> highScoreMap = new HashMap<>();
-    private final PrefixManager prefixManager;
 
 
-    public HighScoreManager(PrefixManager prefixManager) {
-        this.prefixManager = prefixManager;
+    public HighScoreManager() {
         init();
     }
 
@@ -28,11 +24,7 @@ public class HighScoreManager {
 
     public void setHighScore(UUID uuid, int newScore) {
         int oldScore = highScoreMap.getOrDefault(uuid,0);
-        if(oldScore<newScore){
-            highScoreMap.put(uuid,newScore);
-            prefixManager.onAchieveHighScore(uuid,oldScore,newScore);
-        }
-
+        highScoreMap.put(uuid,newScore);
     }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {

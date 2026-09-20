@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard;
 
+import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -23,9 +24,11 @@ public class ScoreManager {
     private final Set<UUID> currentAFKPlayers = new HashSet<>();
 
     private final HighScoreManager highScoreManager;
+    private final PrefixManager prefixManager;
 
-    public ScoreManager(HighScoreManager highScoreManager) {
+    public ScoreManager(HighScoreManager highScoreManager, PrefixManager prefixManager) {
         this.highScoreManager = highScoreManager;
+        this.prefixManager = prefixManager;
         init();
     }
     private void init(){
@@ -37,11 +40,14 @@ public class ScoreManager {
      * 1秒ごとに、ゾーンにいるプレイヤーの時間（連続）を加算
      */
     private void incrementTimeEverySecond() {
-
         for(UUID uuid : currentAFKPlayers) {
             int score = currentSessionTimes.getOrDefault(uuid,0)+1;
             currentSessionTimes.put(uuid, score);
-            highScoreManager.setHighScore(uuid, score);
+            if(highScoreManager.getHighScore(uuid)<score){
+                int oldScore = highScoreManager.getHighScore(uuid);
+                highScoreManager.setHighScore(uuid,score);
+                prefixManager.onAchieveHighScore(uuid,oldScore,score);
+            }
         }
     }
 

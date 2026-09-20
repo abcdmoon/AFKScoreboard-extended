@@ -16,8 +16,12 @@ public final class PrefixRegistry {
         }
     }
 
+    public Prefix getPrefix(String key){
+        return prefixes.get(key);
+    }
+
     public List<Prefix> getPrefixesByCondition(int condition){
-        return conditionMap.get(condition);
+        return conditionMap.getOrDefault(condition, new ArrayList<>());
     }
 
     public Collection<Prefix> getAllPrefixes(){
