@@ -12,12 +12,10 @@ public final class PrefixRegistry {
     private final ConfigManager configManager;
     public PrefixRegistry(ConfigManager configManager) {
         this.configManager = configManager;
-        AFKScoreboard.log(Arrays.toString(configManager.loadPrefixes().toArray()) + " prefix registered");
         for(Prefix prefix : configManager.loadPrefixes()){
             prefixes.put(prefix.key(),  prefix);
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
-        AFKScoreboard.log(conditionMap.keySet().toArray().length + " conditions registered"+conditionMap.keySet().toString());
     }
 
     public Prefix getPrefix(String key){

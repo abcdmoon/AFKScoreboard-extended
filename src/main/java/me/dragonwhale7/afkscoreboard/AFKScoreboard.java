@@ -102,10 +102,4 @@ public class AFKScoreboard extends JavaPlugin {
         }
         return NamespacedKey.fromString(key,instance);
     }
-
-    public static void log(String message){
-        if(instance==null){return;}
-        instance.getLogger().info(message);
-        instance.getServer().broadcast(Component.text(message));
-    }
 }

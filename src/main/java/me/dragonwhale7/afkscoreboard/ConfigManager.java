@@ -112,7 +112,6 @@ public class ConfigManager {
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")
             );
-            Bukkit.getServer().broadcast(Component.text("key:"+key));
             prefixes.add(prefix);
         }
         return prefixes;

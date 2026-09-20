@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -46,12 +45,9 @@ public class PrefixManager {
     }
 
     public void onAchieveHighScore(UUID uuid,int oldscore, int score){
-        AFKScoreboard.log(oldscore + " -> " + score);
-        AFKScoreboard.log(prefixRegistry.getAllConditions().toString());
         for(Integer i : prefixRegistry.getAllConditions()){
             if(oldscore<i&&i<=score){
                 for(Prefix p : prefixRegistry.getPrefixesByCondition(i)){
-                    AFKScoreboard.log(Bukkit.getOfflinePlayer(uuid).getName()+"に"+p.key()+"あげた");
                     grantPrefix(uuid,p);
                 }
             }
