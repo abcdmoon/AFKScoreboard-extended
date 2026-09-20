@@ -5,6 +5,7 @@ import me.dragonwhale7.afkscoreboard.command.CommandManager;
 import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
@@ -100,5 +101,11 @@ public class AFKScoreboard extends JavaPlugin {
             throw new IllegalStateException("AFKScoreboard instance is null");
         }
         return NamespacedKey.fromString(key,instance);
+    }
+
+    public static void log(String message){
+        if(instance==null){return;}
+        instance.getLogger().info(message);
+        instance.getServer().broadcast(Component.text(message));
     }
 }

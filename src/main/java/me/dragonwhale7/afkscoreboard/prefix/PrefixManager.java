@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
@@ -46,6 +47,7 @@ public class PrefixManager {
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
             gameScoreBoardManager.addTeamToAll(prefix.key());
             gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
+                AFKScoreboard.log(prefix.prefixText());
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
