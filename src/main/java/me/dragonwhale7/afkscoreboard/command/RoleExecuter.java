@@ -61,6 +61,7 @@ public class RoleExecuter {
 
     private int loadRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         prefixRegistry.loadPrefixes();
+        prefixManager.reload();
         return Command.SINGLE_SUCCESS;
     }
 }

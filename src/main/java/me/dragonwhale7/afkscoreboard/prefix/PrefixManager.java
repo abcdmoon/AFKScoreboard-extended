@@ -5,7 +5,6 @@ import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.scoreboard.Team;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +14,7 @@ import java.util.UUID;
 public class PrefixManager {
 
     private final HashMap<UUID, Set<Prefix>> ownedPrefixes = new HashMap<>();
+    private final HashMap<UUID,Prefix> displayedPrefixes = new HashMap<>();
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
     private final HighScoreManager highScoreManager;
@@ -32,6 +32,7 @@ public class PrefixManager {
 
     private void init(){
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
+            gameScoreBoardManager.removeTeamFromAll(prefix.key());
             gameScoreBoardManager.addTeamToAll(prefix.key());
             gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
@@ -88,20 +89,25 @@ public class PrefixManager {
         }
         if(prefix!=null){
             gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
+
         }else{
             gameScoreBoardManager.removePlayerFromAllTeam(name);
         }
+        displayedPrefixes.put(uuid,prefix);
     }
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
-        return ownedPrefixes.get(uuid);
+        return ownedPrefixes.getOrDefault(uuid,new HashSet<>());
     }
 
     public void toggleHidden(UUID uuid){
         if(hiddenPlayers.contains(uuid)){
             hiddenPlayers.remove(uuid);
+            changePrefix(uuid,displayedPrefixes.get(uuid));
         }else {
             hiddenPlayers.add(uuid);
+            changePrefix(uuid,null);
         }
+        configManager.savePrefixHiddenPlayers(hiddenPlayers);
     }
 }
