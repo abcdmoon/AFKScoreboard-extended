@@ -1,6 +1,8 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
+import org.bukkit.Bukkit;
 
 import java.util.*;
 
@@ -10,10 +12,12 @@ public final class PrefixRegistry {
     private final ConfigManager configManager;
     public PrefixRegistry(ConfigManager configManager) {
         this.configManager = configManager;
+        AFKScoreboard.log(Arrays.toString(configManager.loadPrefixes().toArray()) + " prefix registered");
         for(Prefix prefix : configManager.loadPrefixes()){
             prefixes.put(prefix.key(),  prefix);
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
+        AFKScoreboard.log(conditionMap.keySet().toArray().length + " conditions registered"+conditionMap.keySet().toString());
     }
 
     public Prefix getPrefix(String key){
@@ -28,7 +32,8 @@ public final class PrefixRegistry {
         return prefixes.values();
     }
 
-    public Set<Integer> getAllConditions(){
-        return conditionMap.keySet();
+    public List<Integer> getAllConditions(){
+        return conditionMap.keySet()
+                .stream().sorted().toList();
     }
 }

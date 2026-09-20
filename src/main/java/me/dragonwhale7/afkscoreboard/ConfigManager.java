@@ -1,6 +1,8 @@
 package me.dragonwhale7.afkscoreboard;
 
 import me.dragonwhale7.afkscoreboard.prefix.Prefix;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -106,10 +108,11 @@ public class ConfigManager {
 
             Prefix prefix = new Prefix(
                     key,
-                    prefixSection.getInt("condition",0),
+                    prefixSection.getInt("require-score",0),
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")
             );
+            Bukkit.getServer().broadcast(Component.text("key:"+key));
             prefixes.add(prefix);
         }
         return prefixes;

@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard;
 
+import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,12 +15,14 @@ public class EventManager implements Listener {
     private final MessageManager messageManager;
     private final RankingManager rankingManager;
     private final ScoreManager scoreManager;
+    private final PrefixManager prefixManager;
 
-    public EventManager(ZoneManager zoneManager,MessageManager messageManager, RankingManager rankingManager,ScoreManager scoreManager) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager, PrefixManager prefixManager) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
+        this.prefixManager = prefixManager;
         onEnable();
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
@@ -44,6 +47,7 @@ public class EventManager implements Listener {
             scoreManager.onPlayerConnect(e.getPlayer());
             onPlayerEnterZone(e.getPlayer());
         }
+        prefixManager.reloadPlayerHighScore(e.getPlayer().getUniqueId());
     }
 
     @EventHandler

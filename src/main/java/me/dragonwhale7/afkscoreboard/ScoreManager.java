@@ -1,6 +1,8 @@
 package me.dragonwhale7.afkscoreboard;
 
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;

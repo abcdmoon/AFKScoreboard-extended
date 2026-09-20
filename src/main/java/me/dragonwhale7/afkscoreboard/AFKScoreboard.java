@@ -5,6 +5,7 @@ import me.dragonwhale7.afkscoreboard.command.CommandManager;
 import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
@@ -43,7 +44,7 @@ public class AFKScoreboard extends JavaPlugin {
         prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry,highScoreManager);
         scoreManager = new ScoreManager(highScoreManager,prefixManager);
         rankingManager = new RankingManager(configManager,scoreManager,highScoreManager,gameScoreBoardManager);
-        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager);
+        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,prefixManager);
 
         getServer().getPluginManager().registerEvents(eventManager, this);
 
@@ -102,4 +103,9 @@ public class AFKScoreboard extends JavaPlugin {
         return NamespacedKey.fromString(key,instance);
     }
 
+    public static void log(String message){
+        if(instance==null){return;}
+        instance.getLogger().info(message);
+        instance.getServer().broadcast(Component.text(message));
+    }
 }
