@@ -1,14 +1,14 @@
 prefixes:
   everyone:
-    require-score: 200
-    prefix-text: "はじめて♡"
+    requireScore: 1200
+    prefixText: "【放置初心者】"
     color: "gray"
   beginner:
-    require-score: 700
-    prefix-text: "初心者"
+    requireScore: 20
+    prefixText: "初心者"
     color: "red"
 
   regular:
-    require-score: 1200
-    prefix-text: "常連"
+    requireScore: 30
+    prefixText: "常連の"
     color: "green"

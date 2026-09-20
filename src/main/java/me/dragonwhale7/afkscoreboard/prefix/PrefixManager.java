@@ -70,4 +70,8 @@ public class PrefixManager {
         }
         gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
     }
+
+    public  Set<Prefix> getOwnedPrefixes(UUID uuid){
+        return ownedPrefixes.get(uuid);
+    }
 }

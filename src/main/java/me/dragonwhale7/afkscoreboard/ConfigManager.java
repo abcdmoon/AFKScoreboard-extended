@@ -108,7 +108,7 @@ public class ConfigManager {
 
             Prefix prefix = new Prefix(
                     key,
-                    prefixSection.getInt("require-score",0),
+                    prefixSection.getInt("requireScore",0),
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")
             );
