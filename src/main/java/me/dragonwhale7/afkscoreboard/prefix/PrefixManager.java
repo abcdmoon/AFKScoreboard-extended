@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 
@@ -12,14 +11,11 @@ import java.util.UUID;
 public class PrefixManager {
 
     private final HashMap<UUID, Set<Prefix>> ownedPrefixes = new HashMap<>();
-    private final HashMap<UUID,Integer> nextConditions = new HashMap<>();
-    private final HighScoreManager highScoreManager;
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
 
-    public PrefixManager(GameScoreBoardManager gameScoreBoardManager,HighScoreManager highScoreManager,PrefixRegistry prefixRegistry) {
+    public PrefixManager(GameScoreBoardManager gameScoreBoardManager,PrefixRegistry prefixRegistry) {
         this.gameScoreBoardManager = gameScoreBoardManager;
-        this.highScoreManager = highScoreManager;
         this.prefixRegistry = prefixRegistry;
         init();
     }
@@ -33,9 +29,15 @@ public class PrefixManager {
         }
     }
 
+    public void reloadPlayerHighScore(UUID uuid){
+        for(Integer i : prefixRegistry.getAllConditions()){
+
+        }
+    }
+
     public void onAchieveHighScore(UUID uuid,int oldscore, int score){
         for(Integer i : prefixRegistry.getAllConditions()){
-            if(oldscore<=i&&i<=score){
+            if(oldscore<i&&i<=score){
                 for(Prefix p : prefixRegistry.getPrefixesByCondition(i)){
                     grantPrefix(uuid,p);
                 }

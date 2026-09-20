@@ -1,13 +1,15 @@
 package me.dragonwhale7.afkscoreboard;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import me.dragonwhale7.afkscoreboard.command.CommandManager;
 import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import me.dragonwhale7.afkscoreboard.command.CommandManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,8 @@ public class AFKScoreboard extends JavaPlugin {
     private ScoreManager scoreManager;
     private HighScoreManager highScoreManager;
     private GameScoreBoardManager gameScoreBoardManager;
+    private PrefixRegistry prefixRegistry;
+    private PrefixManager prefixManager;
 
     @Override
     public void onEnable() {
@@ -34,7 +38,9 @@ public class AFKScoreboard extends JavaPlugin {
         zoneManager = new ZoneManager(this);
         gameScoreBoardManager = new GameScoreBoardManager();
         messageManager = new MessageManager(configManager);
-        highScoreManager = new HighScoreManager();
+        prefixRegistry = new PrefixRegistry(configManager);
+        prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry);
+        highScoreManager = new HighScoreManager(prefixManager);
         scoreManager = new ScoreManager(highScoreManager);
         rankingManager = new RankingManager(configManager,scoreManager,highScoreManager,gameScoreBoardManager);
         eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager);
