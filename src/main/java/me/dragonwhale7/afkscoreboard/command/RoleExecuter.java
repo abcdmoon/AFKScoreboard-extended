@@ -46,6 +46,7 @@ public class RoleExecuter {
 
     private int hideRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
+            prefixManager.changePrefix(player.getUniqueId(),null);
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));

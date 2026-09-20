@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class GameScoreBoardManager {
     private ScoreboardManager scoreboardManager;
@@ -150,5 +149,20 @@ public class GameScoreBoardManager {
             throw new IllegalStateException("Team has not been added");
         }
         team.addEntry(name);
+    }
+
+    public  void removePlayerFromAllTeam(String name) {
+        Team team = mainScoreboard.getEntryTeam(name);
+        if (team != null) {
+            team.removeEntry(name);
+        }
+        team = afkScoreboard.getEntryTeam(name);
+        if (team != null) {
+            team.removeEntry(name);
+        }
+        team = highScoreScoreboard.getEntryTeam(name);
+        if (team != null) {
+            team.removeEntry(name);
+        }
     }
 }

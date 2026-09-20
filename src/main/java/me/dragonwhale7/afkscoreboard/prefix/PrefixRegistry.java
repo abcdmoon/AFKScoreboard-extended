@@ -1,8 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
-import org.bukkit.Bukkit;
 
 import java.util.*;
 

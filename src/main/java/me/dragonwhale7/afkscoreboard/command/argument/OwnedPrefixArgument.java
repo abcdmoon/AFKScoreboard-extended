@@ -57,6 +57,6 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
 
     @Override
     public ArgumentType<String> getNativeType() {
-        return StringArgumentType.word();
+        return StringArgumentType.string();
     }
 }

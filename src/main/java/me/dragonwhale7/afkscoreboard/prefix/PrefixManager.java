@@ -2,6 +2,7 @@ package me.dragonwhale7.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class PrefixManager {
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
             gameScoreBoardManager.addTeamToAll(prefix.key());
             gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
-                team.prefix(Component.text(prefix.prefixText()).color(prefix.color()));
+                team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
     }
@@ -64,7 +65,11 @@ public class PrefixManager {
         if(name == null){
             return;
         }
-        gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
+        if(prefix!=null){
+            gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
+        }else{
+            gameScoreBoardManager.removePlayerFromAllTeam(name);
+        }
     }
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
