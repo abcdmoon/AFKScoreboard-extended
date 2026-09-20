@@ -12,6 +12,7 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import me.dragonwhale7.afkscoreboard.*;
+import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -21,11 +22,13 @@ public class HighScoreExecuter {
     private final HighScoreManager highScoreManager;
     private final RankingManager rankingManager;
     private final ZoneManager zoneManager;
+    private final GameScoreBoardManager gameScoreBoardManager;
 
-    public HighScoreExecuter(HighScoreManager highScoreManager, RankingManager rankingManager, ZoneManager zoneManager) {
+    public HighScoreExecuter(HighScoreManager highScoreManager, RankingManager rankingManager, ZoneManager zoneManager, GameScoreBoardManager gameScoreBoardManager) {
         this.highScoreManager = highScoreManager;
         this.rankingManager = rankingManager;
         this.zoneManager = zoneManager;
+        this.gameScoreBoardManager = gameScoreBoardManager;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(HighScoreExecuter highScoreExecuter) {
@@ -64,21 +67,21 @@ public class HighScoreExecuter {
         if(ctx.getSource().getSender() instanceof Player player){
 
             //要するにハイスコアのスコアボードを見られて、コマンドまたは時間経過で今いる場所にあった表示に戻る
-            if(rankingManager.isShownHighScoreScoreBoard(player)){
+            if(player.getScoreboard().equals(gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE))){
                 if(zoneManager.isLocInAnyZone(player.getLocation())){
-                    rankingManager.showAfkScoreBoard(player);
+                    gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
                 }else{
-                    rankingManager.showMainScoreBoard(player);
+                    gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
                 }
             }else{
                 rankingManager.updateHighScoreScoreBoard();
-                rankingManager.showHighScoreScoreBoard(player);
+                gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.HIGHSCORE);
                 AFKScoreboard.registerTaskLater(()->{
-                    if(rankingManager.isShownHighScoreScoreBoard(player)){
+                    if(player.getScoreboard().equals(gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE))){
                         if(zoneManager.isLocInAnyZone(player.getLocation())){
-                            rankingManager.showAfkScoreBoard(player);
+                            gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
                         }else{
-                            rankingManager.showMainScoreBoard(player);
+                            gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
                         }
                     }
                 },60L);

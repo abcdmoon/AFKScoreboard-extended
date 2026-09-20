@@ -1,9 +1,6 @@
 package me.dragonwhale7.afkscoreboard;
 
-import dev.geco.gsit.api.event.PrePlayerPlayerSitEvent;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -43,8 +40,6 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        e.getPlayer().addPassenger(e.getPlayer().getWorld().spawnEntity(e.getPlayer().getLocation(), EntityType.ARMOR_STAND));
-        e.getPlayer().addPassenger(e.getPlayer().getWorld().spawnEntity(e.getPlayer().getLocation(), EntityType.FROG));
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
             scoreManager.onPlayerConnect(e.getPlayer());
             onPlayerEnterZone(e.getPlayer());
@@ -89,10 +84,5 @@ public class EventManager implements Listener {
     public void onPlayerLeaveZone(Player p) {
         rankingManager.onPlayerLeaveZone(p);
         scoreManager.onPlayerLeaveZone(p);
-    }
-
-    @EventHandler
-    public void onPrePlayerPlayerSit(PrePlayerPlayerSitEvent e){
-        Bukkit.getServer().broadcast(Component.text(e.getPlayer().getName()+"が"+e.getTarget()+"に乗らんとしている"));
     }
 }

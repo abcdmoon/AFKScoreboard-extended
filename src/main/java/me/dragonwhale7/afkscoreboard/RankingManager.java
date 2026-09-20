@@ -1,11 +1,11 @@
 package me.dragonwhale7.afkscoreboard;
 
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.*;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
 
@@ -14,11 +14,7 @@ public class RankingManager {
     private final ConfigManager configManager;
     private final ScoreManager scoreManager;
     private final HighScoreManager highScoreManager;
-    private ScoreboardManager scoreboardManager;
-    private Scoreboard afkScoreboard;
-    private Scoreboard highScoreScoreboard;
-    private Objective afkObjective;
-    private Objective highScoreObjective;
+    private final GameScoreBoardManager gameScoreBoardManager;
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
     private final Set<UUID> hiddenPlayers = new HashSet<>();
@@ -34,44 +30,15 @@ public class RankingManager {
         configManager.saveHiddenPlayers(hiddenPlayers);
     }
 
-    public RankingManager(ConfigManager configManager,ScoreManager scoreManager,HighScoreManager highScoreManager) {
+    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager) {
         this.configManager = configManager;
         this.scoreManager = scoreManager;
         this.highScoreManager = highScoreManager;
+        this.gameScoreBoardManager = gameScoreBoardManager;
 
         init();
     }
     private void init(){
-        scoreboardManager = Bukkit.getScoreboardManager();
-
-        //スコア表示用
-        afkScoreboard = scoreboardManager.getNewScoreboard();
-        // タイトル (Paper推奨の形式に修正)
-        this.afkObjective = afkScoreboard.registerNewObjective(
-                "afk_top10",
-                Criteria.DUMMY,
-                LegacyComponentSerializer.legacySection().deserialize("§e§l放置時間ランキング"),
-                RenderType.INTEGER
-        );
-        this.afkObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
-        this.afkObjective.numberFormat(NumberFormat.blank());
-
-        //ハイスコア表示用
-        highScoreScoreboard = scoreboardManager.getNewScoreboard();
-        // タイトル (Paper推奨の形式に修正)
-        this.highScoreObjective = highScoreScoreboard.registerNewObjective(
-                "afkHighScore_top10",
-                Criteria.DUMMY,
-                LegacyComponentSerializer.legacySection().deserialize("§6§l最高放置時間ランキング"),
-                RenderType.INTEGER
-        );
-        this.highScoreObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
-        this.highScoreObjective.numberFormat(NumberFormat.blank());
-
         hiddenPlayers.clear();
         hiddenPlayers.addAll(configManager.loadHiddenPlayers());
 
@@ -79,21 +46,19 @@ public class RankingManager {
     }
 
     public void onPlayerEnterZone(Player player){
-        if (!player.getScoreboard().equals(afkScoreboard)) {
-            player.setScoreboard(afkScoreboard);
-        }
+        gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
     }
 
     public void onPlayerLeaveZone(Player player){
-        if (player.getScoreboard().equals(afkScoreboard)) {
-            player.setScoreboard(scoreboardManager.getMainScoreboard());
-        }
+        gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
     }
 
     /**
      * ランキングを計算してスコアボードを更新
      */
     private void updateLeaderboard() {
+        Scoreboard afkScoreboard = gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.SCORE);
+        Objective afkObjective = gameScoreBoardManager.getObjective(GameScoreBoardManager.ScoreboardType.SCORE);
         for (String entry : afkScoreboard.getEntries()) {
             afkScoreboard.resetScores(entry);
         }
@@ -138,25 +103,12 @@ public class RankingManager {
         }
     }
 
-    public void showMainScoreBoard(Player player){
-        player.setScoreboard(scoreboardManager.getMainScoreboard());
-    }
-
-    public void showAfkScoreBoard(Player player){
-        player.setScoreboard(afkScoreboard);
-    }
-
-    public void showHighScoreScoreBoard(Player player){
-        player.setScoreboard(highScoreScoreboard);
-    }
-    public boolean isShownHighScoreScoreBoard(Player player){
-        return player.getScoreboard().equals(highScoreScoreboard);
-    }
-
     /**
      * ハイスコアのランキングを計算して反映
      */
     public void updateHighScoreScoreBoard(){
+        Scoreboard highScoreScoreboard = gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE);
+        Objective highScoreObjective = gameScoreBoardManager.getObjective(GameScoreBoardManager.ScoreboardType.HIGHSCORE);
         for (String entry : highScoreScoreboard.getEntries()) {
             highScoreScoreboard.resetScores(entry);
         }

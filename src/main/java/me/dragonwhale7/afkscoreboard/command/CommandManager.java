@@ -6,14 +6,15 @@ import io.papermc.paper.command.brigadier.Commands;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import me.dragonwhale7.afkscoreboard.RankingManager;
 import me.dragonwhale7.afkscoreboard.ZoneManager;
+import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 
 public class CommandManager {
     private CommandManager(){}
 
-    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager) {
+    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager) {
         HideExecuter hideExecuter = new HideExecuter(rankingManager);
         ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager);
-        HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager);
+        HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager,gameScoreBoardManager);
         registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter));
         registrar.register(oldbuild(hideExecuter));
     }
