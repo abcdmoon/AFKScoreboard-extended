@@ -1,7 +1,11 @@
 package me.dragonwhale7.afkscoreboard;
 
+import me.dragonwhale7.afkscoreboard.prefix.Prefix;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +26,7 @@ public class ConfigManager {
 
     private void initialProcess(){
         plugin.saveDefaultConfig();
+
     }
 
     /**
@@ -76,5 +81,38 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    public Set<Prefix> loadPrefixes(){
+        Set<Prefix> prefixes = new HashSet<>();
+        File file = new File(plugin.getDataFolder(), "prefixes.yml");
+
+        if (!file.exists()) {
+            plugin.saveResource("prefix.yml", false);
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        ConfigurationSection section = config.getConfigurationSection("prefixes");
+
+        if (section == null) {
+            return Set.of();
+        }
+
+        for (String key : section.getKeys(false)) {
+            ConfigurationSection prefixSection = section.getConfigurationSection(key);
+
+            if (prefixSection == null) {
+                continue;
+            }
+
+            Prefix prefix = new Prefix(
+                    AFKScoreboard.getNameSpacedKey(key).asString(),
+                    prefixSection.getInt("condition",0),
+                    prefixSection.getString("prefixText", ""),
+                    prefixSection.getString("color", "white")
+            );
+            prefixes.add(prefix);
+        }
+        return prefixes;
+    }
 
 }

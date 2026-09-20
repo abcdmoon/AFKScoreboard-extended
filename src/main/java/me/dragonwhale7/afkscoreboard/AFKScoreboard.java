@@ -3,6 +3,7 @@ package me.dragonwhale7.afkscoreboard;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -86,6 +87,13 @@ public class AFKScoreboard extends JavaPlugin {
     public static void registerTaskLater(Runnable runnable, long delay) {
         if(instance==null){return;}
         Bukkit.getScheduler().runTaskLater(instance,runnable,delay);
+    }
+
+    public static NamespacedKey getNameSpacedKey(String key){
+        if(instance==null){
+            throw new IllegalStateException("AFKScoreboard instance is null");
+        }
+        return NamespacedKey.fromString(key,instance);
     }
 
 }

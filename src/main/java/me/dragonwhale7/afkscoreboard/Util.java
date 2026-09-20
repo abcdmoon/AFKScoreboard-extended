@@ -1,5 +1,7 @@
 package me.dragonwhale7.afkscoreboard;
 
+import net.kyori.adventure.text.format.NamedTextColor;
+
 public class Util {
     /**
      * コンパクトな時間フォーマット
@@ -27,4 +29,5 @@ public class Util {
 
         return days + "d" + hours + "h" + minutes + "m";
     }
+
 }

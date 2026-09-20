@@ -6,8 +6,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 public class GameScoreBoardManager {
     private ScoreboardManager scoreboardManager;
+    private Scoreboard mainScoreboard;
     private Scoreboard afkScoreboard;
     private Scoreboard highScoreScoreboard;
     private Objective afkObjective;
@@ -23,6 +27,7 @@ public class GameScoreBoardManager {
 
     private void init() {
         scoreboardManager = Bukkit.getScoreboardManager();
+        mainScoreboard = scoreboardManager.getMainScoreboard();
 
         //スコア表示用
         afkScoreboard = scoreboardManager.getNewScoreboard();
@@ -63,7 +68,7 @@ public class GameScoreBoardManager {
             }
             case MAIN:
             default:{
-                return scoreboardManager.getMainScoreboard();
+                return mainScoreboard;
             }
         }
     }
@@ -84,5 +89,54 @@ public class GameScoreBoardManager {
 
     public void showScoreboard(Player player, ScoreboardType type) {
         player.setScoreboard(getScoreboard(type));
+    }
+
+    public void addTeamToAll(String key) {
+        try{
+            mainScoreboard.registerNewTeam(key);
+            afkScoreboard.registerNewTeam(key);
+            highScoreScoreboard.registerNewTeam(key);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Team key are already in use");
+        }
+    }
+
+    public void modifyAllTeam(String key, Consumer<Team> consumer) {
+        consumer.accept(mainScoreboard.getTeam(key));
+        consumer.accept(afkScoreboard.getTeam(key));
+        consumer.accept(highScoreScoreboard.getTeam(key));
+    }
+
+    public void removeTeamFromAll(String key) {
+        Team team = mainScoreboard.getTeam(key);
+        if (team != null) {
+            team.unregister();
+        }
+        team = afkScoreboard.getTeam(key);
+        if (team != null) {
+            team.unregister();
+        }
+        team = highScoreScoreboard.getTeam(key);
+        if (team != null) {
+            team.unregister();
+        }
+    }
+
+    public void addPlayerToAllTeam(String name, String key) {
+        Team team = mainScoreboard.getTeam(key);
+        if (team == null) {
+            throw new IllegalStateException("Team has not been added");
+        }
+        team.addEntry(name);
+        team = afkScoreboard.getTeam(key);
+        if (team == null) {
+            throw new IllegalStateException("Team has not been added");
+        }
+        team.addEntry(name);
+        team = highScoreScoreboard.getTeam(key);
+        if (team == null) {
+            throw new IllegalStateException("Team has not been added");
+        }
+        team.addEntry(name);
     }
 }
