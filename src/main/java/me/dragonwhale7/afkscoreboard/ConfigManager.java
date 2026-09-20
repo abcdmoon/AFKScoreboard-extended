@@ -83,7 +83,7 @@ public class ConfigManager {
 
     public Set<Prefix> loadPrefixes(){
         Set<Prefix> prefixes = new HashSet<>();
-        File file = new File(plugin.getDataFolder(), "prefixes.yml");
+        File file = new File(plugin.getDataFolder(), "prefix.yml");
 
         if (!file.exists()) {
             plugin.saveResource("prefix.yml", false);
@@ -105,7 +105,7 @@ public class ConfigManager {
             }
 
             Prefix prefix = new Prefix(
-                    AFKScoreboard.getNameSpacedKey(key).asString(),
+                    key,
                     prefixSection.getInt("condition",0),
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")

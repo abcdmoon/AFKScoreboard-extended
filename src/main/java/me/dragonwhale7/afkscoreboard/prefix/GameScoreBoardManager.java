@@ -93,8 +93,20 @@ public class GameScoreBoardManager {
 
     public void addTeamToAll(String key) {
         try{
+            if(mainScoreboard.getTeam(key) != null){
+                mainScoreboard.getTeam(key).unregister();
+                Bukkit.getLogger().warning(key+" Team already exists!");
+            }
             mainScoreboard.registerNewTeam(key);
+            if(afkScoreboard.getTeam(key) != null){
+                afkScoreboard.getTeam(key).unregister();
+                Bukkit.getLogger().warning(key+" Team already exists!");
+            }
             afkScoreboard.registerNewTeam(key);
+            if(highScoreScoreboard.getTeam(key) != null){
+                highScoreScoreboard.getTeam(key).unregister();
+                Bukkit.getLogger().warning(key+" Team already exists!");
+            }
             highScoreScoreboard.registerNewTeam(key);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Team key are already in use");
