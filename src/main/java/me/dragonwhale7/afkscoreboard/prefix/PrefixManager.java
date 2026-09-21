@@ -30,9 +30,9 @@ public class PrefixManager {
 
     private void init(){
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
-            gameScoreBoardManager.removeTeamFromAll(prefix.key());
-            gameScoreBoardManager.addTeamToAll(prefix.key());
-            gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
+            gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
+            gameScoreBoardManager.addTeamToAll(prefix.teamKey());
+            gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
@@ -42,11 +42,11 @@ public class PrefixManager {
 
     public void reload(Set<Prefix> loadedPrefixes){
         for(Prefix prefix : loadedPrefixes){
-            gameScoreBoardManager.removeTeamFromAll(prefix.key());
+            gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
         }
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
-            gameScoreBoardManager.addTeamToAll(prefix.key());
-            gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
+            gameScoreBoardManager.addTeamToAll(prefix.teamKey());
+            gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
@@ -103,7 +103,7 @@ public class PrefixManager {
             return;
         }
         if(prefix!=null){
-            gameScoreBoardManager.addPlayerToAllTeam(name,prefix.key());
+            gameScoreBoardManager.addPlayerToAllTeam(name,prefix.teamKey());
 
         }else{
             gameScoreBoardManager.removePlayerFromAllTeam(name);
