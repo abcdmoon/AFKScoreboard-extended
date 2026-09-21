@@ -32,7 +32,7 @@ Do not assume any responsibility by use. Please use it at your own risk.
 要OP
 /afkscore reload ゲーム内で放置エリアを編集などして変わったファイルを再読込する
 /afkscore highscore <Player>   任意のプレイヤーのハイスコアが確認できる
-/afkscore role reload   prefix.ymlの内容を読み込み直します
+/afkscore reloadrole   prefix.ymlの内容を読み込み直します
 ```
 ## 仕様
 ・/afkhideをしても記録自体はとられ、表示すると密かに記録していた値が出るようになりました  

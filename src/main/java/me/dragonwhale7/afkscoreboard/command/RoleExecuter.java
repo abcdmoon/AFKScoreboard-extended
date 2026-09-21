@@ -36,10 +36,7 @@ public class RoleExecuter {
                 .then(Commands.argument("text",new OwnedPrefixArgument(prefixManager,prefixRegistry))
                         .executes(roleExecuter::showRole))
                 .then(Commands.literal("hide")
-                        .executes(roleExecuter::hideRole))
-                .then(Commands.literal("reload")
-                        .requires(ctx->ctx.getSender().isOp())
-                        .executes(roleExecuter::loadRole));
+                        .executes(roleExecuter::hideRole));
     }
 
     private int showRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -74,13 +71,4 @@ public class RoleExecuter {
         }
     }
 
-    private int loadRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Set<Prefix> oldPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
-        prefixRegistry.loadPrefixes();
-        prefixManager.reload(oldPrefixes);
-        if(ctx.getSource().getSender() instanceof Player player){
-            player.sendMessage(Component.text("称号の情報をファイルから再読込しました"));
-        }
-        return Command.SINGLE_SUCCESS;
-    }
 }

@@ -19,16 +19,18 @@ public class CommandManager {
         ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager,gameScoreBoardManager);
         RoleExecuter roleExecuter = new RoleExecuter(prefixManager,prefixRegistry);
-        registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter,roleExecuter,prefixManager,prefixRegistry));
+        ReloadRoleExecuter reloadRoleExecuter = new ReloadRoleExecuter(prefixRegistry,prefixManager);
+        registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter,roleExecuter,prefixManager,prefixRegistry,reloadRoleExecuter));
         registrar.register(oldbuild(hideExecuter));
     }
 
-    public static LiteralCommandNode<CommandSourceStack> build(HideExecuter hideExecuter, ReloadExecuter reloadExecuter, HighScoreExecuter highScoreExecuter, RoleExecuter roleExecuter, PrefixManager prefixManager, PrefixRegistry prefixRegistry) {
+    public static LiteralCommandNode<CommandSourceStack> build(HideExecuter hideExecuter, ReloadExecuter reloadExecuter, HighScoreExecuter highScoreExecuter, RoleExecuter roleExecuter, PrefixManager prefixManager, PrefixRegistry prefixRegistry,ReloadRoleExecuter reloadRoleExecuter) {
         return Commands.literal("afkscore")
                 .then(HideExecuter.create(hideExecuter))
                 .then(ReloadExecuter.create(reloadExecuter))
                 .then(HighScoreExecuter.create(highScoreExecuter))
                 .then(RoleExecuter.create(roleExecuter,prefixManager,prefixRegistry))
+                .then(ReloadRoleExecuter.create(reloadRoleExecuter))
                 .build();
 
     }
