@@ -30,7 +30,7 @@ prefixes:
   chunkloader:
     requireScore: 21600
     prefixText: "チャンクローダー"
-    color: "dark green"
+    color: "dark_green"
   figurine:
     requireScore: 28800
     prefixText: "【もはや置物】"
@@ -38,11 +38,11 @@ prefixes:
   hasibirokou:
     requireScore: 36000
     prefixText: "ハシビロコウ"
-    color: "light purple"
+    color: "light_purple"
   blockentity:
     requireScore: 43200
     prefixText: "BlockEntity"
-    color: "dark aqua"
+    color: "dark_aqua"
   kaomoji:
     requireScore: 54000
     prefixText: "(｀・ω・´)"
@@ -74,4 +74,4 @@ prefixes:
   gorogoro2:
     requireScore: 432000
     prefixText: "【ごろごろ】"
-    color: "dark purple"
+    color: "dark_purple"
