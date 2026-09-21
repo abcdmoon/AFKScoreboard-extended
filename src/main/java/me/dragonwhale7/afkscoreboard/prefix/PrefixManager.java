@@ -121,6 +121,7 @@ public class PrefixManager {
                 if(prefixList.isEmpty()){
                     changePrefix(uuid,null);
                 }else {
+                    prefixList.sort(Comparator.comparingInt(Prefix::requireScore));
                     changePrefix(uuid,prefixList.getLast());
                 }
             }
