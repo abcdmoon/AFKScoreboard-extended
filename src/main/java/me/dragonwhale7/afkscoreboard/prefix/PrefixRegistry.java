@@ -7,7 +7,6 @@ import java.util.*;
 
 public final class PrefixRegistry {
     private final Map<String, Prefix> prefixes = new HashMap<>();
-    private final Set<String> teamKeys = new HashSet<>();
     private final Map<Integer, List<Prefix>> conditionMap = new HashMap<>();
     private final ConfigManager configManager;
     public PrefixRegistry(ConfigManager configManager) {
@@ -24,7 +23,6 @@ public final class PrefixRegistry {
                 continue;
             }
             prefixes.put(prefix.key(),  prefix);
-            teamKeys.add(prefix.teamKey());
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
     }

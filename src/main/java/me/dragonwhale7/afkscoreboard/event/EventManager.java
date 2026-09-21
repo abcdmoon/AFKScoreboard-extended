@@ -1,5 +1,6 @@
-package me.dragonwhale7.afkscoreboard;
+package me.dragonwhale7.afkscoreboard.event;
 
+import me.dragonwhale7.afkscoreboard.*;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -88,5 +89,15 @@ public class EventManager implements Listener {
     public void onPlayerLeaveZone(Player p) {
         rankingManager.onPlayerLeaveZone(p);
         scoreManager.onPlayerLeaveZone(p);
+    }
+
+    public void onReloadZone() {
+        for(Player p : Bukkit.getOnlinePlayers()){
+            if(zoneManager.isLocInAnyZone(p.getLocation())) {
+                onPlayerEnterZone(p);
+            }else{
+                onPlayerLeaveZone(p);
+            }
+        }
     }
 }

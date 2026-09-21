@@ -1,8 +1,10 @@
 package me.dragonwhale7.afkscoreboard;
 
+import me.dragonwhale7.afkscoreboard.event.EventManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -13,9 +15,11 @@ import java.util.Objects;
 public class ZoneManager {
 
     private final AFKScoreboard plugin;
+    private final EventManager eventManager;
 
-    public ZoneManager(AFKScoreboard plugin) {
+    public ZoneManager(AFKScoreboard plugin, EventManager eventManager) {
         this.plugin = plugin;
+        this.eventManager = eventManager;
         init();
     }
 
@@ -85,6 +89,7 @@ public class ZoneManager {
                 plugin.getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
             }
         }
+        eventManager.onReloadZone();
     }
 
     /**
