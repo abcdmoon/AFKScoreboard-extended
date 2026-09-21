@@ -69,7 +69,7 @@ public class RankingManager {
                 .filter(e->!isHidden(e.getKey()))
                 .map(entry->{
                     Player player = Bukkit.getPlayer(entry.getKey());
-                    if(player == null) {
+                    if(player == null||!player.isOnline()) {
                         return null;
                     }else{
                         return Map.entry(player,entry.getValue());
@@ -96,7 +96,7 @@ public class RankingManager {
             UUID uuid = entry.getKey();
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player == null || !player.isOnline()) {
+            if (player == null) {
                 continue;
             }
 
