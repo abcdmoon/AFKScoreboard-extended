@@ -125,7 +125,7 @@ public class ZoneManager {
         }
 
         public boolean isInArea(Location loc) {
-            return loc.getWorld().getName().equalsIgnoreCase(world) &&
+            return world.equalsIgnoreCase(loc.getWorld().getName()) &&
                     loc.getX() >= minX && loc.getX() <= maxX &&
                     loc.getY() >= minY && loc.getY() <= maxY &&
                     loc.getZ() >= minZ && loc.getZ() <= maxZ;
