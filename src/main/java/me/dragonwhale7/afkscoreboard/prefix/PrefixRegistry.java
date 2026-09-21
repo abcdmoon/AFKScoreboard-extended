@@ -20,6 +20,7 @@ public final class PrefixRegistry {
         for(Prefix prefix : configManager.loadPrefixes()){
             if(prefixes.containsKey(prefix.key())){
                 AFKScoreboard.warn("There is already a prefix with the same key!");
+                continue;
             }
             prefixes.put(prefix.key(),  prefix);
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
