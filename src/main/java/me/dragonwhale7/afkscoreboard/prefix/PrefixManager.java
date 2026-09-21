@@ -6,6 +6,7 @@ import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,18 +44,25 @@ public class PrefixManager {
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
     }
 
-    public void reload(){
+    public void reload(Set<Prefix> loadedPrefixes){
+        for(Prefix prefix : loadedPrefixes){
+            gameScoreBoardManager.removeTeamFromAll(prefix.key());
+        }
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
+            gameScoreBoardManager.removeTeamFromAll(prefix.key());
             gameScoreBoardManager.addTeamToAll(prefix.key());
             gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
-                AFKScoreboard.log(prefix.prefixText());
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
+        }
+        for(Player player : Bukkit.getOnlinePlayers()){
+            reloadPlayerHighScore(player.getUniqueId());
         }
     }
 
     public void reloadPlayerHighScore(UUID uuid){
         int highScore = highScoreManager.getHighScore(uuid);
+        ownedPrefixes.remove(uuid);
         for(Integer i : prefixRegistry.getAllConditions()){
             if(highScore < i){
                 continue;

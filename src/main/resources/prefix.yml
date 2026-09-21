@@ -1,14 +1,57 @@
 prefixes:
   everyone:
-    requireScore: 1200
-    prefixText: "【放置初心者】"
-    color: "gray"
+    requireScore: 1800
+    prefixText: "試しかっこなし"
+    color: "gold"
   beginner:
-    requireScore: 20
-    prefixText: "初心者"
+    requireScore: 3600
+    prefixText: "【インドア派】"
     color: "red"
-
-  regular:
-    requireScore: 30
-    prefixText: "常連の"
+  normal:
+    requireScore: 7200
+    prefixText: "【PCつけっぱ】"
     color: "green"
+  regular:
+    requireScore: 10800
+    prefixText: "【ハシビロコウ】"
+    color: ""
+  strong:
+    requireScore: 14400
+    prefixText: "【てこで動かぬ】"
+    color: ""
+  powerful:
+    requireScore: 18000
+    prefixText: "【スポーン住み】"
+    color: ""
+  tough:
+    requireScore: 21600
+    prefixText: "【アロンあるふぁ】"
+    color: ""
+  tolerant:
+    requireScore: 25200
+    prefixText: "【BlockEntity】"
+    color: ""
+  superior:
+    requireScore: 14400
+    prefixText: "【風林火山】"
+    color: ""
+  exceptional:
+    requireScore: 14400
+    prefixText: "【かっこいい】"
+    color: ""
+  extraordinary:
+    requireScore: 14400
+    prefixText: "【てこで動かぬ】"
+    color: ""
+  gorogoro:
+    requireScore: 14400
+    prefixText: "【ごろごろ】"
+    color: ""
+  gorogoro2:
+    requireScore: 14400
+    prefixText: "【鯖に飼われてる】"
+    color: ""
+  legendary:
+    requireScore: 14400
+    prefixText: "【ごろごろ】"
+    color: "purple"

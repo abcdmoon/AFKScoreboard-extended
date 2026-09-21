@@ -96,16 +96,4 @@ public class AFKScoreboard extends JavaPlugin {
         Bukkit.getScheduler().runTaskLater(instance,runnable,delay);
     }
 
-    public static NamespacedKey getNameSpacedKey(String key){
-        if(instance==null){
-            throw new IllegalStateException("AFKScoreboard instance is null");
-        }
-        return NamespacedKey.fromString(key,instance);
-    }
-
-    public static void log(String message){
-        if(instance==null){return;}
-        instance.getLogger().info(message);
-        instance.getServer().broadcast(Component.text(message));
-    }
 }

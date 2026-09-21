@@ -17,6 +17,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class RoleExecuter {
 
     private final PrefixManager prefixManager;
@@ -33,7 +36,7 @@ public class RoleExecuter {
                         .executes(roleExecuter::showRole))
                 .then(Commands.literal("hide")
                         .executes(roleExecuter::hideRole))
-                .then(Commands.literal("load")
+                .then(Commands.literal("reload")
                         .requires(ctx->ctx.getSender().isOp())
                         .executes(roleExecuter::loadRole));
     }
@@ -60,8 +63,9 @@ public class RoleExecuter {
     }
 
     private int loadRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        Set<Prefix> loadedPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
         prefixRegistry.loadPrefixes();
-        prefixManager.reload();
+        prefixManager.reload(loadedPrefixes);
         return Command.SINGLE_SUCCESS;
     }
 }
