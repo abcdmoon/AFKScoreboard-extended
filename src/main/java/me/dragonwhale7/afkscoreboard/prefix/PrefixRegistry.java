@@ -17,6 +17,7 @@ public final class PrefixRegistry {
 
     public void loadPrefixes(){
         prefixes.clear();
+        teamKeys.clear();
         conditionMap.clear();
         for(Prefix prefix : configManager.loadPrefixes()){
             if(prefixes.containsKey(prefix.key())){
