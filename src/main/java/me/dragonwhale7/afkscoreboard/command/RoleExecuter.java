@@ -44,7 +44,12 @@ public class RoleExecuter {
     private int showRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
             Prefix prefix = ctx.getArgument("text",Prefix.class);
-            prefixManager.changePrefix(player.getUniqueId(),prefix);
+            if(prefixManager.getOwnedPrefixes(player.getUniqueId()).contains(prefix)){
+                prefixManager.changePrefix(player.getUniqueId(),prefix);
+            }else{
+                final Message message = MessageComponentSerializer.message().serialize(Component.text("その称号は所持していません").color(NamedTextColor.RED));
+                throw new SimpleCommandExceptionType(message).create();
+            }
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
