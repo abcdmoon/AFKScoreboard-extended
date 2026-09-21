@@ -25,10 +25,12 @@ public class ScoreManager {
 
     private final HighScoreManager highScoreManager;
     private final PrefixManager prefixManager;
+    private final ZoneManager zoneManager;
 
-    public ScoreManager(HighScoreManager highScoreManager, PrefixManager prefixManager) {
+    public ScoreManager(HighScoreManager highScoreManager, PrefixManager prefixManager,ZoneManager zoneManager) {
         this.highScoreManager = highScoreManager;
         this.prefixManager = prefixManager;
+        this.zoneManager = zoneManager;
         init();
     }
     private void init(){
@@ -66,7 +68,7 @@ public class ScoreManager {
         Integer disconnectedSessionTime = disconnectedSessionTimes.get(uuid);
         if(disconnectedSessionTime != null){
             long quitTime = disconnectTimes.getOrDefault(uuid,0L);
-            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
+            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS&&zoneManager.isLocInAnyZone(player.getLocation())) {
                 currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
             }else{
                 disconnectedSessionTimes.remove(uuid);

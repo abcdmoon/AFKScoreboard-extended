@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class EventManager implements Listener {
 
@@ -39,8 +40,8 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
+        scoreManager.onPlayerConnect(e.getPlayer());
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
-            scoreManager.onPlayerConnect(e.getPlayer());
             onPlayerEnterZone(e.getPlayer());
         }
         prefixManager.reloadPlayerPrefix(e.getPlayer().getUniqueId());
@@ -86,11 +87,11 @@ public class EventManager implements Listener {
         scoreManager.onPlayerLeaveZone(p);
     }
 
-    public void onReloadZone(Map<Player,Boolean> oldStateMap) {
+    public void onReloadZone(Map<UUID,Boolean> oldStateMap) {
         for(Player p : Bukkit.getOnlinePlayers()){
-            if((!oldStateMap.get(p))&&zoneManager.isLocInAnyZone(p.getLocation())) {
+            if((!oldStateMap.get(p.getUniqueId()))&&zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerEnterZone(p);
-            }else if(oldStateMap.get(p)&&!zoneManager.isLocInAnyZone(p.getLocation())) {
+            }else if(oldStateMap.get(p.getUniqueId())&&!zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerLeaveZone(p);
             }
         }

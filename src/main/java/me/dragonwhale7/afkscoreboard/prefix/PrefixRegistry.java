@@ -28,7 +28,9 @@ public final class PrefixRegistry {
             if(!teamKeys.contains(prefix.teamKey())){
                 teamKeys.add(prefix.teamKey());
             }else {
+                prefixes.remove(prefix.key());
                 AFKScoreboard.warn("There is already a team with the same key!");
+                continue;
             }
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
@@ -39,14 +41,14 @@ public final class PrefixRegistry {
     }
 
     public Set<String> getAllKeys(){
-        return prefixes.keySet();
+        return Set.copyOf(prefixes.keySet());
     }
     public Set<String> getTeamKeys(){
         return Set.copyOf(teamKeys);
     }
 
     public List<Prefix> getPrefixesByCondition(int condition){
-        return conditionMap.getOrDefault(condition,List.of());
+        return List.copyOf(conditionMap.getOrDefault(condition,List.of()));
     }
 
     public Collection<Prefix> getAllPrefixes(){

@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 public class ZoneManager {
 
@@ -28,12 +29,11 @@ public class ZoneManager {
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
     public void reloadAxAFKZones(EventManager eventManager) {
-        HashMap<Player,Boolean> preLoadStates = new HashMap<>();
+        HashMap<UUID,Boolean> preLoadStates = new HashMap<>();
         for(Player p : Bukkit.getOnlinePlayers()){
-            preLoadStates.put(p,isLocInAnyZone(p.getLocation()));
+            preLoadStates.put(p.getUniqueId(),isLocInAnyZone(p.getLocation()));
         }
 
-        loadedZones.clear();
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
             plugin.getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
@@ -45,7 +45,7 @@ public class ZoneManager {
             plugin.getLogger().warning("AxAFKZoneのzonesフォルダが見つかりません。");
             return;
         }
-
+        Map<String, ZoneArea> newZones = new HashMap<>();
         for (File file : Objects.requireNonNull(afkZoneFolder.listFiles())) {
             if (!file.getName().endsWith(".yml")) continue;
 
@@ -79,13 +79,15 @@ public class ZoneManager {
                 );
 
                 String zoneName = file.getName().replace(".yml", "");
-                loadedZones.put(zoneName, area);
+                newZones.put(zoneName, area);
                 plugin.getLogger().info("放置ゾーンを自動登録しました: " + zoneName);
 
             } catch (Exception e) {
                 plugin.getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
             }
         }
+        loadedZones.clear();
+        loadedZones.putAll(newZones);
         eventManager.onReloadZone(preLoadStates);
     }
 

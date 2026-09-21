@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.nio.charset.StandardCharsets;
