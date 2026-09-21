@@ -134,8 +134,6 @@ public class PrefixManager {
             hiddenPlayers.add(uuid);
             changePrefix(uuid,null);
         }
-        AFKScoreboard.runTaskAsynchronously(t->{
             configManager.savePrefixHiddenPlayers(hiddenPlayers);
-        });
     }
 }

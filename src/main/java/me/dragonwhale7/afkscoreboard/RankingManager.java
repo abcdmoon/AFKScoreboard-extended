@@ -28,9 +28,7 @@ public class RankingManager {
             hiddenPlayers.add(uuid);
         }
         Set<UUID> hiddenPlayersSet = Set.copyOf(hiddenPlayers);
-        AFKScoreboard.runTaskAsynchronously(t->{
-            configManager.saveHiddenPlayers(hiddenPlayersSet);
-        });
+        configManager.saveHiddenPlayers(hiddenPlayersSet);
     }
 
     public RankingManager(ConfigManager configManager, ScoreManager scoreManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager) {
