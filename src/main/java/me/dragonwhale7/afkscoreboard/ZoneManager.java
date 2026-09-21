@@ -28,12 +28,12 @@ public class ZoneManager {
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
     public void reloadAxAFKZones(EventManager eventManager) {
-        loadedZones.clear();
         HashMap<Player,Boolean> preLoadStates = new HashMap<>();
         for(Player p : Bukkit.getOnlinePlayers()){
             preLoadStates.put(p,isLocInAnyZone(p.getLocation()));
         }
 
+        loadedZones.clear();
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
             plugin.getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
