@@ -24,11 +24,15 @@ public class ConfigManager {
         this.plugin = plugin;
         config = plugin.getConfig();
         initialProcess();
+        AFKScoreboard.addOnDisableTask(this::finalProcess);
     }
 
     private void initialProcess(){
         plugin.saveDefaultConfig();
+    }
 
+    private void finalProcess(){
+        plugin.saveConfig();
     }
 
     /**
@@ -54,7 +58,6 @@ public class ConfigManager {
                 .map(UUID::toString)
                 .collect(Collectors.toList());
         config.set("welcomed-players", uuidStrings);
-        plugin.saveConfig();
     }
 
     /**
@@ -80,7 +83,6 @@ public class ConfigManager {
                 .map(UUID::toString)
                 .collect(Collectors.toList());
         config.set("hidden-players", uuidStrings);
-        plugin.saveConfig();
     }
 
     /**
@@ -106,7 +108,6 @@ public class ConfigManager {
                 .map(UUID::toString)
                 .collect(Collectors.toList());
         config.set("prefix-hidden-players", uuidStrings);
-        plugin.saveConfig();
     }
 
     public Set<Prefix> loadPrefixes(){
