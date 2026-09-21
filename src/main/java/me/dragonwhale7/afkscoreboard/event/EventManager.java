@@ -90,7 +90,7 @@ public class EventManager implements Listener {
         for(Player p : Bukkit.getOnlinePlayers()){
             if((!oldStateMap.get(p))&&zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerEnterZone(p);
-            }else if(oldStateMap.get(p)&&zoneManager.isLocInAnyZone(p.getLocation())) {
+            }else if(oldStateMap.get(p)&&!zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerLeaveZone(p);
             }
         }

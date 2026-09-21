@@ -19,7 +19,6 @@ public class HighScoreManager {
     }
 
     public void setHighScore(UUID uuid, int newScore) {
-        int oldScore = highScoreMap.getOrDefault(uuid,0);
         highScoreMap.put(uuid,newScore);
     }
 

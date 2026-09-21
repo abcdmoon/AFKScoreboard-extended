@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
@@ -26,6 +27,7 @@ public class PrefixManager {
         this.highScoreManager = highScoreManager;
         this.prefixRegistry = prefixRegistry;
         init();
+        AFKScoreboard.addOnDisableTask(this::fin);
     }
 
     private void init(){
@@ -38,6 +40,12 @@ public class PrefixManager {
         }
         hiddenPlayers.clear();
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
+    }
+
+    private void fin(){
+        for(String teamKey : prefixRegistry.getTeamKeys()) {
+            gameScoreBoardManager.removeTeamFromAll(teamKey);
+        }
     }
 
     public void reload(Set<Prefix> oldPrefixes){

@@ -7,6 +7,7 @@ import java.util.*;
 
 public final class PrefixRegistry {
     private final Map<String, Prefix> prefixes = new HashMap<>();
+    private final Set<String> teamKeys = new HashSet<>();
     private final Map<Integer, List<Prefix>> conditionMap = new HashMap<>();
     private final ConfigManager configManager;
     public PrefixRegistry(ConfigManager configManager) {
@@ -23,6 +24,11 @@ public final class PrefixRegistry {
                 continue;
             }
             prefixes.put(prefix.key(),  prefix);
+            if(!teamKeys.contains(prefix.teamKey())){
+                teamKeys.add(prefix.teamKey());
+            }else {
+                AFKScoreboard.warn("There is already a team with the same key!");
+            }
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
     }
@@ -33,6 +39,9 @@ public final class PrefixRegistry {
 
     public Set<String> getAllKeys(){
         return prefixes.keySet();
+    }
+    public Set<String> getTeamKeys(){
+        return Set.copyOf(teamKeys);
     }
 
     public List<Prefix> getPrefixesByCondition(int condition){
