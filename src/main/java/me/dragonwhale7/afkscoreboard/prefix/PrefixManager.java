@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
