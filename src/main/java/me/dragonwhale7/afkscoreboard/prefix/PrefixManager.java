@@ -63,6 +63,10 @@ public class PrefixManager {
     public void reloadPlayerHighScore(UUID uuid){
         int highScore = highScoreManager.getHighScore(uuid);
         ownedPrefixes.remove(uuid);
+        String name = Bukkit.getOfflinePlayer(uuid).getName();
+        if(name!=null){
+            gameScoreBoardManager.removePlayerFromAllTeam(name);
+        }
         for(Integer i : prefixRegistry.getAllConditions()){
             if(highScore < i){
                 continue;
@@ -107,7 +111,7 @@ public class PrefixManager {
     }
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
-        return ownedPrefixes.getOrDefault(uuid,new HashSet<>());
+        return ownedPrefixes.getOrDefault(uuid,Set.of());
     }
 
     public void toggleHidden(UUID uuid){
