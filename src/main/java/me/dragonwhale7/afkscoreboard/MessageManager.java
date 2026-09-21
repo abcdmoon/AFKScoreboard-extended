@@ -35,6 +35,7 @@ public class MessageManager {
             welcomedPlayers.add(player.getUniqueId());
             // メッセージを送信
             player.sendMessage(Component.text("/afkhide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
+            player.sendMessage(Component.text("/afkscore role hide").color(NamedTextColor.AQUA).append(Component.text(" で自分の称号を表示/非表示できます").color(NamedTextColor.WHITE)));
 
             Set<UUID> welcomedPlayersSet = Set.copyOf(welcomedPlayers);
             configManager.saveWelcomedPlayers(welcomedPlayersSet);

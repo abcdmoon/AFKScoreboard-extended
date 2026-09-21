@@ -1,57 +1,77 @@
 prefixes:
-  everyone:
+  goro:
     requireScore: 1800
-    prefixText: "スポーン好きの"
+    prefixText: "ごろごろ"
     color: "gray"
   beginner:
     requireScore: 3600
-    prefixText: "【インドア派】"
-    color: "red"
-  normal:
-    requireScore: 7200
-    prefixText: "【PCつけっぱ】"
+    prefixText: "初心者卒業 "
     color: "green"
-  regular:
+  slowlife:
+    requireScore: 5400
+    prefixText: "のんびりしてる"
+    color: "green"
+  spawn:
+    requireScore: 7200
+    prefixText: "スポーン好きの"
+    color: "aqua"
+  pcuser:
     requireScore: 10800
-    prefixText: "【ハシビロコウ】"
-    color: ""
-  strong:
+    prefixText: "【PCつけっぱ】"
+    color: "aqua"
+  minecraft:
     requireScore: 14400
-    prefixText: "【てこで動かぬ】"
-    color: ""
-  powerful:
+    prefixText: "【マイクラ好き】"
+    color: "yellow"
+  hobby:
     requireScore: 18000
-    prefixText: "【スポーン住み】"
-    color: ""
-  tough:
+    prefixText: "【放置が趣味】"
+    color: "white"
+  chunkloader:
     requireScore: 21600
-    prefixText: "【アロンあるふぁ】"
-    color: ""
-  tolerant:
-    requireScore: 25200
-    prefixText: "【BlockEntity】"
-    color: ""
-  superior:
-    requireScore: 14400
-    prefixText: "【風林火山】"
-    color: ""
-  exceptional:
-    requireScore: 14400
-    prefixText: "【かっこいい】"
-    color: ""
-  extraordinary:
-    requireScore: 14400
-    prefixText: "【てこで動かぬ】"
-    color: ""
+    prefixText: "チャンクローダー"
+    color: "dark green"
+  figurine:
+    requireScore: 28800
+    prefixText: "【もはや置物】"
+    color: "yellow"
+  hasibirokou:
+    requireScore: 36000
+    prefixText: "ハシビロコウ"
+    color: "light purple"
+  blockentity:
+    requireScore: 43200
+    prefixText: "BlockEntity"
+    color: "dark aqua"
+  kaomoji:
+    requireScore: 54000
+    prefixText: "(｀・ω・´)"
+    color: "green"
+  hudou:
+    requireScore: 64800
+    prefixText: "【不動明王】"
+    color: "red"
+  gorosaba:
+    requireScore: 86400
+    prefixText: "【ごろ鯖大好き】"
+    color: "gold"
+  spawnzumi:
+    requireScore: 129600
+    prefixText: "【スポーン住みの】"
+    color: "blue"
+  itumo:
+    requireScore: 172800
+    prefixText: "【いつ見てもいる】"
+    color: "aqua"
   gorogoro:
-    requireScore: 14400
+    requireScore: 259200
     prefixText: "【ごろごろ】"
-    color: ""
+    color: "yellow"
+  serverpet:
+    requireScore: 345600
+    prefixText: "鯖に飼われてる"
+    color: "gold"
   gorogoro2:
-    requireScore: 14400
-    prefixText: "【鯖に飼われてる】"
-    color: ""
-  legendary:
     requireScore: 432000
     prefixText: "【ごろごろ】"
     color: "purple"

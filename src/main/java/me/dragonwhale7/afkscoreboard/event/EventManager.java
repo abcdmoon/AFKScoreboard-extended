@@ -40,6 +40,7 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
+        e.getPlayer().updateCommands();
         scoreManager.onPlayerConnect(e.getPlayer());
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
             onPlayerEnterZone(e.getPlayer());
