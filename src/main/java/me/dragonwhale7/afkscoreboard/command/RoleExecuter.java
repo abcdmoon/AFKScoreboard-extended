@@ -68,9 +68,9 @@ public class RoleExecuter {
     }
 
     private int loadRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Set<Prefix> loadedPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
+        Set<Prefix> oldPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
         prefixRegistry.loadPrefixes();
-        prefixManager.reload(loadedPrefixes);
+        prefixManager.reload(oldPrefixes);
         return Command.SINGLE_SUCCESS;
     }
 }

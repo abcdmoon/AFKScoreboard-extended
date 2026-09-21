@@ -68,8 +68,10 @@ public class ScoreManager {
             long quitTime = disconnectTimes.getOrDefault(uuid,0L);
             if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
                 currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
-                disconnectTimes.remove(uuid);
+            }else{
+                disconnectedSessionTimes.remove(uuid);
             }
+            disconnectTimes.remove(uuid);
         }
     }
 
@@ -92,8 +94,9 @@ public class ScoreManager {
         return currentSessionTimes.remove(uuid);
     }
 
-    public List<Map.Entry<UUID, Integer>> getScoreList() {
+    public List<Map.Entry<UUID, Integer>> getSortedList() {
         return currentSessionTimes.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .toList();
     }
 

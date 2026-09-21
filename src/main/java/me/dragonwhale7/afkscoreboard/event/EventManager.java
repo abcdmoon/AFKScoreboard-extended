@@ -86,11 +86,11 @@ public class EventManager implements Listener {
         scoreManager.onPlayerLeaveZone(p);
     }
 
-    public void onReloadZone(Map<Player,Boolean> map) {
+    public void onReloadZone(Map<Player,Boolean> oldStateMap) {
         for(Player p : Bukkit.getOnlinePlayers()){
-            if(zoneManager.isLocInAnyZone(p.getLocation())&&(map.get(p)==null||!map.get(p))) {
+            if((!oldStateMap.get(p))&&zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerEnterZone(p);
-            }else if(map.get(p)) {
+            }else if(oldStateMap.get(p)&&zoneManager.isLocInAnyZone(p.getLocation())) {
                 onPlayerLeaveZone(p);
             }
         }

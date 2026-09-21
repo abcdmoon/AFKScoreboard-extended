@@ -27,7 +27,10 @@ public class RankingManager {
         }else {
             hiddenPlayers.add(uuid);
         }
-        configManager.saveHiddenPlayers(hiddenPlayers);
+        Set<UUID> hiddenPlayersSet = Set.copyOf(hiddenPlayers);
+        AFKScoreboard.runTaskAsynchronously(t->{
+            configManager.saveHiddenPlayers(hiddenPlayersSet);
+        });
     }
 
     public RankingManager(ConfigManager configManager, ScoreManager scoreManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager) {
@@ -64,7 +67,7 @@ public class RankingManager {
         }
 
         // 現在放置中の上位10人を取得
-        List<Map.Entry<UUID, Integer>> scoreList = scoreManager.getScoreList();
+        List<Map.Entry<UUID, Integer>> scoreList = scoreManager.getSortedList();
         List<Map.Entry<Player,Integer>> sortedPlayerTop10 = scoreList.stream()
                 .filter(e->!isHidden(e.getKey()))
                 .map(entry->{
@@ -75,6 +78,7 @@ public class RankingManager {
                         return Map.entry(player,entry.getValue());
                     }
                 })
+                .filter(Objects::nonNull)
                 .limit(10)
                 .toList();
 

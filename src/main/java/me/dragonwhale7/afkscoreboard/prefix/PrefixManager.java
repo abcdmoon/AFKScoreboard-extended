@@ -40,8 +40,8 @@ public class PrefixManager {
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
     }
 
-    public void reload(Set<Prefix> loadedPrefixes){
-        for(Prefix prefix : loadedPrefixes){
+    public void reload(Set<Prefix> oldPrefixes){
+        for(Prefix prefix : oldPrefixes){
             gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
         }
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){

@@ -151,15 +151,15 @@ public class GameScoreBoardManager {
 
     public  void removePlayerFromAllTeam(String name) {
         Team team = mainScoreboard.getEntryTeam(name);
-        if (team != null) {
+        if (team != null&&team.getName().startsWith("afs_")) {
             team.removeEntry(name);
         }
         team = afkScoreboard.getEntryTeam(name);
-        if (team != null) {
+        if (team != null&&team.getName().startsWith("afs_")) {
             team.removeEntry(name);
         }
         team = highScoreScoreboard.getEntryTeam(name);
-        if (team != null) {
+        if (team != null&&team.getName().startsWith("afs_")) {
             team.removeEntry(name);
         }
     }
