@@ -77,6 +77,7 @@ public class HighScoreExecuter {
                 rankingManager.updateHighScoreScoreBoard();
                 gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.HIGHSCORE);
                 AFKScoreboard.registerTaskLater(()->{
+                    if(!player.isOnline()){return;}
                     if(player.getScoreboard().equals(gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE))){
                         if(zoneManager.isLocInAnyZone(player.getLocation())){
                             gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
