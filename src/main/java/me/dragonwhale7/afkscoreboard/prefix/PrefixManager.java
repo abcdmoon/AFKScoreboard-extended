@@ -8,10 +8,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class PrefixManager {
 
@@ -117,7 +114,16 @@ public class PrefixManager {
     public void toggleHidden(UUID uuid){
         if(hiddenPlayers.contains(uuid)){
             hiddenPlayers.remove(uuid);
-            changePrefix(uuid,displayedPrefixes.get(uuid));
+            if(displayedPrefixes.get(uuid)!=null){
+                changePrefix(uuid,displayedPrefixes.get(uuid));
+            }else{
+                List<Prefix> prefixList = new ArrayList<>(ownedPrefixes.getOrDefault(uuid,Set.of()));
+                if(prefixList.isEmpty()){
+                    changePrefix(uuid,null);
+                }else {
+                    changePrefix(uuid,prefixList.getLast());
+                }
+            }
         }else {
             hiddenPlayers.add(uuid);
             changePrefix(uuid,null);
