@@ -24,16 +24,9 @@ public class EventManager implements Listener {
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.prefixManager = prefixManager;
-        onEnable();
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
-    private void onEnable(){
-        for(Player p : Bukkit.getOnlinePlayers()){
-            if(zoneManager.isLocInAnyZone(p.getLocation())){
-                onPlayerEnterZone(p);
-            }
-        }
-    }
+
     private void onDisable(){
         for(Player p : Bukkit.getOnlinePlayers()){
             if(zoneManager.isLocInAnyZone(p.getLocation())){
