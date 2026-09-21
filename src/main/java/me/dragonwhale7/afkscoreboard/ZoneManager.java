@@ -15,11 +15,9 @@ import java.util.Objects;
 public class ZoneManager {
 
     private final AFKScoreboard plugin;
-    private final EventManager eventManager;
 
-    public ZoneManager(AFKScoreboard plugin, EventManager eventManager) {
+    public ZoneManager(AFKScoreboard plugin) {
         this.plugin = plugin;
-        this.eventManager = eventManager;
         init();
     }
 
