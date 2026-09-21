@@ -103,9 +103,15 @@ public class GameScoreBoardManager {
     }
 
     public void modifyAllTeam(String key, Consumer<Team> consumer) {
-        consumer.accept(mainScoreboard.getTeam(key));
-        consumer.accept(afkScoreboard.getTeam(key));
-        consumer.accept(highScoreScoreboard.getTeam(key));
+        if(mainScoreboard.getTeam(key) != null) {
+            consumer.accept(mainScoreboard.getTeam(key));
+        }
+        if(afkScoreboard.getTeam(key) != null) {
+            consumer.accept(afkScoreboard.getTeam(key));
+        }
+        if(highScoreScoreboard.getTeam(key) != null) {
+            consumer.accept(highScoreScoreboard.getTeam(key));
+        }
     }
 
     public void removeTeamFromAll(String key) {
