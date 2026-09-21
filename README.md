@@ -1,4 +1,19 @@
 # AFKScoreboard
+This project is a modified version of gorogoro-space/AFKScoreboard.
+
+This project is based on the original AFKScoreboard by gorogoro-space.
+
+Original repository: https://github.com/gorogoro-space/AFKScoreboard
+Original author: gorogoro-space
+License: GNU General Public License v3.0 (GPL-3.0)
+Modification: This repository contains modifications to the original project.
+Modified: 2026
+License
+
+This project is distributed under the GNU General Public License v3.0.
+
+The original project is licensed under GPL-3.0. This repository contains modifications to the original work and is distributed under the same license.
+
 [![Paper 1.21.11](https://img.shields.io/badge/Paper-1.21.11-brightgreen.svg)](https://fill-ui.papermc.io/projects/paper/version/1.21.11)
 [![GitHub release](https://img.shields.io/github/release/gorogoro-space/AFKScoreboard.svg)](https://github.com/gorogoro-space/AFKScoreboard/releases)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/gorogoro-space/AFKScoreboard/issues)
