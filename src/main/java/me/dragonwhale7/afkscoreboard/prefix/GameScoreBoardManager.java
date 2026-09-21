@@ -1,6 +1,7 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -24,6 +25,7 @@ public class GameScoreBoardManager {
     public GameScoreBoardManager(PrefixRegistry prefixRegistry) {
         this.prefixRegistry = prefixRegistry;
         init();
+        AFKScoreboard.addOnDisableTask(this::fin);
     }
 
     private void init() {
@@ -57,6 +59,12 @@ public class GameScoreBoardManager {
 
         // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
         this.highScoreObjective.numberFormat(NumberFormat.blank());
+    }
+
+    private void fin(){
+        for(String teamKey : prefixRegistry.getTeamKeys()){
+            removeTeamFromAll(teamKey);
+        }
     }
 
     public Scoreboard getScoreboard(ScoreboardType type) {

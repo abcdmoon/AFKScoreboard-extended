@@ -27,7 +27,6 @@ public class PrefixManager {
         this.highScoreManager = highScoreManager;
         this.prefixRegistry = prefixRegistry;
         init();
-        AFKScoreboard.addOnDisableTask(this::fin);
     }
 
     private void init(){
@@ -40,12 +39,6 @@ public class PrefixManager {
         }
         hiddenPlayers.clear();
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
-    }
-
-    private void fin(){
-        for(String teamKey : prefixRegistry.getTeamKeys()) {
-            gameScoreBoardManager.removeTeamFromAll(teamKey);
-        }
     }
 
     public void reload(Set<Prefix> oldPrefixes){
