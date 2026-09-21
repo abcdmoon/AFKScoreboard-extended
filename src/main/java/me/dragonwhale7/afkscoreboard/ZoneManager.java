@@ -18,21 +18,16 @@ public class ZoneManager {
 
     public ZoneManager(AFKScoreboard plugin) {
         this.plugin = plugin;
-        init();
     }
 
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
-    private void init() {
-        reloadAxAFKZones();
-    }
-
 
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public void reloadAxAFKZones() {
+    public void reloadAxAFKZones(EventManager eventManager) {
         loadedZones.clear();
         HashMap<Player,Boolean> preLoadStates = new HashMap<>();
         for(Player p : Bukkit.getOnlinePlayers()){

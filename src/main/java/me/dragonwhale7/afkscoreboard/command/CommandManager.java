@@ -6,6 +6,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import me.dragonwhale7.afkscoreboard.RankingManager;
 import me.dragonwhale7.afkscoreboard.ZoneManager;
+import me.dragonwhale7.afkscoreboard.event.EventManager;
 import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
@@ -13,9 +14,9 @@ import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 public class CommandManager {
     private CommandManager(){}
 
-    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager, PrefixManager prefixManager, PrefixRegistry prefixRegistry) {
+    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager, PrefixManager prefixManager, PrefixRegistry prefixRegistry, EventManager eventManager) {
         HideExecuter hideExecuter = new HideExecuter(rankingManager);
-        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager);
+        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager,gameScoreBoardManager);
         RoleExecuter roleExecuter = new RoleExecuter(prefixManager,prefixRegistry);
         registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter,roleExecuter,prefixManager,prefixRegistry));

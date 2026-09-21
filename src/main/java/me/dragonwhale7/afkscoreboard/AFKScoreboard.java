@@ -44,11 +44,12 @@ public class AFKScoreboard extends JavaPlugin {
         scoreManager = new ScoreManager(highScoreManager,prefixManager);
         rankingManager = new RankingManager(configManager,scoreManager,highScoreManager,gameScoreBoardManager);
         eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,prefixManager);
+        zoneManager.reloadAxAFKZones(eventManager);
 
         getServer().getPluginManager().registerEvents(eventManager, this);
 
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
-            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager,highScoreManager,gameScoreBoardManager,prefixManager,prefixRegistry);
+            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager,highScoreManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
         });
     }
 
