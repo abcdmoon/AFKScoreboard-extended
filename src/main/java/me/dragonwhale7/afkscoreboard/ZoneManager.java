@@ -36,6 +36,10 @@ public class ZoneManager {
      */
     public void reloadAxAFKZones() {
         loadedZones.clear();
+        HashMap<Player,Boolean> preLoadStates = new HashMap<>();
+        for(Player p : Bukkit.getOnlinePlayers()){
+            preLoadStates.put(p,isLocInAnyZone(p.getLocation()));
+        }
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
@@ -89,7 +93,7 @@ public class ZoneManager {
                 plugin.getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
             }
         }
-        eventManager.onReloadZone();
+        eventManager.onReloadZone(preLoadStates);
     }
 
     /**

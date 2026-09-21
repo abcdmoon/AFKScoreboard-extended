@@ -10,6 +10,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Map;
+
 public class EventManager implements Listener {
 
     private final ZoneManager zoneManager;
@@ -84,11 +86,11 @@ public class EventManager implements Listener {
         scoreManager.onPlayerLeaveZone(p);
     }
 
-    public void onReloadZone() {
+    public void onReloadZone(Map<Player,Boolean> map) {
         for(Player p : Bukkit.getOnlinePlayers()){
-            if(zoneManager.isLocInAnyZone(p.getLocation())) {
+            if(zoneManager.isLocInAnyZone(p.getLocation())&&(!map.get(p))) {
                 onPlayerEnterZone(p);
-            }else{
+            }else if(map.get(p)) {
                 onPlayerLeaveZone(p);
             }
         }
