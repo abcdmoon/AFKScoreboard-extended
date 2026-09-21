@@ -1,5 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
 
 import java.util.*;
@@ -17,6 +18,9 @@ public final class PrefixRegistry {
         prefixes.clear();
         conditionMap.clear();
         for(Prefix prefix : configManager.loadPrefixes()){
+            if(prefixes.containsKey(prefix.key())){
+                AFKScoreboard.warn("There is already a prefix with the same key!");
+            }
             prefixes.put(prefix.key(),  prefix);
             conditionMap.computeIfAbsent(prefix.requireScore(), k->new ArrayList<>()).add(prefix);
         }
@@ -27,7 +31,7 @@ public final class PrefixRegistry {
     }
 
     public List<Prefix> getPrefixesByCondition(int condition){
-        return conditionMap.getOrDefault(condition, new ArrayList<>());
+        return conditionMap.getOrDefault(condition,List.of());
     }
 
     public Collection<Prefix> getAllPrefixes(){

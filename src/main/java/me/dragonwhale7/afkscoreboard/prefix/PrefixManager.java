@@ -49,7 +49,6 @@ public class PrefixManager {
             gameScoreBoardManager.removeTeamFromAll(prefix.key());
         }
         for(Prefix prefix : prefixRegistry.getAllPrefixes()){
-            gameScoreBoardManager.removeTeamFromAll(prefix.key());
             gameScoreBoardManager.addTeamToAll(prefix.key());
             gameScoreBoardManager.modifyAllTeam(prefix.key(),team->{
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
@@ -63,6 +62,7 @@ public class PrefixManager {
     public void reloadPlayerHighScore(UUID uuid){
         int highScore = highScoreManager.getHighScore(uuid);
         ownedPrefixes.remove(uuid);
+        displayedPrefixes.remove(uuid);
         String name = Bukkit.getOfflinePlayer(uuid).getName();
         if(name!=null){
             gameScoreBoardManager.removePlayerFromAllTeam(name);

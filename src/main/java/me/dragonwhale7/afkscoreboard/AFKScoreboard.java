@@ -96,4 +96,9 @@ public class AFKScoreboard extends JavaPlugin {
         Bukkit.getScheduler().runTaskLater(instance,runnable,delay);
     }
 
+    public static void warn(String message){
+        if(instance==null){return;}
+        instance.getLogger().warning(message);
+    }
+
 }
