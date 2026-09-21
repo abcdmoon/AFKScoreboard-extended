@@ -49,8 +49,8 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
+        scoreManager.onPlayerDisconnect(e.getPlayer());
         if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
-            scoreManager.onPlayerDisconnect(e.getPlayer());
             onPlayerLeaveZone(e.getPlayer());
         }
     }
