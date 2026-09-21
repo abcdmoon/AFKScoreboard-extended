@@ -75,6 +75,7 @@ public class PrefixManager {
         if(oldPrefix!=null){
             if(prefixRegistry.getAllKeys().contains(oldPrefix.key())){
                 changePrefix(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
+                displayedPrefixes.put(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
             }
         }
     }
