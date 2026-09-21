@@ -86,6 +86,10 @@ public class PrefixManager {
             if(oldscore<i&&i<=score){
                 for(Prefix p : prefixRegistry.getPrefixesByCondition(i)){
                     grantPrefix(uuid,p);
+                    Player player = Bukkit.getPlayer(uuid);
+                    if(player!=null){
+                        player.sendMessage(Component.text("あなたは称号 ").append(Component.text(p.prefixText()).decorate(TextDecoration.BOLD).color(p.color())).append(Component.text(" を獲得しました")));
+                    }
                 }
             }
         }
@@ -116,6 +120,10 @@ public class PrefixManager {
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
         return Set.copyOf(ownedPrefixes.getOrDefault(uuid,Set.of()));
+    }
+
+    public boolean isHidden(UUID uuid){
+        return hiddenPlayers.contains(uuid);
     }
 
     public void toggleHidden(UUID uuid){

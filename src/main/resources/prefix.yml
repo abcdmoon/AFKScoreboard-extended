@@ -1,8 +1,8 @@
 prefixes:
   everyone:
     requireScore: 1800
-    prefixText: "試しかっこなし"
-    color: "gold"
+    prefixText: "スポーン好きの"
+    color: "gray"
   beginner:
     requireScore: 3600
     prefixText: "【インドア派】"
@@ -52,6 +52,6 @@ prefixes:
     prefixText: "【鯖に飼われてる】"
     color: ""
   legendary:
-    requireScore: 14400
+    requireScore: 432000
     prefixText: "【ごろごろ】"
     color: "purple"

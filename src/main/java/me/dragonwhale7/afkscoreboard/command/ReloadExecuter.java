@@ -8,6 +8,8 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.dragonwhale7.afkscoreboard.ZoneManager;
 import me.dragonwhale7.afkscoreboard.event.EventManager;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 
 public class ReloadExecuter {
 
@@ -27,6 +29,9 @@ public class ReloadExecuter {
 
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         zoneManager.reloadAxAFKZones(eventManager);
+        if(ctx.getSource().getSender() instanceof Player player) {
+            player.sendMessage(Component.text("放置エリアの情報を再読込しました"));
+        }
         return Command.SINGLE_SUCCESS;
     }
 }

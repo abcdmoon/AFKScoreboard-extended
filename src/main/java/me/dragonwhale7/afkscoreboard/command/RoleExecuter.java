@@ -15,6 +15,7 @@ import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -46,6 +47,7 @@ public class RoleExecuter {
             Prefix prefix = ctx.getArgument("text",Prefix.class);
             if(prefixManager.getOwnedPrefixes(player.getUniqueId()).contains(prefix)){
                 prefixManager.changePrefix(player.getUniqueId(),prefix);
+                player.sendMessage(Component.text("表示する称号を").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text("にしました")));
             }else{
                 final Message message = MessageComponentSerializer.message().serialize(Component.text("その称号は所持していません").color(NamedTextColor.RED));
                 throw new SimpleCommandExceptionType(message).create();
@@ -60,6 +62,11 @@ public class RoleExecuter {
     private int hideRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
             prefixManager.toggleHidden(player.getUniqueId());
+            if(prefixManager.isHidden(player.getUniqueId())){
+                player.sendMessage(Component.text("あなたの称号を").append(Component.text("非表示").color(NamedTextColor.GREEN)).append(Component.text("にしました")));
+            }else{
+                player.sendMessage(Component.text("あなたの称号を").append(Component.text("表示").color(NamedTextColor.GREEN)).append(Component.text("するようにしました")));
+            }
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
@@ -71,6 +78,9 @@ public class RoleExecuter {
         Set<Prefix> oldPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
         prefixRegistry.loadPrefixes();
         prefixManager.reload(oldPrefixes);
+        if(ctx.getSource().getSender() instanceof Player player){
+            player.sendMessage(Component.text("称号の情報をファイルから再読込しました"));
+        }
         return Command.SINGLE_SUCCESS;
     }
 }
