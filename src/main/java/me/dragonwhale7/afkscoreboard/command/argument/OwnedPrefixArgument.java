@@ -34,12 +34,11 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
 
     @Override
     public Prefix convert(String nativeType) throws CommandSyntaxException {
-        for(Prefix prefix:prefixRegistry.getAllPrefixes()){
-            if(prefix.key().equals(nativeType)){
-                return prefix;
-            }
+        Prefix prefix = prefixRegistry.getPrefix(nativeType);
+        if (prefix == null) {
+            throw invalidPrefixOption.create(nativeType);
         }
-        throw invalidPrefixOption.create(nativeType);
+        return prefix;
     }
 
     @Override

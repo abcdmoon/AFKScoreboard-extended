@@ -52,7 +52,7 @@ public final class PrefixRegistry {
     }
 
     public Collection<Prefix> getAllPrefixes(){
-        return prefixes.values();
+        return List.copyOf(prefixes.values());
     }
 
     public List<Integer> getAllConditions(){

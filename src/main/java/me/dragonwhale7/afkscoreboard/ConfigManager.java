@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,10 +24,17 @@ public class ConfigManager {
         config = plugin.getConfig();
         initialProcess();
         AFKScoreboard.addOnDisableTask(this::finalProcess);
+
+        //1時間毎に情報をファイルに保存
+        AFKScoreboard.registerTaskTimer(this::periodicProcess,20*60*60,20*60*60);
     }
 
     private void initialProcess(){
         plugin.saveDefaultConfig();
+    }
+
+    private void periodicProcess(){
+        plugin.saveConfig();
     }
 
     private void finalProcess(){

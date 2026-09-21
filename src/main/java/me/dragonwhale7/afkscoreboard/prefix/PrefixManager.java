@@ -12,8 +12,8 @@ import java.util.*;
 
 public class PrefixManager {
 
-    private final HashMap<UUID, Set<Prefix>> ownedPrefixes = new HashMap<>();
-    private final HashMap<UUID,Prefix> displayedPrefixes = new HashMap<>();
+    private final Map<UUID, Set<Prefix>> ownedPrefixes = new HashMap<>();
+    private final Map<UUID,Prefix> displayedPrefixes = new HashMap<>();
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
     private final HighScoreManager highScoreManager;
@@ -73,8 +73,9 @@ public class PrefixManager {
             }
         }
         if(oldPrefix!=null){
-            if(prefixRegistry.getAllKeys().contains(oldPrefix.key())){
-                changePrefix(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
+            Prefix prefix = prefixRegistry.getPrefix(oldPrefix.key());
+            if(prefix!=null){
+                changePrefix(uuid,prefix);
                 displayedPrefixes.put(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
             }
         }
@@ -114,7 +115,7 @@ public class PrefixManager {
     }
 
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
-        return ownedPrefixes.getOrDefault(uuid,Set.of());
+        return Set.copyOf(ownedPrefixes.getOrDefault(uuid,Set.of()));
     }
 
     public void toggleHidden(UUID uuid){

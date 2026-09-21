@@ -1,7 +1,5 @@
 package me.dragonwhale7.afkscoreboard;
 
-import net.kyori.adventure.text.format.NamedTextColor;
-
 public class Util {
     /**
      * コンパクトな時間フォーマット

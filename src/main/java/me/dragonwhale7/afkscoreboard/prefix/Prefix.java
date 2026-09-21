@@ -10,8 +10,8 @@ public class Prefix{
         public String key(){return key;}
         private final String teamKey;
         public String teamKey(){return teamKey;}
-        private final Integer requireScore;
-        public Integer requireScore(){return requireScore;}
+        private final int requireScore;
+        public int requireScore(){return requireScore;}
         private final String prefixText;
         public String prefixText(){return prefixText;}
         private final NamedTextColor color;

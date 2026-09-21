@@ -59,6 +59,7 @@ public class GameScoreBoardManager {
 
         // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
         this.highScoreObjective.numberFormat(NumberFormat.blank());
+
     }
 
     private void fin(){
