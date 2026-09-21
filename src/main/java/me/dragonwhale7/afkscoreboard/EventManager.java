@@ -47,7 +47,7 @@ public class EventManager implements Listener {
             scoreManager.onPlayerConnect(e.getPlayer());
             onPlayerEnterZone(e.getPlayer());
         }
-        //prefixManager.reloadPlayerHighScore(e.getPlayer().getUniqueId());
+        prefixManager.reloadPlayerPrefix(e.getPlayer().getUniqueId());
     }
 
     @EventHandler

@@ -31,6 +31,10 @@ public final class PrefixRegistry {
         return prefixes.get(key);
     }
 
+    public Set<String> getAllKeys(){
+        return prefixes.keySet();
+    }
+
     public List<Prefix> getPrefixesByCondition(int condition){
         return conditionMap.getOrDefault(condition,List.of());
     }

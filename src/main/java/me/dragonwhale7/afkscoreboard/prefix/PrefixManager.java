@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import me.dragonwhale7.afkscoreboard.ConfigManager;
 import me.dragonwhale7.afkscoreboard.HighScoreManager;
 import net.kyori.adventure.text.Component;
@@ -52,14 +51,14 @@ public class PrefixManager {
             });
         }
         for(Player player : Bukkit.getOnlinePlayers()){
-            reloadPlayerHighScore(player.getUniqueId());
+            reloadPlayerPrefix(player.getUniqueId());
         }
     }
 
-    public void reloadPlayerHighScore(UUID uuid){
+    public void reloadPlayerPrefix(UUID uuid){
         int highScore = highScoreManager.getHighScore(uuid);
         ownedPrefixes.remove(uuid);
-        displayedPrefixes.remove(uuid);
+        Prefix oldPrefix = displayedPrefixes.remove(uuid);
         String name = Bukkit.getOfflinePlayer(uuid).getName();
         if(name!=null){
             gameScoreBoardManager.removePlayerFromAllTeam(name);
@@ -70,6 +69,11 @@ public class PrefixManager {
             }
             for(Prefix prefix : prefixRegistry.getPrefixesByCondition(i)){
                 grantPrefix(uuid,prefix);
+            }
+        }
+        if(oldPrefix!=null){
+            if(prefixRegistry.getAllKeys().contains(oldPrefix.key())){
+                changePrefix(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
             }
         }
     }

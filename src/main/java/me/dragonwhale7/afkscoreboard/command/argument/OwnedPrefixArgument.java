@@ -35,7 +35,7 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
     @Override
     public Prefix convert(String nativeType) throws CommandSyntaxException {
         for(Prefix prefix:prefixRegistry.getAllPrefixes()){
-            if(prefix.prefixText().equals(nativeType)){
+            if(prefix.key().equals(nativeType)){
                 return prefix;
             }
         }
@@ -48,7 +48,7 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
             if(ctx.getSender() instanceof Player p){
                 if(prefixManager.getOwnedPrefixes(p.getUniqueId())!=null){
                     for(Prefix prefix : prefixManager.getOwnedPrefixes(p.getUniqueId())){
-                        builder.suggest(prefix.prefixText());
+                        builder.suggest(prefix.key());
                     }
                 }
             }
