@@ -9,6 +9,7 @@ import org.bukkit.scoreboard.*;
 import java.util.function.Consumer;
 
 public class GameScoreBoardManager {
+    private final PrefixRegistry prefixRegistry;
     private ScoreboardManager scoreboardManager;
     private Scoreboard mainScoreboard;
     private Scoreboard afkScoreboard;
@@ -20,7 +21,8 @@ public class GameScoreBoardManager {
         MAIN,SCORE,HIGHSCORE
     }
 
-    public GameScoreBoardManager() {
+    public GameScoreBoardManager(PrefixRegistry prefixRegistry) {
+        this.prefixRegistry = prefixRegistry;
         init();
     }
 

@@ -1,9 +1,6 @@
 package me.dragonwhale7.afkscoreboard;
 
 import me.dragonwhale7.afkscoreboard.prefix.Prefix;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;

@@ -1,8 +1,6 @@
 package me.dragonwhale7.afkscoreboard;
 
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -94,9 +92,8 @@ public class ScoreManager {
         return currentSessionTimes.remove(uuid);
     }
 
-    public List<Map.Entry<UUID, Integer>> getSortedList() {
+    public List<Map.Entry<UUID, Integer>> getScoreList() {
         return currentSessionTimes.entrySet().stream()
-            .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
             .toList();
     }
 

@@ -11,12 +11,8 @@ public class HighScoreManager {
 
 
     public HighScoreManager() {
-        init();
     }
 
-    private void init(){
-
-    }
 
     public int getHighScore(UUID uuid) {
         return highScoreMap.getOrDefault(uuid,0);

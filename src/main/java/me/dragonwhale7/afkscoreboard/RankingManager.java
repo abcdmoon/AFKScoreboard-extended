@@ -64,27 +64,35 @@ public class RankingManager {
         }
 
         // 現在放置中の上位10人を取得
-        List<Map.Entry<UUID, Integer>> sortedTop10 = scoreManager.getSortedList();
-        sortedTop10 = sortedTop10.stream()
+        List<Map.Entry<UUID, Integer>> scoreList = scoreManager.getScoreList();
+        List<Map.Entry<Player,Integer>> sortedPlayerTop10 = scoreList.stream()
                 .filter(e->!isHidden(e.getKey()))
+                .map(entry->{
+                    Player player = Bukkit.getPlayer(entry.getKey());
+                    if(player == null) {
+                        return null;
+                    }else{
+                        return Map.entry(player,entry.getValue());
+                    }
+                })
                 .limit(10)
                 .toList();
 
         // 初期値の動的計算: ヘッダー2行 ＋ ランクインしている人数
         // 誰もおらず「誰も放置していません」の1行を表示する場合は「2行 + 1行 = 3」になります
-        int scoreValue = 2 + (sortedTop10.isEmpty() ? 1 : sortedTop10.size());
+        int scoreValue = 2 + (scoreList.isEmpty() ? 1 : scoreList.size());
 
         // ヘッダー部分の設定
         afkObjective.getScore("§7位 プレイヤー §b連続放置時間").setScore(scoreValue--);
         afkObjective.getScore("§8----------------------").setScore(scoreValue--);
 
-        if (sortedTop10.isEmpty()) {
+        if (scoreList.isEmpty()) {
             afkObjective.getScore("§7 現在、誰も放置していません").setScore(scoreValue);
             return;
         }
 
         int rank = 1;
-        for (Map.Entry<UUID, Integer> entry : sortedTop10) {
+        for (Map.Entry<UUID, Integer> entry : scoreList) {
             UUID uuid = entry.getKey();
             Player player = Bukkit.getPlayer(uuid);
 

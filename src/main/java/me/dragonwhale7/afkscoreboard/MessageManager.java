@@ -35,8 +35,8 @@ public class MessageManager {
             welcomedPlayers.add(player.getUniqueId());
             // メッセージを送信
             player.sendMessage(Component.text("/afkhide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
-            // 既読情報を即座に config.yml へ非同期保存（安全対策）
-            AFKScoreboard.runTaskAsynchronously(t->configManager.saveWelcomedPlayers(welcomedPlayers));
+
+            configManager.saveWelcomedPlayers(welcomedPlayers);
         }else{
             //入ったことがある場合
         }

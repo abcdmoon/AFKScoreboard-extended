@@ -19,7 +19,7 @@ public class Prefix{
         public NamedTextColor color(){return color;}
 
     public Prefix(String key, int requireScore, String prefixText, String color) {
-        this.key = "afkscoreboard"+key;
+        this.key = key;
         this.teamKey = createTeamKey(key);
         this.requireScore = requireScore;
         this.prefixText = prefixText;
