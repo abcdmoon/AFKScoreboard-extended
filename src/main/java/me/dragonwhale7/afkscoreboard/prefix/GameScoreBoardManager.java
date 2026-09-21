@@ -91,18 +91,14 @@ public class GameScoreBoardManager {
     }
 
     public void addTeamToAll(String key) {
-        try{
-            if (mainScoreboard.getTeam(key) == null) {
-                mainScoreboard.registerNewTeam(key);
-            }
-            if (afkScoreboard.getTeam(key) == null) {
-                afkScoreboard.registerNewTeam(key);
-            }
-            if (highScoreScoreboard.getTeam(key) == null) {
-                highScoreScoreboard.registerNewTeam(key);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Team key are already in use");
+        if (mainScoreboard.getTeam(key) == null) {
+            mainScoreboard.registerNewTeam(key);
+        }
+        if (afkScoreboard.getTeam(key) == null) {
+            afkScoreboard.registerNewTeam(key);
+        }
+        if (highScoreScoreboard.getTeam(key) == null) {
+            highScoreScoreboard.registerNewTeam(key);
         }
     }
 
