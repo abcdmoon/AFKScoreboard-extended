@@ -140,7 +140,7 @@ final class CosmeticService implements Listener {
 
     /**
      * 1 秒に 1 回。ゾーン内の秒数を足し、見た目を合わせる。ゾーン外とログアウトでは消す。
-     * /afkhide で非表示中の人は、秒数だけ数えて見た目は付けない。
+     * /afkhide で非表示中の人とスペクテイター・バニッシュ中の人は、秒数だけ数えて見た目は付けない。
      */
     void maintain() {
         if (++weekClock >= 60) {
@@ -154,7 +154,7 @@ final class CosmeticService implements Listener {
             online.add(player.getUniqueId());
             if (plugin.isPlayerInAnyZone(player.getLocation())) {
                 store.addSecond(player.getUniqueId());
-                if (plugin.isHidden(player.getUniqueId())) {
+                if (plugin.isHidden(player.getUniqueId()) || plugin.isConcealed(player)) {
                     clear(player);
                 } else {
                     sync(player);
@@ -209,7 +209,8 @@ final class CosmeticService implements Listener {
         }
         grant.inZone = plugin.isPlayerInAnyZone(player.getLocation());
         grant.hidden = plugin.isHidden(player.getUniqueId());
-        if (grant.inZone && !grant.hidden) {
+        grant.concealed = plugin.isConcealed(player);
+        if (grant.inZone && !grant.hidden && !grant.concealed) {
             sync(player);
             Active state = active.get(player.getUniqueId());
             if (state != null && state.particle != null) {
@@ -264,7 +265,7 @@ final class CosmeticService implements Listener {
      * /afkhide・/afklook の切り替え直後に、次の 1 秒を待たずに見た目を合わせる。秒数は足さない。
      */
     void refresh(Player player) {
-        if (plugin.isPlayerInAnyZone(player.getLocation()) && !plugin.isHidden(player.getUniqueId())) {
+        if (plugin.isPlayerInAnyZone(player.getLocation()) && !plugin.isHidden(player.getUniqueId()) && !plugin.isConcealed(player)) {
             sync(player);
         } else {
             clear(player);
@@ -334,7 +335,8 @@ final class CosmeticService implements Listener {
         for (Map.Entry<UUID, Active> entry : active.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());
             Active state = entry.getValue();
-            if (player == null || !player.isOnline() || state.particle == null) {
+            // スペクテイター・バニッシュになった直後は、次の 1 秒で外れるまでの間も出さない
+            if (player == null || !player.isOnline() || state.particle == null || plugin.isConcealed(player)) {
                 continue;
             }
             if (!plugin.isPlayerInAnyZone(player.getLocation())) {
@@ -1184,5 +1186,6 @@ final class CosmeticService implements Listener {
         boolean mountNew;
         boolean inZone;
         boolean hidden;
+        boolean concealed;
     }
 }

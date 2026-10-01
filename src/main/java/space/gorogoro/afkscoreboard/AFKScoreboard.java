@@ -2,6 +2,7 @@ package space.gorogoro.afkscoreboard;
 
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Criteria;
@@ -57,6 +59,9 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
     // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
     private final Set<UUID> welcomedPlayers = new HashSet<>();
+
+    // ゾーン内でスペクテイター・バニッシュ中のためボードを出していない人（戻ったときにボードを付け直す。メモリ上のみ）
+    private final Set<UUID> concealedPlayers = new HashSet<>();
 
     // 救済猶予時間（5分 = 300,000ミリ秒）
     private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
@@ -130,7 +135,10 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             // afkhide（非表示モード）になっていないプレイヤーのみ対象
             if (!hiddenPlayers.contains(uuid) && isPlayerInAnyZone(player.getLocation())) {
                 currentSessionTimes.put(uuid, 0);
-                player.setScoreboard(afkScoreboard);
+                // スペクテイター・バニッシュ中はボードを出さない（連続放置は数える）
+                if (!isConcealed(player)) {
+                    player.setScoreboard(afkScoreboard);
+                }
             }
         }
 
@@ -280,7 +288,9 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
                 // エリア内にいるなら、その場でカウントを開始しボードを表示
                 if (isInZone) {
                     currentSessionTimes.put(uuid, 0);
-                    player.setScoreboard(afkScoreboard);
+                    if (!isConcealed(player)) {
+                        player.setScoreboard(afkScoreboard);
+                    }
                 }
             } else {
                 // 非表示（除外）リストに追加 ＝ 除外モードにする
@@ -297,7 +307,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
                 player.sendMessage("§f放置ランキングからあなたを§a非表示§fにしました");
 
                 // 除外モードになってもエリア内にいるならスコアボードを表示したままにする
-                if (isInZone) {
+                if (isInZone && !isConcealed(player)) {
                     player.setScoreboard(afkScoreboard);
                 } else {
                     player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -347,6 +357,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         sendDebugLine(player, "3時間（頭MOB）", grant.mount, grant.mountNew);
         if (grant.hidden) {
             player.sendMessage("§7/afkhide で非表示中なので、見た目は表示しません。");
+        } else if (grant.concealed) {
+            player.sendMessage("§7スペクテイター・バニッシュ中なので、見た目は表示しません。");
         } else if (grant.inZone) {
             player.sendMessage("§7ゾーン内なので、この場に表示しました。");
         } else {
@@ -461,6 +473,22 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     }
 
     /**
+     * スペクテイターかバニッシュ中か。該当する人には見た目・ランキング・本人のボードを出さない（秒数は数える）
+     * バニッシュは EssentialsX などが付けるメタデータ vanished で見る。EssentialsX は解除時に false を入れるので値で判定する
+     */
+    boolean isConcealed(Player player) {
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return true;
+        }
+        for (MetadataValue value : player.getMetadata("vanished")) {
+            if (value.asBoolean()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
      */
     boolean isPlayerInAnyZone(Location loc) {
@@ -543,7 +571,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // 今ゾーンにいて、ランキング表示がオンの人を、今週の累計で並べる
         List<Map.Entry<UUID, Integer>> sortedTop10 = new ArrayList<>();
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (hiddenPlayers.contains(online.getUniqueId())) {
+            if (hiddenPlayers.contains(online.getUniqueId()) || isConcealed(online)) {
                 continue;
             }
             if (!isPlayerInAnyZone(online.getLocation())) {
@@ -608,19 +636,30 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!isPlayerInAnyZone(player.getLocation())) {
+                continue;
+            }
             // 週間累計は非表示中も残す。ボードに出すかどうかとは分ける
-            if (isPlayerInAnyZone(player.getLocation())) {
-                weeklyStore.addSecond(player.getUniqueId());
+            weeklyStore.addSecond(player.getUniqueId());
+
+            // ゾーン内でスペクテイター・バニッシュを切り替えた人のボードを合わせる（他プラグインのボードには触らない）
+            UUID uuid = player.getUniqueId();
+            boolean showingBoard = player.getScoreboard().equals(afkScoreboard);
+            if (isConcealed(player)) {
+                if (showingBoard) {
+                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                }
+                concealedPlayers.add(uuid);
+            } else if (concealedPlayers.remove(uuid) && !showingBoard) {
+                player.setScoreboard(afkScoreboard);
             }
 
             // afkhide ユーザーは連続放置のカウントだけをスキップ（ボードの有無とは分離）
             if (hiddenPlayers.contains(player.getUniqueId())) {
                 continue;
             }
-            if (player.getScoreboard().equals(afkScoreboard)) {
-                UUID uuid = player.getUniqueId();
-                currentSessionTimes.put(uuid, currentSessionTimes.getOrDefault(uuid, 0) + 1);
-            }
+            // スペクテイター・バニッシュ中でボードを出していなくても数える
+            currentSessionTimes.put(uuid, currentSessionTimes.getOrDefault(uuid, 0) + 1);
         }
     }
 
@@ -649,8 +688,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
         // --- 進入と退出の処理ロジック ---
         if (isNowInAnyZone) {
-            // 変更点：afkhide中かどうかにかかわらず、エリア内に入ったらスコアボードを表示
-            if (!player.getScoreboard().equals(afkScoreboard)) {
+            // 変更点：afkhide中かどうかにかかわらず、エリア内に入ったらスコアボードを表示（スペクテイター・バニッシュ中は出さない）
+            if (!isConcealed(player) && !player.getScoreboard().equals(afkScoreboard)) {
                 player.setScoreboard(afkScoreboard);
             }
 
@@ -684,6 +723,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             if (player.getScoreboard().equals(afkScoreboard)) {
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             }
+            concealedPlayers.remove(uuid);
 
             // 内部カウント対象だった場合はデータをリセット
             if (currentSessionTimes.containsKey(uuid)) {
@@ -697,6 +737,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+        concealedPlayers.remove(uuid);
         if (currentSessionTimes.containsKey(uuid)) {
             disconnectedSessionTimes.put(uuid, currentSessionTimes.remove(uuid));
             disconnectTimes.put(uuid, System.currentTimeMillis());
@@ -716,7 +757,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
         // 変更点：ログイン時にすでにエリア内にいる場合の対策
         Player player = event.getPlayer();
-        if (isPlayerInAnyZone(player.getLocation())) {
+        if (isPlayerInAnyZone(player.getLocation()) && !isConcealed(player)) {
             player.setScoreboard(afkScoreboard);
         }
     }
