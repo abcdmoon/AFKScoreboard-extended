@@ -152,7 +152,7 @@ public class ZoneManager {
             afkPlayers.remove(uuid);
         }
         public Set<UUID> getAfkPlayers() {
-            return afkPlayers;
+            return Set.copyOf(afkPlayers);
         }
     }
 }

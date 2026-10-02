@@ -24,14 +24,12 @@ public class PlayerDataManager {
     private final Set<UUID> errorUUIDs = new HashSet<>();
     private final File file;
     private final AFKScoreboard plugin;
-    private final ZoneManager zoneManager;
     private final ExecutorService saveExecutor;
     private YamlConfiguration config;
     private boolean isDirty = false;
 
-    public PlayerDataManager(AFKScoreboard plugin,ZoneManager zoneManager) {
+    public PlayerDataManager(AFKScoreboard plugin) {
         this.plugin = plugin;
-        this.zoneManager = zoneManager;
 
         file = new File(plugin.getDataFolder(), "playerdata.yml");
         if ((!file.exists())||!file.isFile()) {
@@ -83,7 +81,7 @@ public class PlayerDataManager {
     private void loadPlayerData(UUID uuid) {
         ConfigurationSection section = config.getConfigurationSection(uuid.toString());
         if(section == null) {
-            PlayerData data = PlayerData.getDefault(uuid,zoneManager.getAllZones().stream().map(ZoneManager.ZoneArea::getName).toList());
+            PlayerData data = PlayerData.getDefault(uuid);
             config.set(uuid.toString(), data);
             playerData.put(uuid, data);
         }else{
@@ -109,7 +107,7 @@ public class PlayerDataManager {
                 }else{
                     AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました: "+e.getMessage());
                 }
-                playerData.put(uuid,PlayerData.getDefault(uuid,zoneManager.getAllZones().stream().map(ZoneManager.ZoneArea::getName).toList()));
+                playerData.put(uuid,PlayerData.getDefault(uuid));
                 errorUUIDs.add(uuid);
             }
         }
@@ -247,12 +245,8 @@ public class PlayerDataManager {
             this.prefixes = new HashSet<>(prefixes);
         }
 
-        public static PlayerData getDefault(UUID uuid, Collection<String> zoneNames) {
-            Map<String,Integer> highScores = new HashMap<>();
-            for(String zoneName : zoneNames){
-                highScores.put(zoneName,0);
-            }
-            return new PlayerData(uuid,false,false,false,highScores,"",Set.of());
+        public static PlayerData getDefault(UUID uuid) {
+            return new PlayerData(uuid,false,false,false,Map.of(),"",Set.of());
         }
 
         @NotNull

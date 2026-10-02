@@ -65,7 +65,11 @@ public class AFKScoreboard extends JavaPlugin {
     @Override
     public void onDisable() {
         for(Runnable runnable : onDisableTasks) {
-            runnable.run();
+            try{
+                runnable.run();
+            }catch(Exception e){
+                warn(e.getMessage());
+            }
         }
         onDisableTasks.clear();
 
