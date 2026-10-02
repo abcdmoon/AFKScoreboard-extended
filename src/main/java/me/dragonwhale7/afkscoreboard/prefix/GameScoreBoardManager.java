@@ -63,7 +63,7 @@ public class GameScoreBoardManager {
     }
 
     private void fin(){
-        for(String teamKey : prefixRegistry.getTeamKeys()){
+        for(String teamKey : prefixRegistry.getTeamKeys()) {
             removeTeamFromAll(teamKey);
         }
     }

@@ -14,9 +14,9 @@ import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 public class CommandManager {
     private CommandManager(){}
 
-    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager, PrefixManager prefixManager, PrefixRegistry prefixRegistry, EventManager eventManager) {
+    public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager, PrefixManager prefixManager, PrefixRegistry prefixRegistry) {
         HideExecuter hideExecuter = new HideExecuter(rankingManager);
-        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager);
+        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(highScoreManager,rankingManager,zoneManager,gameScoreBoardManager);
         RoleExecuter roleExecuter = new RoleExecuter(prefixManager,prefixRegistry);
         ReloadRoleExecuter reloadRoleExecuter = new ReloadRoleExecuter(prefixRegistry,prefixManager);

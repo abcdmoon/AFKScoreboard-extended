@@ -8,10 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class ZoneManager {
 
@@ -24,15 +21,10 @@ public class ZoneManager {
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
-
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public void reloadAxAFKZones(EventManager eventManager) {
-        HashMap<UUID,Boolean> preLoadStates = new HashMap<>();
-        for(Player p : Bukkit.getOnlinePlayers()){
-            preLoadStates.put(p.getUniqueId(),isLocInAnyZone(p.getLocation()));
-        }
+    public void reloadAxAFKZones() {
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
@@ -52,6 +44,7 @@ public class ZoneManager {
             try {
                 YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
+                String name = file.getName().substring(0, file.getName().lastIndexOf("."));
                 String locStr1 = config.getString("zone.location1");
                 String locStr2 = config.getString("zone.location2");
 
@@ -72,6 +65,7 @@ public class ZoneManager {
 
                 // 2つの座標から「最小(min)」と「最大(max)」を計算して立体範囲を登録
                 ZoneArea area = new ZoneArea(
+                        name,
                         world,
                         Math.min(x1, x2), Math.max(x1, x2),
                         Math.min(y1, y2), Math.max(y1, y2),
@@ -88,12 +82,17 @@ public class ZoneManager {
         }
         loadedZones.clear();
         loadedZones.putAll(newZones);
-        eventManager.onReloadZone(preLoadStates);
+        //eventManager.onReloadZone(preLoadStates);
     }
 
-    /**
-     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
-     */
+    public void onPlayerEnterZone(Player player,String zoneName) {
+        loadedZones.get(zoneName).addAfkPlayer(player.getUniqueId());
+    }
+
+    public void onPlayerLeaveZone(Player player,String zoneName) {
+        loadedZones.get(zoneName).removeAfkPlayer(player.getUniqueId());
+    }
+    /*
     public boolean isLocInAnyZone(Location loc) {
         for (ZoneArea zone : loadedZones.values()) {
             if (zone.isInArea(loc)) {
@@ -103,20 +102,56 @@ public class ZoneManager {
         return false;
     }
 
+     */
+
+    /**
+     *
+     * @return プレイヤーの所在ゾーンの名前 どこにも属していない場合 null
+     */
+    public String getPlayersZone(UUID uuid) {
+        for(ZoneArea area : loadedZones.values()){
+            if(area.isInArea(uuid)){
+                return area.getName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 座標がエリア内か取得する 基本
+     * @return 座標の存在するゾーンの名前 どこにも入っていない場合 null
+     */
+    public String getLocZone(Location loc) {
+        for(ZoneArea area : loadedZones.values()){
+            if(area.isInArea(loc)){
+                return area.getName();
+            }
+        }
+        return null;
+    }
+
     /**
      * ゾーンの立体範囲を表現・判定する内部データクラス
      */
     private static class ZoneArea {
+        public String getName() {
+            return name;
+        }
+
+        private final String name;
         private final String world;
         private final double minX, maxX;
         private final double minY, maxY;
         private final double minZ, maxZ;
+        private final Set<UUID> afkPlayers;
 
-        public ZoneArea(String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
+        public ZoneArea(String name,String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
+            this.name = name;
             this.world = world;
             this.minX = minX; this.maxX = maxX+1;
             this.minY = minY; this.maxY = maxY+1;
             this.minZ = minZ; this.maxZ = maxZ+1;
+            afkPlayers = new HashSet<>();
         }
 
         public boolean isInArea(Location loc) {
@@ -124,6 +159,16 @@ public class ZoneManager {
                     loc.getX() >= minX && loc.getX() <= maxX &&
                     loc.getY() >= minY && loc.getY() <= maxY &&
                     loc.getZ() >= minZ && loc.getZ() <= maxZ;
+        }
+
+        public boolean isInArea(UUID uuid) {
+            return afkPlayers.contains(uuid);
+        }
+        public void addAfkPlayer(UUID uuid) {
+            afkPlayers.add(uuid);
+        }
+        public void removeAfkPlayer(UUID uuid) {
+            afkPlayers.remove(uuid);
         }
     }
 }

@@ -54,8 +54,19 @@ public class ScoreManager {
     }
 
     public void onPlayerEnterZone(Player player){
-        currentAFKPlayers.add(player.getUniqueId());
-        currentSessionTimes.putIfAbsent(player.getUniqueId(), 0);
+        UUID uuid = player.getUniqueId();
+        Integer disconnectedSessionTime = disconnectedSessionTimes.get(uuid);
+        if(disconnectedSessionTime != null){
+            long quitTime = disconnectTimes.getOrDefault(uuid,0L);
+            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS) {
+                currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
+            }else{
+                disconnectedSessionTimes.remove(uuid);
+            }
+            disconnectTimes.remove(uuid);
+        }
+        currentAFKPlayers.add(uuid);
+        currentSessionTimes.putIfAbsent(uuid, 0);
 
     }
     public void onPlayerLeaveZone(Player player){
@@ -63,12 +74,13 @@ public class ScoreManager {
         currentSessionTimes.remove(player.getUniqueId());
     }
 
+    /*
     public void onPlayerConnect(Player player){
         UUID uuid = player.getUniqueId();
         Integer disconnectedSessionTime = disconnectedSessionTimes.get(uuid);
         if(disconnectedSessionTime != null){
             long quitTime = disconnectTimes.getOrDefault(uuid,0L);
-            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS&&zoneManager.isLocInAnyZone(player.getLocation())) {
+            if ((System.currentTimeMillis() - quitTime) < RECOVERY_GRACE_PERIOD_MS&&zoneManager.getLocZone(player.getLocation())!=null) {
                 currentSessionTimes.put(uuid,disconnectedSessionTimes.remove(uuid));
             }else{
                 disconnectedSessionTimes.remove(uuid);
@@ -76,6 +88,8 @@ public class ScoreManager {
             disconnectTimes.remove(uuid);
         }
     }
+
+     */
 
     public void onPlayerDisconnect(Player player){
         UUID uuid = player.getUniqueId();

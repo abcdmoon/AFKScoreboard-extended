@@ -68,7 +68,7 @@ public class HighScoreExecuter {
 
             //要するにハイスコアのスコアボードを見られて、コマンドまたは時間経過で今いる場所にあった表示に戻る
             if(player.getScoreboard().equals(gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE))){
-                if(zoneManager.isLocInAnyZone(player.getLocation())){
+                if(zoneManager.getPlayersZone(player.getUniqueId())!=null){
                     gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
                 }else{
                     gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
@@ -79,7 +79,7 @@ public class HighScoreExecuter {
                 AFKScoreboard.registerTaskLater(()->{
                     if(!player.isOnline()){return;}
                     if(player.getScoreboard().equals(gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.HIGHSCORE))){
-                        if(zoneManager.isLocInAnyZone(player.getLocation())){
+                        if(zoneManager.getPlayersZone(player.getUniqueId())!=null){
                             gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
                         }else{
                             gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);

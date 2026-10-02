@@ -7,11 +7,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.Objects;
 
 public class EventManager implements Listener {
 
@@ -27,35 +25,47 @@ public class EventManager implements Listener {
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.prefixManager = prefixManager;
+        AFKScoreboard.registerTaskTimer(this::update,0,20L);
         AFKScoreboard.addOnDisableTask(this::onDisable);
+    }
+
+    private void update(){
+        for(Player p : Bukkit.getOnlinePlayers()){
+            String before = zoneManager.getPlayersZone(p.getUniqueId());
+            String now = zoneManager.getLocZone(p.getLocation());
+            if(!Objects.equals(before, now)){
+                if(before!=null){
+                    onPlayerLeaveZone(p,before);
+                }
+                if(now!=null){
+                    onPlayerEnterZone(p,now);
+                }
+            }
+        }
     }
 
     private void onDisable(){
         for(Player p : Bukkit.getOnlinePlayers()){
-            if(zoneManager.isLocInAnyZone(p.getLocation())){
-                onPlayerLeaveZone(p);
+            if(zoneManager.getPlayersZone(p.getUniqueId()) != null){
+                onPlayerLeaveZone(p, zoneManager.getPlayersZone(p.getUniqueId()));
             }
         }
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        e.getPlayer().updateCommands();
-        scoreManager.onPlayerConnect(e.getPlayer());
-        if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
-            onPlayerEnterZone(e.getPlayer());
-        }
         prefixManager.reloadPlayerPrefix(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         scoreManager.onPlayerDisconnect(e.getPlayer());
-        if(zoneManager.isLocInAnyZone(e.getPlayer().getLocation())) {
-            onPlayerLeaveZone(e.getPlayer());
+        if(zoneManager.getPlayersZone(e.getPlayer().getUniqueId()) != null) {
+            onPlayerLeaveZone(e.getPlayer(), zoneManager.getPlayersZone(e.getPlayer().getUniqueId()));
         }
     }
 
+    /*
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         // ブロックの境界線を越えて移動したときだけ判定（負荷対策）
@@ -75,19 +85,23 @@ public class EventManager implements Listener {
         }
 
     }
+     */
 
-    public void onPlayerEnterZone(Player p) {
+    public void onPlayerEnterZone(Player p, String zoneName) {
+        zoneManager.onPlayerEnterZone(p,zoneName);
         messageManager.onPlayerEnterZone(p);
 
         rankingManager.onPlayerEnterZone(p);
         scoreManager.onPlayerEnterZone(p);
     }
 
-    public void onPlayerLeaveZone(Player p) {
+    public void onPlayerLeaveZone(Player p, String zoneName) {
+        zoneManager.onPlayerLeaveZone(p,zoneName);
         rankingManager.onPlayerLeaveZone(p);
         scoreManager.onPlayerLeaveZone(p);
     }
 
+    /*
     public void onReloadZone(Map<UUID,Boolean> oldStateMap) {
         for(Player p : Bukkit.getOnlinePlayers()){
             if((!oldStateMap.get(p.getUniqueId()))&&zoneManager.isLocInAnyZone(p.getLocation())) {
@@ -97,4 +111,6 @@ public class EventManager implements Listener {
             }
         }
     }
+
+     */
 }
