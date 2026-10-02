@@ -58,11 +58,11 @@ public class PrefixExecuter {
 
     private int hidePrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
-            if(playerDataManager.isHidingPrefix(player.getUniqueId())){
-                playerDataManager.setHidingPrefix(player.getUniqueId(),false);
+            if(!playerDataManager.isHidingPrefix(player.getUniqueId())){
+                playerDataManager.setHidingPrefix(player.getUniqueId(),true);
                 player.sendMessage(Component.text("あなたの称号を").append(Component.text("非表示").color(NamedTextColor.GREEN)).append(Component.text("にしました")));
             }else{
-                playerDataManager.setHidingPrefix(player.getUniqueId(),true);
+                playerDataManager.setHidingPrefix(player.getUniqueId(),false);
                 player.sendMessage(Component.text("あなたの称号を").append(Component.text("表示").color(NamedTextColor.GREEN)).append(Component.text("するようにしました")));
             }
             prefixManager.changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));

@@ -18,6 +18,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @NullMarked
@@ -47,7 +48,7 @@ public class OwnedPrefixArgument implements CustomArgumentType.Converted<Prefix,
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         if(context.getSource() instanceof CommandSourceStack ctx){
             if(ctx.getSender() instanceof Player p){
-                for(Prefix prefix : playerDataManager.getPlayerPrefixes(p.getUniqueId()).stream().map(prefixRegistry::getPrefix).toList()){
+                for(Prefix prefix : playerDataManager.getPlayerPrefixes(p.getUniqueId()).stream().map(prefixRegistry::getPrefix).filter(Objects::nonNull).toList()){
                     builder.suggest(prefix.key());
                 }
             }

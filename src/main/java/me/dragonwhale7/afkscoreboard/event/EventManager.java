@@ -21,13 +21,15 @@ public class EventManager implements Listener {
     private final RankingManager rankingManager;
     private final ScoreManager scoreManager;
     private final PlayerDataManager playerDataManager;
+    private final PrefixManager prefixManager;
 
-    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
+        this.prefixManager = prefixManager;
         AFKScoreboard.registerTaskTimer(this::checkPlayerZone,0,20L);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
@@ -58,6 +60,7 @@ public class EventManager implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         playerDataManager.onPlayerJoin(e.getPlayer());
+        prefixManager.onPlayerJoin(e.getPlayer());
     }
 
     @EventHandler

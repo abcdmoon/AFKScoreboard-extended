@@ -89,16 +89,19 @@ public class PlayerDataManager {
                 boolean isInformed = section.getBoolean("isInformed");
                 boolean isHiddenInRank = section.getBoolean("isHiddenInRank");
                 boolean isHidingPrefix = section.getBoolean("isHidingPrefix");
+
                 ConfigurationSection highScoresSection = section.getConfigurationSection("highScores");
                 Map<String, Integer> highScores = new HashMap<>();
-                highScoresSection.getKeys(false).forEach(key -> {
-                    highScores.put(key, highScoresSection.getInt(key));
-                });
+                if(highScoresSection != null) {
+                    highScoresSection.getKeys(false).forEach(key -> {
+                        highScores.put(key, highScoresSection.getInt(key));
+                    });
+                }
+
                 String showedPrefix = section.getString("showedPrefix");
-                Set<String> prefixes = new HashSet<>();
-                section.getList("prefixes").forEach(key -> {
-                    prefixes.add(key.toString());
-                });
+                if(showedPrefix == null){showedPrefix = "";}
+
+                Set<String> prefixes = new HashSet<>(section.getStringList("prefixes"));
                 playerData.put(uuid,new PlayerData(uuid,isInformed,isHiddenInRank,isHidingPrefix,highScores,showedPrefix,prefixes));
             }catch(Exception e){
                 String name = Bukkit.getOfflinePlayer(uuid).getName();

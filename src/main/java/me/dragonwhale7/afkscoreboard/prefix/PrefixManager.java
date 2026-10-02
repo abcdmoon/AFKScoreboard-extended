@@ -32,6 +32,9 @@ public class PrefixManager {
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
+        for(Player player : Bukkit.getOnlinePlayers()){
+            changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
+        }
     }
 
 
@@ -49,34 +52,6 @@ public class PrefixManager {
             changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
         }
     }
-
-    /*
-    public void reloadPlayerPrefix(UUID uuid){
-        int highScore = playerDataManager.getHighScore(uuid);
-        ownedPrefixes.remove(uuid);
-        Prefix oldPrefix = displayedPrefixes.remove(uuid);
-        String name = Bukkit.getOfflinePlayer(uuid).getName();
-        if(name!=null){
-            gameScoreBoardManager.removePlayerFromAllTeam(name);
-        }
-        for(Integer i : prefixRegistry.getAllConditions()){
-            if(highScore < i){
-                continue;
-            }
-            for(Prefix prefix : prefixRegistry.getPrefixesByCondition(i)){
-                grantPrefix(uuid,prefix);
-            }
-        }
-        if(oldPrefix!=null){
-            Prefix prefix = prefixRegistry.getPrefix(oldPrefix.key());
-            if(prefix!=null){
-                changePrefix(uuid,prefix);
-                displayedPrefixes.put(uuid,prefixRegistry.getPrefix(oldPrefix.key()));
-            }
-        }
-    }
-
-     */
 
     public void onScoreChange(UUID uuid,int score){
         if(prefixRegistry.getAllConditions().contains(score)){
@@ -104,7 +79,7 @@ public class PrefixManager {
             gameScoreBoardManager.removePlayerFromAllTeam(name);
             return;
         }
-        if(prefix!=null&&prefix.key().isEmpty()){
+        if(prefix!=null&&!prefix.key().isEmpty()){
             gameScoreBoardManager.addPlayerToAllTeam(name,prefix.teamKey());
 
         }else{
@@ -113,35 +88,7 @@ public class PrefixManager {
         playerDataManager.setShowedPrefix(uuid,prefix==null?"":prefix.key());
     }
 
-    /*
-    public  Set<Prefix> getOwnedPrefixes(UUID uuid){
-        return Set.copyOf(ownedPrefixes.getOrDefault(uuid,Set.of()));
+    public void onPlayerJoin(Player player){
+        changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
     }
-
-    public boolean isHidden(UUID uuid){
-        return hiddenPlayers.contains(uuid);
-    }
-
-    public void toggleHidden(UUID uuid){
-        if(hiddenPlayers.contains(uuid)){
-            hiddenPlayers.remove(uuid);
-            if(displayedPrefixes.get(uuid)!=null){
-                changePrefix(uuid,displayedPrefixes.get(uuid));
-            }else{
-                List<Prefix> prefixList = new ArrayList<>(ownedPrefixes.getOrDefault(uuid,Set.of()));
-                if(prefixList.isEmpty()){
-                    changePrefix(uuid,null);
-                }else {
-                    prefixList.sort(Comparator.comparingInt(Prefix::requireScore));
-                    changePrefix(uuid,prefixList.getLast());
-                }
-            }
-        }else {
-            hiddenPlayers.add(uuid);
-            changePrefix(uuid,null);
-        }
-            configManager.savePrefixHiddenPlayers(hiddenPlayers);
-    }
-
-     */
 }
