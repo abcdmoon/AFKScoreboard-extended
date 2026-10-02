@@ -45,7 +45,9 @@ public class ZoneManager {
             if(zone.getRegion().getWorld()==null){
                 continue;
             }
-            newZones.put(zone.getName(),new ZoneArea(zone.getName()
+            String name = zone.getName();
+            name = name.replace(".","_");
+            newZones.put(name,new ZoneArea(zone.getName()
                     ,zone.getRegion().getWorld()
                     ,zone.getRegion().getCorner1()
             ,zone.getRegion().getCorner2()));

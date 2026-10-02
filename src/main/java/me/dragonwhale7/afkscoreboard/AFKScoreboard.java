@@ -75,14 +75,6 @@ public class AFKScoreboard extends JavaPlugin {
     }
 
     /**
-     * プラグイン名義で非同期でタスクを実行します
-     */
-    public static void runTaskAsynchronously(Consumer<BukkitTask> bukkitTaskConsumer){
-        if(instance==null){return;}
-        Bukkit.getScheduler().runTaskAsynchronously(instance,bukkitTaskConsumer);
-    }
-
-    /**
      * プラグイン名義でタスクを定期実行します
      */
     public static void registerTaskTimer(Runnable runnable, long delay, long period) {
@@ -98,6 +90,11 @@ public class AFKScoreboard extends JavaPlugin {
     public static void warn(String message){
         if(instance==null){return;}
         instance.getLogger().warning(message);
+    }
+
+    public static void runTask(Runnable runnable){
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTask(instance,runnable);
     }
 
 }

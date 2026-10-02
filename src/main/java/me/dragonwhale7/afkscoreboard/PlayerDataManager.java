@@ -42,6 +42,7 @@ public class PlayerDataManager {
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
     private void onDisable(){
+        savePlayerData();
         saveExecutor.shutdown();
         try {
             if (!saveExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
@@ -54,8 +55,22 @@ public class PlayerDataManager {
 
     private void reloadPlayerData() {
         config = YamlConfiguration.loadConfiguration(file);
-        for(Player player : Bukkit.getOnlinePlayers()) {
-            loadPlayerData(player.getUniqueId());
+
+        for (String key : config.getKeys(false)) {
+            try {
+                UUID uuid = UUID.fromString(key);
+                loadPlayerData(uuid);
+            } catch (IllegalArgumentException e) {
+                AFKScoreboard.warn("無効なUUIDのデータをスキップしました:" + key);
+            }
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UUID uuid = player.getUniqueId();
+
+            if (!playerData.containsKey(uuid)) {
+                loadPlayerData(uuid);
+            }
         }
     }
 
@@ -84,9 +99,9 @@ public class PlayerDataManager {
             }catch(Exception e){
                 String name = Bukkit.getOfflinePlayer(uuid).getName();
                 if(name==null){
-                    AFKScoreboard.warn(uuid+"は有効なUUIDではありません");
+                    AFKScoreboard.warn(uuid+"なるプレイヤーの名前が取得できませんでした: "+e.getMessage());
                 }else{
-                    AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました");
+                    AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました: "+e.getMessage());
                 }
             }
         }
@@ -102,7 +117,8 @@ public class PlayerDataManager {
                 file.getParentFile().mkdirs();
                 Files.writeString(file.toPath(), data, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                plugin.getLogger().severe("playerdata.yml の書き込みに失敗しました: " + e.getMessage());
+                AFKScoreboard.warn("playerdata.yml の書き込みに失敗しました: " + e.getMessage());
+                AFKScoreboard.runTask(() -> isDirty = true);
             }
         });
     }
@@ -205,7 +221,7 @@ public class PlayerDataManager {
             this.isHidingPrefix = isHidingPrefix;
             this.highScores = new HashMap<>(highScores);
             this.showedPrefix = showedPrefix;
-            this.prefixes = prefixes;
+            this.prefixes = new HashSet<>(prefixes);
         }
 
         public static PlayerData getDefault(UUID uuid, Collection<String> zoneNames) {
