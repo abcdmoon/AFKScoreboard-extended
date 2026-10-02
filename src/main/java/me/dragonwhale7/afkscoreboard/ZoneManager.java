@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.event.EventManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -92,23 +91,12 @@ public class ZoneManager {
     public void onPlayerLeaveZone(Player player,String zoneName) {
         loadedZones.get(zoneName).removeAfkPlayer(player.getUniqueId());
     }
-    /*
-    public boolean isLocInAnyZone(Location loc) {
-        for (ZoneArea zone : loadedZones.values()) {
-            if (zone.isInArea(loc)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-     */
 
     /**
      *
      * @return プレイヤーの所在ゾーンの名前 どこにも属していない場合 null
      */
-    public String getPlayersZone(UUID uuid) {
+    public String getZoneByPlayer(UUID uuid) {
         for(ZoneArea area : loadedZones.values()){
             if(area.isInArea(uuid)){
                 return area.getName();
@@ -118,10 +106,10 @@ public class ZoneManager {
     }
 
     /**
-     * 座標がエリア内か取得する 基本
+     * 座標がエリア内か取得する 毎秒のチェック以外で使う必要のある箇所はないはず
      * @return 座標の存在するゾーンの名前 どこにも入っていない場合 null
      */
-    public String getLocZone(Location loc) {
+    public String getZoneByLoc(Location loc) {
         for(ZoneArea area : loadedZones.values()){
             if(area.isInArea(loc)){
                 return area.getName();

@@ -25,14 +25,14 @@ public class EventManager implements Listener {
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.prefixManager = prefixManager;
-        AFKScoreboard.registerTaskTimer(this::update,0,20L);
+        AFKScoreboard.registerTaskTimer(this::checkPlayerZone,0,20L);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
 
-    private void update(){
+    private void checkPlayerZone(){
         for(Player p : Bukkit.getOnlinePlayers()){
-            String before = zoneManager.getPlayersZone(p.getUniqueId());
-            String now = zoneManager.getLocZone(p.getLocation());
+            String before = zoneManager.getZoneByPlayer(p.getUniqueId());
+            String now = zoneManager.getZoneByLoc(p.getLocation());
             if(!Objects.equals(before, now)){
                 if(before!=null){
                     onPlayerLeaveZone(p,before);
@@ -46,8 +46,8 @@ public class EventManager implements Listener {
 
     private void onDisable(){
         for(Player p : Bukkit.getOnlinePlayers()){
-            if(zoneManager.getPlayersZone(p.getUniqueId()) != null){
-                onPlayerLeaveZone(p, zoneManager.getPlayersZone(p.getUniqueId()));
+            if(zoneManager.getZoneByPlayer(p.getUniqueId()) != null){
+                onPlayerLeaveZone(p, zoneManager.getZoneByPlayer(p.getUniqueId()));
             }
         }
     }
@@ -60,14 +60,15 @@ public class EventManager implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         scoreManager.onPlayerDisconnect(e.getPlayer());
-        if(zoneManager.getPlayersZone(e.getPlayer().getUniqueId()) != null) {
-            onPlayerLeaveZone(e.getPlayer(), zoneManager.getPlayersZone(e.getPlayer().getUniqueId()));
+        if(zoneManager.getZoneByPlayer(e.getPlayer().getUniqueId()) != null) {
+            onPlayerLeaveZone(e.getPlayer(), zoneManager.getZoneByPlayer(e.getPlayer().getUniqueId()));
         }
     }
 
     /*
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
+        /*
         // ブロックの境界線を越えて移動したときだけ判定（負荷対策）
         if (!e.hasChangedBlock()) {
             return;
@@ -84,8 +85,7 @@ public class EventManager implements Listener {
             onPlayerLeaveZone(e.getPlayer());
         }
 
-    }
-     */
+         */
 
     public void onPlayerEnterZone(Player p, String zoneName) {
         zoneManager.onPlayerEnterZone(p,zoneName);
