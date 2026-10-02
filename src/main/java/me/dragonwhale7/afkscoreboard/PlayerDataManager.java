@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PlayerDataManager {
 
@@ -29,6 +30,7 @@ public class PlayerDataManager {
     private final File file;
     private final AFKScoreboard plugin;
     private final ExecutorService saveExecutor;
+    private final AtomicReference<String> pendingYml = new AtomicReference<>();
     private YamlConfiguration config;
     private boolean isDirty = false;
 
@@ -132,11 +134,15 @@ public class PlayerDataManager {
         if(!isDirty){return;}
         isDirty = false;
         
-        String data = config.saveToString();
+        String ymlText = config.saveToString();
+        if(pendingYml.getAndSet(ymlText) != null){
+            return;
+        }
         saveExecutor.execute(() -> {
+            String yml = pendingYml.getAndSet(null);
             try {
                 file.getParentFile().mkdirs();
-                Files.writeString(file.toPath(), data, StandardCharsets.UTF_8);
+                Files.writeString(file.toPath(), yml, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 AFKScoreboard.warn("playerdata.yml の書き込みに失敗しました: " + e.getMessage());
                 AFKScoreboard.runTask(() -> isDirty = true);
