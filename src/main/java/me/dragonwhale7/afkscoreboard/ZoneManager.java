@@ -27,7 +27,7 @@ public class ZoneManager {
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public void reloadAxAFKZones(EventManager eventManager) {
+    public boolean reloadAxAFKZones(EventManager eventManager) {
         Map<String,Set<UUID>> oldAfkPlayers = new HashMap<>();
         for(Map.Entry<String,ZoneArea> entry : loadedZones.entrySet()) {
             oldAfkPlayers.put(entry.getKey(),entry.getValue().getAfkPlayers());
@@ -36,13 +36,13 @@ public class ZoneManager {
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
             plugin.getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
-            return;
+            return false;
         }
 
         File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
         if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
             plugin.getLogger().warning("AxAFKZoneのzonesフォルダが見つかりません。");
-            return;
+            return false;
         }
         Map<String, ZoneArea> newZones = new HashMap<>();
         ConcurrentHashMap<String, Zone> zones = Zones.getZones();
@@ -56,6 +56,12 @@ public class ZoneManager {
                 AFKScoreboard.warn("This zone name is already in use! : "+zone.getName()+" and "+name +" are the same!");
                 continue;
             }
+            for(ZoneArea area : newZones.values()){
+                if(area.isInArea(zone.getRegion().getCorner1())
+                || area.isInArea(zone.getRegion().getCorner2())){
+                    AFKScoreboard.warn("The area of "+zone.getName()+" is overlapping!");
+                }
+            }
             newZones.put(name,new ZoneArea(
                     name
                     ,zone.getRegion().getWorld()
@@ -68,6 +74,7 @@ public class ZoneManager {
         loadedZones.putAll(newZones);
 
         eventManager.onZoneReload(oldAfkPlayers);
+        return true;
     }
 
     public void onPlayerEnterZone(Player player,String zoneName) {
