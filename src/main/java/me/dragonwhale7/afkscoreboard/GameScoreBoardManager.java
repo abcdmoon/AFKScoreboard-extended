@@ -1,7 +1,7 @@
-package me.dragonwhale7.afkscoreboard.prefix;
+package me.dragonwhale7.afkscoreboard;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -65,6 +65,13 @@ public class GameScoreBoardManager {
     private void fin(){
         for(String teamKey : prefixRegistry.getTeamKeys()) {
             removeTeamFromAll(teamKey);
+        }
+
+        Scoreboard main = Bukkit.getScoreboardManager().getMainScoreboard();
+        for(Player player : Bukkit.getOnlinePlayers()){
+            if(player.getScoreboard().equals(afkScoreboard)||player.getScoreboard().equals(highScoreScoreboard)){
+                player.setScoreboard(main);
+            }
         }
     }
 

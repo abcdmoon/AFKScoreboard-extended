@@ -35,7 +35,7 @@ public class ReloadRoleExecuter {
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Set<Prefix> oldPrefixes = new HashSet<>(prefixRegistry.getAllPrefixes());
         prefixRegistry.loadPrefixes();
-        prefixManager.reload(oldPrefixes);
+        prefixManager.recreatePrefixes(oldPrefixes);
         if(ctx.getSource().getSender() instanceof Player player){
             player.sendMessage(Component.text("称号の情報をファイルから再読込しました"));
         }

@@ -12,20 +12,20 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import me.dragonwhale7.afkscoreboard.*;
-import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
+import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
 
 public class HighScoreExecuter {
 
-    private final HighScoreManager highScoreManager;
+    private final PlayerDataManager playerDataManager;
     private final RankingManager rankingManager;
     private final ZoneManager zoneManager;
     private final GameScoreBoardManager gameScoreBoardManager;
 
-    public HighScoreExecuter(HighScoreManager highScoreManager, RankingManager rankingManager, ZoneManager zoneManager, GameScoreBoardManager gameScoreBoardManager) {
-        this.highScoreManager = highScoreManager;
+    public HighScoreExecuter(PlayerDataManager playerDataManager, RankingManager rankingManager, ZoneManager zoneManager, GameScoreBoardManager gameScoreBoardManager) {
+        this.playerDataManager = playerDataManager;
         this.rankingManager = rankingManager;
         this.zoneManager = zoneManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
@@ -43,7 +43,7 @@ public class HighScoreExecuter {
 
     private int showOwnScore(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
-            player.sendMessage(Component.text("現在のハイスコア:").append(Component.text(Util.formatTimeCompact(highScoreManager.getHighScore(player.getUniqueId()))).color(NamedTextColor.AQUA)));
+            player.sendMessage(Component.text("現在のハイスコア:").append(Component.text(Util.formatTimeCompact(playerDataManager.getHighestScore(player.getUniqueId()))).color(NamedTextColor.AQUA)));
             return Command.SINGLE_SUCCESS;
         }else{
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
@@ -55,7 +55,7 @@ public class HighScoreExecuter {
         if(ctx.getSource().getSender() instanceof Player player){
             PlayerSelectorArgumentResolver targetResolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
             Player target = targetResolver.resolve(ctx.getSource()).getFirst();
-            player.sendMessage(Component.text("現在の"+target.getName()+"のハイスコア:").append(Component.text(Util.formatTimeCompact(highScoreManager.getHighScore(target.getUniqueId()))).color(NamedTextColor.AQUA)));
+            player.sendMessage(Component.text("現在の"+target.getName()+"のハイスコア:").append(Component.text(Util.formatTimeCompact(playerDataManager.getHighestScore(target.getUniqueId()))).color(NamedTextColor.AQUA)));
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));

@@ -7,10 +7,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class ConfigManager {
 
@@ -40,9 +37,7 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
-    /**
-     * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
-     */
+    /*
     public Set<UUID> loadWelcomedPlayers(){
         Set<UUID> welcomedPlayers = new HashSet<>();
         List<String> uuidStrings = config.getStringList("welcomed-players");
@@ -55,9 +50,6 @@ public class ConfigManager {
         return welcomedPlayers;
     }
 
-    /**
-     * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
-     */
     public void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
         List<String> uuidStrings = welcomedPlayers.stream()
                 .map(UUID::toString)
@@ -65,9 +57,6 @@ public class ConfigManager {
         config.set("welcomed-players", uuidStrings);
     }
 
-    /**
-     * config.yml から非表示プレイヤーのUUIDを読み込む
-     */
     public Set<UUID> loadHiddenPlayers() {
         Set<UUID> hiddenPlayers = new HashSet<>();
         List<String> uuidStrings = config.getStringList("hidden-players");
@@ -79,9 +68,6 @@ public class ConfigManager {
         return hiddenPlayers;
     }
 
-    /**
-     * 非表示プレイヤーのUUIDを config.yml へ保存する
-     */
     public void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
 
         List<String> uuidStrings = hiddenPlayers.stream()
@@ -90,9 +76,6 @@ public class ConfigManager {
         config.set("hidden-players", uuidStrings);
     }
 
-    /**
-     * config.yml から肩書非表示プレイヤーのUUIDを読み込む
-     */
     public Set<UUID> loadPrefixHiddenPlayers() {
         Set<UUID> hiddenPlayers = new HashSet<>();
         List<String> uuidStrings = config.getStringList("prefix-hidden-players");
@@ -104,9 +87,6 @@ public class ConfigManager {
         return hiddenPlayers;
     }
 
-    /**
-     * 肩書非表示プレイヤーのUUIDを config.yml へ保存する
-     */
     public void savePrefixHiddenPlayers(Set<UUID> hiddenPlayers) {
 
         List<String> uuidStrings = hiddenPlayers.stream()
@@ -114,6 +94,8 @@ public class ConfigManager {
                 .collect(Collectors.toList());
         config.set("prefix-hidden-players", uuidStrings);
     }
+
+     */
 
     public Set<Prefix> loadPrefixes(){
         Set<Prefix> prefixes = new HashSet<>();

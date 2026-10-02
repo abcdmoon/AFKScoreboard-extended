@@ -3,7 +3,6 @@ package me.dragonwhale7.afkscoreboard;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.dragonwhale7.afkscoreboard.command.CommandManager;
 import me.dragonwhale7.afkscoreboard.event.EventManager;
-import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import org.bukkit.Bukkit;
@@ -25,7 +24,7 @@ public class AFKScoreboard extends JavaPlugin {
     private MessageManager messageManager;
     private RankingManager rankingManager;
     private ScoreManager scoreManager;
-    private HighScoreManager highScoreManager;
+    private PlayerDataManager playerDataManager;
     private GameScoreBoardManager gameScoreBoardManager;
     private PrefixRegistry prefixRegistry;
     private PrefixManager prefixManager;
@@ -39,17 +38,17 @@ public class AFKScoreboard extends JavaPlugin {
         messageManager = new MessageManager(configManager);
         prefixRegistry = new PrefixRegistry(configManager);
         gameScoreBoardManager = new GameScoreBoardManager(prefixRegistry);
-        highScoreManager = new HighScoreManager();
-        prefixManager = new PrefixManager(configManager,gameScoreBoardManager, prefixRegistry,highScoreManager);
-        scoreManager = new ScoreManager(highScoreManager,prefixManager,zoneManager);
-        rankingManager = new RankingManager(configManager,scoreManager,highScoreManager,gameScoreBoardManager);
+        playerDataManager = new PlayerDataManager(this,zoneManager);
+        prefixManager = new PrefixManager(configManager,gameScoreBoardManager, prefixRegistry, playerDataManager);
+        scoreManager = new ScoreManager(playerDataManager,prefixManager,zoneManager);
+        rankingManager = new RankingManager(configManager,scoreManager, playerDataManager,gameScoreBoardManager);
         eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,prefixManager);
         zoneManager.reloadAxAFKZones();
 
         getServer().getPluginManager().registerEvents(eventManager, this);
 
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
-            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager,highScoreManager,gameScoreBoardManager,prefixManager,prefixRegistry);
+            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry);
         });
     }
 

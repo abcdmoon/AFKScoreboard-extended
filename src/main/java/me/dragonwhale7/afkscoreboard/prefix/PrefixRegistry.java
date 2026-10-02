@@ -56,8 +56,7 @@ public final class PrefixRegistry {
         return List.copyOf(prefixes.values());
     }
 
-    public List<Integer> getAllConditions(){
-        return conditionMap.keySet()
-                .stream().sorted().toList();
+    public Set<Integer> getAllConditions(){
+        return conditionMap.keySet();
     }
 }

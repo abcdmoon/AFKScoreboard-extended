@@ -1,7 +1,8 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.ConfigManager;
-import me.dragonwhale7.afkscoreboard.HighScoreManager;
+import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
+import me.dragonwhale7.afkscoreboard.PlayerDataManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -15,15 +16,15 @@ public class PrefixManager {
     private final Map<UUID,Prefix> displayedPrefixes = new HashMap<>();
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
-    private final HighScoreManager highScoreManager;
+    private final PlayerDataManager playerDataManager;
 
     private final Set<UUID> hiddenPlayers = new HashSet<>();
     private final ConfigManager configManager;
 
-    public PrefixManager(ConfigManager configManager,GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, HighScoreManager highScoreManager) {
+    public PrefixManager(ConfigManager configManager,GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, PlayerDataManager playerDataManager) {
         this.configManager = configManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
-        this.highScoreManager = highScoreManager;
+        this.playerDataManager = playerDataManager;
         this.prefixRegistry = prefixRegistry;
         init();
     }
@@ -40,7 +41,8 @@ public class PrefixManager {
         hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
     }
 
-    public void reload(Set<Prefix> oldPrefixes){
+
+    public void recreatePrefixes(Set<Prefix> oldPrefixes){
         for(Prefix prefix : oldPrefixes){
             gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
         }
@@ -50,13 +52,11 @@ public class PrefixManager {
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
-        for(Player player : Bukkit.getOnlinePlayers()){
-            reloadPlayerPrefix(player.getUniqueId());
-        }
     }
 
+    /*
     public void reloadPlayerPrefix(UUID uuid){
-        int highScore = highScoreManager.getHighScore(uuid);
+        int highScore = playerDataManager.getHighScore(uuid);
         ownedPrefixes.remove(uuid);
         Prefix oldPrefix = displayedPrefixes.remove(uuid);
         String name = Bukkit.getOfflinePlayer(uuid).getName();
@@ -80,15 +80,15 @@ public class PrefixManager {
         }
     }
 
-    public void onAchieveHighScore(UUID uuid,int oldscore, int score){
-        for(Integer i : prefixRegistry.getAllConditions()){
-            if(oldscore<i&&i<=score){
-                for(Prefix p : prefixRegistry.getPrefixesByCondition(i)){
-                    grantPrefix(uuid,p);
-                    Player player = Bukkit.getPlayer(uuid);
-                    if(player!=null){
-                        player.sendMessage(Component.text("あなたは称号 ").append(Component.text(p.prefixText()).decorate(TextDecoration.BOLD).color(p.color())).append(Component.text(" を獲得しました")));
-                    }
+     */
+
+    public void onScoreChange(UUID uuid,int score){
+        if(prefixRegistry.getAllConditions().contains(score)){
+            for(Prefix prefix : prefixRegistry.getPrefixesByCondition(score)){
+                grantPrefix(uuid,prefix);
+                Player player = Bukkit.getPlayer(uuid);
+                if(player!=null){
+                    player.sendMessage(Component.text("あなたは称号 ").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text(" を獲得しました")));
                 }
             }
         }
@@ -117,6 +117,7 @@ public class PrefixManager {
         displayedPrefixes.put(uuid,prefix);
     }
 
+    /*
     public  Set<Prefix> getOwnedPrefixes(UUID uuid){
         return Set.copyOf(ownedPrefixes.getOrDefault(uuid,Set.of()));
     }
@@ -145,4 +146,6 @@ public class PrefixManager {
         }
             configManager.savePrefixHiddenPlayers(hiddenPlayers);
     }
+
+     */
 }

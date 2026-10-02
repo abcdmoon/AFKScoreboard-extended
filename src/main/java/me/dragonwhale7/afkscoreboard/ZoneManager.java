@@ -1,13 +1,16 @@
 package me.dragonwhale7.afkscoreboard;
 
+import com.artillexstudios.axafkzone.zones.Zone;
+import com.artillexstudios.axafkzone.zones.Zones;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ZoneManager {
 
@@ -37,51 +40,20 @@ public class ZoneManager {
             return;
         }
         Map<String, ZoneArea> newZones = new HashMap<>();
-        for (File file : Objects.requireNonNull(afkZoneFolder.listFiles())) {
-            if (!file.getName().endsWith(".yml")) continue;
-
-            try {
-                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
-                String name = file.getName().substring(0, file.getName().lastIndexOf("."));
-                String locStr1 = config.getString("zone.location1");
-                String locStr2 = config.getString("zone.location2");
-
-                if (locStr1 == null || locStr2 == null) continue;
-
-                String[] split1 = locStr1.split(";");
-                String[] split2 = locStr2.split(";");
-
-                String world = split1[0];
-
-                double x1 = Double.parseDouble(split1[1]);
-                double y1 = Double.parseDouble(split1[2]);
-                double z1 = Double.parseDouble(split1[3]);
-
-                double x2 = Double.parseDouble(split2[1]);
-                double y2 = Double.parseDouble(split2[2]);
-                double z2 = Double.parseDouble(split2[3]);
-
-                // 2つの座標から「最小(min)」と「最大(max)」を計算して立体範囲を登録
-                ZoneArea area = new ZoneArea(
-                        name,
-                        world,
-                        Math.min(x1, x2), Math.max(x1, x2),
-                        Math.min(y1, y2), Math.max(y1, y2),
-                        Math.min(z1, z2), Math.max(z1, z2)
-                );
-
-                String zoneName = file.getName().replace(".yml", "");
-                newZones.put(zoneName, area);
-                plugin.getLogger().info("放置ゾーンを自動登録しました: " + zoneName);
-
-            } catch (Exception e) {
-                plugin.getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
+        ConcurrentHashMap<String, Zone> zones = Zones.getZones();
+        for(Zone zone : zones.values()) {
+            if(zone.getRegion().getWorld()==null){
+                continue;
             }
+            newZones.put(zone.getName(),new ZoneArea(zone.getName()
+                    ,zone.getRegion().getWorld()
+                    ,zone.getRegion().getCorner1()
+            ,zone.getRegion().getCorner2()));
+
         }
+
         loadedZones.clear();
         loadedZones.putAll(newZones);
-        //eventManager.onReloadZone(preLoadStates);
     }
 
     public void onPlayerEnterZone(Player player,String zoneName) {
@@ -118,10 +90,14 @@ public class ZoneManager {
         return null;
     }
 
+    public Collection<ZoneArea> getAllZones(){
+        return loadedZones.values();
+    }
+
     /**
      * ゾーンの立体範囲を表現・判定する内部データクラス
      */
-    private static class ZoneArea {
+    public static class ZoneArea {
         public String getName() {
             return name;
         }
@@ -133,13 +109,16 @@ public class ZoneManager {
         private final double minZ, maxZ;
         private final Set<UUID> afkPlayers;
 
-        public ZoneArea(String name,String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
+        public ZoneArea(String name, World world,Location loc1, Location loc2) {
             this.name = name;
-            this.world = world;
-            this.minX = minX; this.maxX = maxX+1;
-            this.minY = minY; this.maxY = maxY+1;
-            this.minZ = minZ; this.maxZ = maxZ+1;
-            afkPlayers = new HashSet<>();
+            this.world = world.getName();
+            this.minX = Math.min(loc1.getX(), loc2.getX());
+            this.maxX = Math.max(loc1.getX(), loc2.getX());
+            this.minY = Math.min(loc1.getY(), loc2.getY());
+            this.maxY = Math.max(loc1.getY(), loc2.getY());
+            this.minZ = Math.min(loc1.getZ(), loc2.getZ());
+            this.maxZ = Math.max(loc1.getZ(), loc2.getZ());
+            this.afkPlayers = new HashSet<>();
         }
 
         public boolean isInArea(Location loc) {
@@ -152,11 +131,14 @@ public class ZoneManager {
         public boolean isInArea(UUID uuid) {
             return afkPlayers.contains(uuid);
         }
-        public void addAfkPlayer(UUID uuid) {
+        private void addAfkPlayer(UUID uuid) {
             afkPlayers.add(uuid);
         }
-        public void removeAfkPlayer(UUID uuid) {
+        private void removeAfkPlayer(UUID uuid) {
             afkPlayers.remove(uuid);
+        }
+        public Set<UUID> getAfkPlayers() {
+            return afkPlayers;
         }
     }
 }

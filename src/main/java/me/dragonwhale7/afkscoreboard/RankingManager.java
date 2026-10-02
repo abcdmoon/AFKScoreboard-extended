@@ -1,6 +1,5 @@
 package me.dragonwhale7.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.prefix.GameScoreBoardManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -13,7 +12,7 @@ public class RankingManager {
 
     private final ConfigManager configManager;
     private final ScoreManager scoreManager;
-    private final HighScoreManager highScoreManager;
+    private final PlayerDataManager playerDataManager;
     private final GameScoreBoardManager gameScoreBoardManager;
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
@@ -31,10 +30,10 @@ public class RankingManager {
         configManager.saveHiddenPlayers(hiddenPlayersSet);
     }
 
-    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, HighScoreManager highScoreManager, GameScoreBoardManager gameScoreBoardManager) {
+    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager) {
         this.configManager = configManager;
         this.scoreManager = scoreManager;
-        this.highScoreManager = highScoreManager;
+        this.playerDataManager = playerDataManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
 
         init();
@@ -118,7 +117,7 @@ public class RankingManager {
         }
 
         // 現在放置中の上位10人を取得
-        List<Map.Entry<UUID, Integer>> sortedTop10 = highScoreManager.getSortedList();
+        List<Map.Entry<UUID, Integer>> sortedTop10 = playerDataManager.getSortedList();
         sortedTop10 = sortedTop10.stream()
                 .filter(e->!isHidden(e.getKey()))
                 .limit(10)

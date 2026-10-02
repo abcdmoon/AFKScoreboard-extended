@@ -23,12 +23,12 @@ public class ScoreManager {
     //領域内のプレイヤーのセット
     private final Set<UUID> currentAFKPlayers = new HashSet<>();
 
-    private final HighScoreManager highScoreManager;
+    private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
     private final ZoneManager zoneManager;
 
-    public ScoreManager(HighScoreManager highScoreManager, PrefixManager prefixManager,ZoneManager zoneManager) {
-        this.highScoreManager = highScoreManager;
+    public ScoreManager(PlayerDataManager playerDataManager, PrefixManager prefixManager, ZoneManager zoneManager) {
+        this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
         this.zoneManager = zoneManager;
         init();
@@ -42,14 +42,16 @@ public class ScoreManager {
      * 1秒ごとに、ゾーンにいるプレイヤーの時間（連続）を加算
      */
     private void incrementTimeEverySecond() {
-        for(UUID uuid : currentAFKPlayers) {
-            int score = currentSessionTimes.getOrDefault(uuid,0)+1;
-            currentSessionTimes.put(uuid, score);
-            if(highScoreManager.getHighScore(uuid)<score){
-                int oldScore = highScoreManager.getHighScore(uuid);
-                highScoreManager.setHighScore(uuid,score);
-                prefixManager.onAchieveHighScore(uuid,oldScore,score);
+        for(ZoneManager.ZoneArea area : zoneManager.getAllZones()){
+            for(UUID uuid : area.getAfkPlayers()){
+                int score = currentSessionTimes.getOrDefault(uuid,0)+1;
+                currentSessionTimes.put(uuid, score);
+                prefixManager.onScoreChange(uuid, score);
+                if(playerDataManager.getHighScore(uuid,area.getName())<score){
+                    playerDataManager.setHighScore(uuid,score,area.getName());
+                }
             }
+
         }
     }
 
