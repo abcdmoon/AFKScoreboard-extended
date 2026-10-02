@@ -14,9 +14,11 @@ import org.bukkit.entity.Player;
 public class ReloadExecuter {
 
     private final ZoneManager zoneManager;
+    private final EventManager eventManager;
 
-    public ReloadExecuter(ZoneManager zoneManager) {
+    public ReloadExecuter(ZoneManager zoneManager,EventManager eventManager) {
         this.zoneManager = zoneManager;
+        this.eventManager = eventManager;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(ReloadExecuter reloadExecuter) {
@@ -26,7 +28,7 @@ public class ReloadExecuter {
     }
 
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        zoneManager.reloadAxAFKZones();
+        zoneManager.reloadAxAFKZones(eventManager);
         if(ctx.getSource().getSender() instanceof Player player) {
             player.sendMessage(Component.text("放置エリアの情報を再読込しました"));
         }

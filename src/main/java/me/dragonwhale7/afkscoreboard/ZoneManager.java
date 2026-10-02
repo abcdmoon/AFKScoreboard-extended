@@ -2,6 +2,7 @@ package me.dragonwhale7.afkscoreboard;
 
 import com.artillexstudios.axafkzone.zones.Zone;
 import com.artillexstudios.axafkzone.zones.Zones;
+import me.dragonwhale7.afkscoreboard.event.EventManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -26,7 +27,11 @@ public class ZoneManager {
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public void reloadAxAFKZones() {
+    public void reloadAxAFKZones(EventManager eventManager) {
+        Map<String,Set<UUID>> oldAfkPlayers = new HashMap<>();
+        for(Map.Entry<String,ZoneArea> entry : loadedZones.entrySet()) {
+            oldAfkPlayers.put(entry.getKey(),entry.getValue().getAfkPlayers());
+        }
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
@@ -47,7 +52,12 @@ public class ZoneManager {
             }
             String name = zone.getName();
             name = name.replace(".","_");
-            newZones.put(name,new ZoneArea(zone.getName()
+            if(newZones.containsKey(name)){
+                AFKScoreboard.warn("This zone name is already in use! : "+zone.getName()+" and "+name +" are the same!");
+                continue;
+            }
+            newZones.put(name,new ZoneArea(
+                    name
                     ,zone.getRegion().getWorld()
                     ,zone.getRegion().getCorner1()
             ,zone.getRegion().getCorner2()));
@@ -56,6 +66,8 @@ public class ZoneManager {
 
         loadedZones.clear();
         loadedZones.putAll(newZones);
+
+        eventManager.onZoneReload(oldAfkPlayers);
     }
 
     public void onPlayerEnterZone(Player player,String zoneName) {

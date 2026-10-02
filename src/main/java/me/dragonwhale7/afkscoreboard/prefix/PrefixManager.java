@@ -101,7 +101,7 @@ public class PrefixManager {
             gameScoreBoardManager.removePlayerFromAllTeam(name);
             return;
         }
-        if(prefix!=null){
+        if(prefix!=null&&prefix.key().isEmpty()){
             gameScoreBoardManager.addPlayerToAllTeam(name,prefix.teamKey());
 
         }else{

@@ -20,6 +20,8 @@ public class PlayerDataManager {
 
 
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
+    //データが読み込めなかったUUID メモリ上では初期値から扱い、ファイルには書き込まない
+    private final Set<UUID> errorUUIDs = new HashSet<>();
     private final File file;
     private final AFKScoreboard plugin;
     private final ZoneManager zoneManager;
@@ -55,14 +57,18 @@ public class PlayerDataManager {
 
     private void reloadPlayerData() {
         config = YamlConfiguration.loadConfiguration(file);
+        playerData.clear();
+        errorUUIDs.clear();
 
         for (String key : config.getKeys(false)) {
+            UUID uuid;
             try {
-                UUID uuid = UUID.fromString(key);
-                loadPlayerData(uuid);
+                uuid = UUID.fromString(key);
             } catch (IllegalArgumentException e) {
                 AFKScoreboard.warn("無効なUUIDのデータをスキップしました:" + key);
+                continue;
             }
+            loadPlayerData(uuid);
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -103,6 +109,8 @@ public class PlayerDataManager {
                 }else{
                     AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました: "+e.getMessage());
                 }
+                playerData.put(uuid,PlayerData.getDefault(uuid,zoneManager.getAllZones().stream().map(ZoneManager.ZoneArea::getName).toList()));
+                errorUUIDs.add(uuid);
             }
         }
     }
@@ -124,12 +132,18 @@ public class PlayerDataManager {
     }
     
     private void saveValue(UUID uuid,Object value,String... path){
+        if(errorUUIDs.contains(uuid)){return;}
+
         StringBuilder sb = new StringBuilder(uuid.toString());
         for(String s : path){
             sb.append(".").append(s);
         }
         config.set(sb.toString(), value);
         isDirty = true;
+    }
+
+    public void onPlayerJoin(Player player){
+        loadPlayerData(player.getUniqueId());
     }
 
     public boolean isInformed(UUID uuid){

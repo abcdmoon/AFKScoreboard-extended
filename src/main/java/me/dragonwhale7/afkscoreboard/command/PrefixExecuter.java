@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
+import me.dragonwhale7.afkscoreboard.PlayerDataManager;
 import me.dragonwhale7.afkscoreboard.command.argument.OwnedPrefixArgument;
 import me.dragonwhale7.afkscoreboard.prefix.Prefix;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
@@ -18,31 +19,30 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Set;
+public class PrefixExecuter {
 
-public class RoleExecuter {
-
-    private final PrefixManager prefixManager;
     private final PrefixRegistry prefixRegistry;
+    private final PlayerDataManager playerDataManager;
+    private final PrefixManager prefixManager;
 
-    public RoleExecuter(PrefixManager prefixManager,PrefixRegistry prefixRegistry) {
+    public PrefixExecuter(PrefixManager prefixManager, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry) {
         this.prefixManager = prefixManager;
+        this.playerDataManager = playerDataManager;
         this.prefixRegistry = prefixRegistry;
     }
 
-    static LiteralArgumentBuilder<CommandSourceStack> create(RoleExecuter roleExecuter, PrefixManager prefixManager, PrefixRegistry prefixRegistry) {
-        return Commands.literal("role")
-                .then(Commands.argument("text",new OwnedPrefixArgument(prefixManager,prefixRegistry))
-                        .executes(roleExecuter::showRole))
+    static LiteralArgumentBuilder<CommandSourceStack> create(PrefixExecuter prefixExecuter, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry) {
+        return Commands.literal("prefix")
+                .then(Commands.argument("text",new OwnedPrefixArgument(playerDataManager,prefixRegistry))
+                        .executes(prefixExecuter::showPrefix))
                 .then(Commands.literal("hide")
-                        .executes(roleExecuter::hideRole));
+                        .executes(prefixExecuter::hidePrefix));
     }
 
-    private int showRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private int showPrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
             Prefix prefix = ctx.getArgument("text",Prefix.class);
-            if(prefixManager.getOwnedPrefixes(player.getUniqueId()).contains(prefix)){
+            if(playerDataManager.getPlayerPrefixes(player.getUniqueId()).contains(prefix.key())){
                 prefixManager.changePrefix(player.getUniqueId(),prefix);
                 player.sendMessage(Component.text("表示する称号を").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text("にしました")));
             }else{
@@ -56,14 +56,16 @@ public class RoleExecuter {
         }
     }
 
-    private int hideRole(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private int hidePrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
-            prefixManager.toggleHidden(player.getUniqueId());
-            if(prefixManager.isHidden(player.getUniqueId())){
+            if(playerDataManager.isHidingPrefix(player.getUniqueId())){
+                playerDataManager.setHidingPrefix(player.getUniqueId(),false);
                 player.sendMessage(Component.text("あなたの称号を").append(Component.text("非表示").color(NamedTextColor.GREEN)).append(Component.text("にしました")));
             }else{
+                playerDataManager.setHidingPrefix(player.getUniqueId(),true);
                 player.sendMessage(Component.text("あなたの称号を").append(Component.text("表示").color(NamedTextColor.GREEN)).append(Component.text("するようにしました")));
             }
+            prefixManager.changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));

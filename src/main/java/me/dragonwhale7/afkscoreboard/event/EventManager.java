@@ -9,7 +9,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 public class EventManager implements Listener {
 
@@ -17,14 +20,14 @@ public class EventManager implements Listener {
     private final MessageManager messageManager;
     private final RankingManager rankingManager;
     private final ScoreManager scoreManager;
-    private final PrefixManager prefixManager;
+    private final PlayerDataManager playerDataManager;
 
-    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager, PrefixManager prefixManager) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
-        this.prefixManager = prefixManager;
+        this.playerDataManager = playerDataManager;
         AFKScoreboard.registerTaskTimer(this::checkPlayerZone,0,20L);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
@@ -54,7 +57,7 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        prefixManager.reloadPlayerPrefix(e.getPlayer().getUniqueId());
+        playerDataManager.onPlayerJoin(e.getPlayer());
     }
 
     @EventHandler
@@ -65,27 +68,26 @@ public class EventManager implements Listener {
         }
     }
 
-    /*
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
-        /*
-        // ブロックの境界線を越えて移動したときだけ判定（負荷対策）
-        if (!e.hasChangedBlock()) {
-            return;
+    public void onZoneReload(Map<String, Set<UUID>> oldAfkPlayers){
+        for(Player p : Bukkit.getOnlinePlayers()){
+            String before = null;
+            for(Map.Entry<String, Set<UUID>> entry : oldAfkPlayers.entrySet()){
+                if(entry.getValue().contains(p.getUniqueId())){
+                    before = entry.getKey();
+                }
+            }
+            String now = zoneManager.getZoneByLoc(p.getLocation());
+            if(!Objects.equals(before, now)){
+                if(before!=null){
+                    rankingManager.onPlayerLeaveZone(p);
+                    scoreManager.onPlayerLeaveZone(p);
+                }
+                if(now!=null){
+                    onPlayerEnterZone(p,now);
+                }
+            }
         }
-
-        //ここから領域に入ったときと出たときに分岐
-        boolean wasInAnyZone = zoneManager.isLocInAnyZone(e.getFrom());
-        boolean isInAnyZone = zoneManager.isLocInAnyZone(e.getTo());
-
-
-        if(!wasInAnyZone && isInAnyZone) {
-            onPlayerEnterZone(e.getPlayer());
-        }else if(wasInAnyZone && !isInAnyZone) {
-            onPlayerLeaveZone(e.getPlayer());
-        }
-
-         */
+    }
 
     public void onPlayerEnterZone(Player p, String zoneName) {
         zoneManager.onPlayerEnterZone(p,zoneName);
