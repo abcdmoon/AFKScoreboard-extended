@@ -12,7 +12,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.nio.file.*;
+import java.nio.file.attribute.FileAttribute;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -142,6 +143,23 @@ public class PlayerDataManager {
             String yml = pendingYml.getAndSet(null);
             try {
                 file.getParentFile().mkdirs();
+                Path path = Files.createTempFile(file.getParentFile().toPath(),"playerdata",".tmp");
+                // 一時ファイルへ書き込む
+                Files.writeString(
+                        path,
+                        yml,
+                        StandardCharsets.UTF_8,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING
+                );
+
+                // 元ファイルを原子的に置き換える
+                Files.move(
+                        path,
+                        file.toPath(),
+                        StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
                 Files.writeString(file.toPath(), yml, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 AFKScoreboard.warn("playerdata.yml の書き込みに失敗しました: " + e.getMessage());

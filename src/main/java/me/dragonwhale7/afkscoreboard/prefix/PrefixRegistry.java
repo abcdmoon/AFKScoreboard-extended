@@ -1,7 +1,6 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.AFKScoreboard;
-import me.dragonwhale7.afkscoreboard.ConfigManager;
 
 import java.util.*;
 
@@ -9,9 +8,10 @@ public final class PrefixRegistry {
     private final Map<String, Prefix> prefixes = new HashMap<>();
     private final Set<String> teamKeys = new HashSet<>();
     private final Map<Integer, List<Prefix>> conditionMap = new HashMap<>();
-    private final ConfigManager configManager;
-    public PrefixRegistry(ConfigManager configManager) {
-        this.configManager = configManager;
+    private final PrefixConfigManager prefixConfigManager;
+
+    public PrefixRegistry(PrefixConfigManager prefixConfigManager) {
+        this.prefixConfigManager = prefixConfigManager;
         loadPrefixes();
     }
 
@@ -19,7 +19,7 @@ public final class PrefixRegistry {
         prefixes.clear();
         teamKeys.clear();
         conditionMap.clear();
-        for(Prefix prefix : configManager.loadPrefixes()){
+        for(Prefix prefix : prefixConfigManager.loadPrefixes()){
             if(prefixes.containsKey(prefix.key())){
                 AFKScoreboard.warn("There is already a prefix with the same key!");
                 continue;
@@ -40,9 +40,6 @@ public final class PrefixRegistry {
         return prefixes.get(key);
     }
 
-    public Set<String> getAllKeys(){
-        return Set.copyOf(prefixes.keySet());
-    }
     public Set<String> getTeamKeys(){
         return Set.copyOf(teamKeys);
     }

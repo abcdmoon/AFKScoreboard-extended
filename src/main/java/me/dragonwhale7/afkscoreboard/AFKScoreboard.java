@@ -3,6 +3,7 @@ package me.dragonwhale7.afkscoreboard;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.dragonwhale7.afkscoreboard.command.CommandManager;
 import me.dragonwhale7.afkscoreboard.event.EventManager;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixConfigManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import org.bukkit.Bukkit;
@@ -28,6 +29,7 @@ public class AFKScoreboard extends JavaPlugin {
     private GameScoreBoardManager gameScoreBoardManager;
     private PrefixRegistry prefixRegistry;
     private PrefixManager prefixManager;
+    private PrefixConfigManager prefixConfigManager;
 
     @Override
     public void onEnable() {
@@ -36,8 +38,9 @@ public class AFKScoreboard extends JavaPlugin {
         configManager = new ConfigManager(this);
         zoneManager = new ZoneManager(this);
         playerDataManager = new PlayerDataManager(this);
+        prefixConfigManager = new PrefixConfigManager(this);
         messageManager = new MessageManager(configManager,playerDataManager);
-        prefixRegistry = new PrefixRegistry(configManager);
+        prefixRegistry = new PrefixRegistry(prefixConfigManager);
         gameScoreBoardManager = new GameScoreBoardManager(prefixRegistry);
         prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry, playerDataManager);
         scoreManager = new ScoreManager(playerDataManager,prefixManager,zoneManager);
