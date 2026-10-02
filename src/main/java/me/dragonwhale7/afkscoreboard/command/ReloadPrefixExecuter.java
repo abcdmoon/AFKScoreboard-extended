@@ -15,20 +15,20 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ReloadRoleExecuter {
+public class ReloadPrefixExecuter {
     private final PrefixRegistry prefixRegistry;
     private final PrefixManager prefixManager;
 
 
-    public ReloadRoleExecuter(PrefixRegistry prefixRegistry, PrefixManager prefixManager) {
+    public ReloadPrefixExecuter(PrefixRegistry prefixRegistry, PrefixManager prefixManager) {
         this.prefixRegistry = prefixRegistry;
         this.prefixManager = prefixManager;
     }
 
-    static LiteralArgumentBuilder<CommandSourceStack> create(ReloadRoleExecuter reloadRoleExecuter) {
-        return Commands.literal("reloadrole")
+    static LiteralArgumentBuilder<CommandSourceStack> create(ReloadPrefixExecuter reloadPrefixExecuter) {
+        return Commands.literal("reloadprefix")
                 .requires(ctx->ctx.getSender().isOp())
-                .executes(reloadRoleExecuter::execute);
+                .executes(reloadPrefixExecuter::execute);
     }
 
 

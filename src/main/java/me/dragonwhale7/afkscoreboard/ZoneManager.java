@@ -62,13 +62,18 @@ public class ZoneManager {
                     ,zone.getRegion().getCorner1()
                     ,zone.getRegion().getCorner2());
             for(ZoneArea zone1:newZones.values()){
-                if(zone1.world.equals(newZone.world)
-                        &&((((zone1.minX<=newZone.minX&&newZone.minX<= zone1.maxX)||(zone1.minX<= newZone.maxX&&newZone.maxX<= zone1.maxX))
-                        &&((zone1.minY<=newZone.minY&&newZone.minY<= zone1.maxY)||(zone1.minY<= newZone.maxY&&newZone.maxY<= zone1.maxY))
-                        &&((zone1.minZ<=newZone.minZ&&newZone.minZ<= zone1.maxZ)||(zone1.minZ<= newZone.maxZ&&newZone.maxZ<= zone1.maxZ)))
-                        ||(((newZone.minX<=zone1.minX&&zone1.minX<= newZone.maxX)||(newZone.minX<= zone1.maxX&&zone1.maxX<= newZone.maxX))
-                                &&((newZone.minY<=zone1.minY&&zone1.minY<= newZone.maxY)||(newZone.minY<= zone1.maxY&&zone1.maxY<= newZone.maxY))
-                                &&((newZone.minZ<=zone1.minZ&&zone1.minZ<= newZone.maxZ)||(newZone.minZ<= zone1.maxZ&&zone1.maxZ<= newZone.maxZ))))){
+                boolean overlapX =
+                        zone1.minX <= newZone.maxX &&
+                                zone1.maxX >= newZone.minX;
+
+                boolean overlapY =
+                        zone1.minY <= newZone.maxY &&
+                                zone1.maxY >= newZone.minY;
+
+                boolean overlapZ =
+                        zone1.minZ <= newZone.maxZ &&
+                                zone1.maxZ >= newZone.minZ;
+                if(newZone.world.equals(zone1.world)&&overlapX && overlapY && overlapZ){
                     AFKScoreboard.warn("The area of "+newZone.name+" is overlapping");
                     continue out;
                 }

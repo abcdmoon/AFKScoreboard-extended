@@ -160,10 +160,11 @@ public class PlayerDataManager {
                         StandardCopyOption.ATOMIC_MOVE,
                         StandardCopyOption.REPLACE_EXISTING
                 );
-                Files.writeString(file.toPath(), yml, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 AFKScoreboard.warn("playerdata.yml の書き込みに失敗しました: " + e.getMessage());
                 AFKScoreboard.runTask(() -> isDirty = true);
+            }finally {
+                new File(file.getParentFile(),"playerdata.tmp").delete();
             }
         });
     }

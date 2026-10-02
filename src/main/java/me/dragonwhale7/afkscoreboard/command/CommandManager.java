@@ -19,18 +19,18 @@ public class CommandManager {
         ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(playerDataManager,rankingManager,zoneManager,gameScoreBoardManager);
         PrefixExecuter prefixExecuter = new PrefixExecuter(prefixManager,playerDataManager,prefixRegistry);
-        ReloadRoleExecuter reloadRoleExecuter = new ReloadRoleExecuter(prefixRegistry,prefixManager);
-        registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter, prefixExecuter,playerDataManager,prefixRegistry,reloadRoleExecuter));
+        ReloadPrefixExecuter reloadPrefixExecuter = new ReloadPrefixExecuter(prefixRegistry,prefixManager);
+        registrar.register(build(hideExecuter,reloadExecuter,highScoreExecuter, prefixExecuter,playerDataManager,prefixRegistry, reloadPrefixExecuter));
         registrar.register(oldbuild(hideExecuter));
     }
 
-    public static LiteralCommandNode<CommandSourceStack> build(HideExecuter hideExecuter, ReloadExecuter reloadExecuter, HighScoreExecuter highScoreExecuter, PrefixExecuter prefixExecuter, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry, ReloadRoleExecuter reloadRoleExecuter) {
+    public static LiteralCommandNode<CommandSourceStack> build(HideExecuter hideExecuter, ReloadExecuter reloadExecuter, HighScoreExecuter highScoreExecuter, PrefixExecuter prefixExecuter, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry, ReloadPrefixExecuter reloadPrefixExecuter) {
         return Commands.literal("afkscore")
                 .then(HideExecuter.create(hideExecuter))
                 .then(ReloadExecuter.create(reloadExecuter))
                 .then(HighScoreExecuter.create(highScoreExecuter))
                 .then(PrefixExecuter.create(prefixExecuter,playerDataManager,prefixRegistry))
-                .then(ReloadRoleExecuter.create(reloadRoleExecuter))
+                .then(ReloadPrefixExecuter.create(reloadPrefixExecuter))
                 .build();
 
     }

@@ -44,7 +44,9 @@ public class PrefixExecuter {
             Prefix prefix = ctx.getArgument("text",Prefix.class);
             if(playerDataManager.getPlayerPrefixes(player.getUniqueId()).contains(prefix.key())){
                 prefixManager.changePrefix(player.getUniqueId(),prefix);
-                player.sendMessage(Component.text("表示する称号を").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text("にしました")));
+                if(!playerDataManager.isHidingPrefix(player.getUniqueId())){
+                    player.sendMessage(Component.text("表示する称号を").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text("にしました")));
+                }
             }else{
                 final Message message = MessageComponentSerializer.message().serialize(Component.text("その称号は所持していません").color(NamedTextColor.RED));
                 throw new SimpleCommandExceptionType(message).create();

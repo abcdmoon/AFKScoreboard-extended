@@ -16,6 +16,11 @@ public final class PrefixRegistry {
     }
 
     public void loadPrefixes(){
+        Set<Prefix> prefixSet = prefixConfigManager.loadPrefixes();
+        if(prefixSet.isEmpty()){
+            AFKScoreboard.warn("No prefixes have been loaded");
+            return;
+        }
         prefixes.clear();
         teamKeys.clear();
         conditionMap.clear();
