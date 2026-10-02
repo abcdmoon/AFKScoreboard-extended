@@ -16,6 +16,11 @@ Modified: 2026
 
 This plugin works with AxAFKZone to display a ranking scoreboard based on AFK time.
 
+# Dependencies
+This plugin works with AxAFKZone(https://github.com/Artillex-Studios/AxAFKZone) ver 1.12.0.
+The AxAFKZone JAR is included in libs/ for compilation. AxAFKZone is licensed under the MIT License.
+
+
 # I haven't tested whether it works, but...
 It may work if the conditions of using **Java 21** or earlier and **Paper 26.2** or earlier are met.
 
