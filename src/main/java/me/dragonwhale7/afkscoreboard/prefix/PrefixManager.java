@@ -12,17 +12,12 @@ import java.util.*;
 
 public class PrefixManager {
 
-    private final Map<UUID, Set<Prefix>> ownedPrefixes = new HashMap<>();
-    private final Map<UUID,Prefix> displayedPrefixes = new HashMap<>();
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
     private final PlayerDataManager playerDataManager;
 
-    private final Set<UUID> hiddenPlayers = new HashSet<>();
-    private final ConfigManager configManager;
 
-    public PrefixManager(ConfigManager configManager,GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, PlayerDataManager playerDataManager) {
-        this.configManager = configManager;
+    public PrefixManager(GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, PlayerDataManager playerDataManager) {
         this.gameScoreBoardManager = gameScoreBoardManager;
         this.playerDataManager = playerDataManager;
         this.prefixRegistry = prefixRegistry;
@@ -37,8 +32,6 @@ public class PrefixManager {
                 team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
             });
         }
-        hiddenPlayers.clear();
-        hiddenPlayers.addAll(configManager.loadPrefixHiddenPlayers());
     }
 
 
@@ -95,7 +88,7 @@ public class PrefixManager {
     }
 
     public void grantPrefix(UUID uuid, Prefix prefix){
-        ownedPrefixes.computeIfAbsent(uuid,k->new HashSet<>()).add(prefix);
+        playerDataManager.addPlayerPrefix(uuid,prefix.key());
         changePrefix(uuid,prefix);
     }
 
@@ -104,7 +97,7 @@ public class PrefixManager {
         if(name == null){
             return;
         }
-        if(hiddenPlayers.contains(uuid)){
+        if(playerDataManager.isHidingPrefix(uuid)){
             gameScoreBoardManager.removePlayerFromAllTeam(name);
             return;
         }
@@ -114,7 +107,7 @@ public class PrefixManager {
         }else{
             gameScoreBoardManager.removePlayerFromAllTeam(name);
         }
-        displayedPrefixes.put(uuid,prefix);
+        playerDataManager.setShowedPrefix(uuid,prefix==null?"":prefix.key());
     }
 
     /*

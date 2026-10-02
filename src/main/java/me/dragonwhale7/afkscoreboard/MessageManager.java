@@ -12,33 +12,28 @@ public class MessageManager {
 
     private final ConfigManager configManager;
 
-    // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
-    private final Set<UUID> welcomedPlayers = new HashSet<>();
+    private final PlayerDataManager playerDataManager;
 
 
-    public MessageManager(ConfigManager configManager) {
+    public MessageManager(ConfigManager configManager,PlayerDataManager playerDataManager) {
         this.configManager = configManager;
+        this.playerDataManager = playerDataManager;
         init();
     }
 
     private void init(){
-        welcomedPlayers.clear();
-        welcomedPlayers.addAll(configManager.loadWelcomedPlayers());
     }
 
     public void onPlayerEnterZone(Player player) {
         // 放置エリアに足を踏み入れたプレイヤーへの通知
 
-        if (!welcomedPlayers.contains(player.getUniqueId())) {
-            //初めて入った場合
+        if (!playerDataManager.isInformed(player.getUniqueId())) {
+            playerDataManager.setInformed(player.getUniqueId(), true);
 
-            welcomedPlayers.add(player.getUniqueId());
             // メッセージを送信
             player.sendMessage(Component.text("/afkhide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
             player.sendMessage(Component.text("/afkscore role hide").color(NamedTextColor.AQUA).append(Component.text(" で自分の称号を表示/非表示できます").color(NamedTextColor.WHITE)));
 
-            Set<UUID> welcomedPlayersSet = Set.copyOf(welcomedPlayers);
-            configManager.saveWelcomedPlayers(welcomedPlayersSet);
         }else{
             //入ったことがある場合
         }

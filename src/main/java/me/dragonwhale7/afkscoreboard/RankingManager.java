@@ -23,11 +23,11 @@ public class RankingManager {
     public void toggleHidden(UUID uuid) {
         if(hiddenPlayers.contains(uuid)) {
             hiddenPlayers.remove(uuid);
+            playerDataManager.setHiddenInRank(uuid, false);
         }else {
             hiddenPlayers.add(uuid);
+            playerDataManager.setHiddenInRank(uuid, true);
         }
-        Set<UUID> hiddenPlayersSet = Set.copyOf(hiddenPlayers);
-        configManager.saveHiddenPlayers(hiddenPlayersSet);
     }
 
     public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager) {
@@ -40,7 +40,7 @@ public class RankingManager {
     }
     private void init(){
         hiddenPlayers.clear();
-        hiddenPlayers.addAll(configManager.loadHiddenPlayers());
+        hiddenPlayers.addAll(playerDataManager.getHiddenInRankPlayers());
 
         AFKScoreboard.registerTaskTimer(this::updateLeaderboard,0,100L);
     }

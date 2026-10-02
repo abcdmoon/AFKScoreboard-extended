@@ -146,6 +146,15 @@ public class PlayerDataManager {
         playerData.get(uuid).isHiddenInRank = isHiddenInRank;
         saveValue(uuid,isHiddenInRank,"isHiddenInRank");
     }
+    public Set<UUID> getHiddenInRankPlayers(){
+        Set<UUID> hiddenInRankPlayers = new HashSet<>();
+        for(UUID uuid : playerData.keySet()){
+            if(playerData.get(uuid).isHiddenInRank){
+                hiddenInRankPlayers.add(uuid);
+            }
+        }
+        return hiddenInRankPlayers;
+    }
     public boolean isHidingPrefix(UUID uuid){
         return playerData.get(uuid).isHidingPrefix;
     }
