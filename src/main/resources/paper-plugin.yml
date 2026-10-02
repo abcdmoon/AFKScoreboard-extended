@@ -10,6 +10,6 @@ dependencies:
   server:
     AxAFKZone:
       load: AFTER
-      required: false
+      required: true
       join-classpath: true
 
