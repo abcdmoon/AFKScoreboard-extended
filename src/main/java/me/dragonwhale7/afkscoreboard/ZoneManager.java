@@ -46,7 +46,7 @@ public class ZoneManager {
         }
         Map<String, ZoneArea> newZones = new HashMap<>();
         ConcurrentHashMap<String, Zone> zones = Zones.getZones();
-        for(Zone zone : zones.values()) {
+        out:for(Zone zone : zones.values()) {
             if(zone.getRegion().getWorld()==null){
                 continue;
             }
@@ -56,17 +56,23 @@ public class ZoneManager {
                 AFKScoreboard.warn("This zone name is already in use! : "+zone.getName()+" and "+name +" are the same!");
                 continue;
             }
-            for(ZoneArea area : newZones.values()){
-                if(area.isInArea(zone.getRegion().getCorner1())
-                || area.isInArea(zone.getRegion().getCorner2())){
-                    AFKScoreboard.warn("The area of "+zone.getName()+" is overlapping!");
-                }
-            }
-            newZones.put(name,new ZoneArea(
+            ZoneArea newZone = new ZoneArea(
                     name
                     ,zone.getRegion().getWorld()
                     ,zone.getRegion().getCorner1()
-            ,zone.getRegion().getCorner2()));
+                    ,zone.getRegion().getCorner2());
+            for(ZoneArea zone1:newZones.values()){
+                if((((zone1.minX<=newZone.minX&&newZone.minX<= zone1.maxX)||(zone1.minX<= newZone.maxX&&newZone.maxX<= zone1.maxX))
+                        &&((zone1.minY<=newZone.minY&&newZone.minY<= zone1.maxY)||(zone1.minY<= newZone.maxY&&newZone.maxY<= zone1.maxY))
+                        &&((zone1.minZ<=newZone.minZ&&newZone.minZ<= zone1.maxZ)||(zone1.minZ<= newZone.maxZ&&newZone.maxZ<= zone1.maxZ)))
+                        ||(((newZone.minX<=zone1.minX&&zone1.minX<= newZone.maxX)||(newZone.minX<= zone1.maxX&&zone1.maxX<= newZone.maxX))
+                                &&((newZone.minY<=zone1.minY&&zone1.minY<= newZone.maxY)||(newZone.minY<= zone1.maxY&&zone1.maxY<= newZone.maxY))
+                                &&((newZone.minZ<=zone1.minZ&&zone1.minZ<= newZone.maxZ)||(newZone.minZ<= zone1.maxZ&&zone1.maxZ<= newZone.maxZ)))){
+                    AFKScoreboard.warn("The area of "+newZone.name+" is overlapping");
+                    continue out;
+                }
+            }
+            newZones.put(name,newZone);
 
         }
 

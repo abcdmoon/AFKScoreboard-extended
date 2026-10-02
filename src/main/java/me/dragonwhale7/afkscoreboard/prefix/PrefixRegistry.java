@@ -20,7 +20,6 @@ public final class PrefixRegistry {
         teamKeys.clear();
         conditionMap.clear();
         for(Prefix prefix : configManager.loadPrefixes()){
-            AFKScoreboard.warn("key:"+prefix.key()+prefix.prefixText()+prefix.requireScore());
             if(prefixes.containsKey(prefix.key())){
                 AFKScoreboard.warn("There is already a prefix with the same key!");
                 continue;

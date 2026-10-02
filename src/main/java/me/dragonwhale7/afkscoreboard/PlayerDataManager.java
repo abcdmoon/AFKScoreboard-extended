@@ -2,12 +2,14 @@ package me.dragonwhale7.afkscoreboard;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,6 +22,8 @@ public class PlayerDataManager {
 
 
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
+    //元のファイルの読み込みに異常があった場合立つフラグ メモリ上では初期値から扱い、ファイルには書き込まない
+    private boolean configError = false;
     //データが読み込めなかったUUID メモリ上では初期値から扱い、ファイルには書き込まない
     private final Set<UUID> errorUUIDs = new HashSet<>();
     private final File file;
@@ -54,7 +58,14 @@ public class PlayerDataManager {
     }
 
     private void reloadPlayerData() {
-        config = YamlConfiguration.loadConfiguration(file);
+        config = new YamlConfiguration();
+        try{
+            config.load(file);
+            configError = false;
+        } catch (Exception e) {
+            AFKScoreboard.warn("playerdata.ymlの読み込みに失敗しました");
+            configError = true;
+        }
         playerData.clear();
         errorUUIDs.clear();
 
@@ -106,7 +117,7 @@ public class PlayerDataManager {
             }catch(Exception e){
                 String name = Bukkit.getOfflinePlayer(uuid).getName();
                 if(name==null){
-                    AFKScoreboard.warn(uuid+"なるプレイヤーの名前が取得できませんでした: "+e.getMessage());
+                    AFKScoreboard.warn(uuid+" からプレイヤーの名前が取得できませんでした: "+e.getMessage());
                 }else{
                     AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました: "+e.getMessage());
                 }
@@ -117,6 +128,7 @@ public class PlayerDataManager {
     }
 
     private void savePlayerData() {
+        if(configError){return;}
         if(!isDirty){return;}
         isDirty = false;
         
