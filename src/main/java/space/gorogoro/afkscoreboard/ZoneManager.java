@@ -1,139 +1,142 @@
 package space.gorogoro.afkscoreboard;
 
-import org.bukkit.Bukkit;
+import com.artillexstudios.axafkzone.zones.Zone;
+import com.artillexstudios.axafkzone.zones.Zones;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.entity.Player;
 
-import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ZoneManager {
 
-    private final AFKScoreboard plugin;
-
-    // 読み込んだ各ゾーンの座標範囲データ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
-    public ZoneManager(AFKScoreboard plugin) {
-        this.plugin = plugin;
+    // プレイヤーが現在いるゾーン
+    private final Map<UUID, String> playerZones = new HashMap<>();
+
+    /**
+     * AxAFKZoneからゾーンを読み込む
+     */
+    public void reloadAxAFKZones() {
+        loadedZones.clear();
+
+        ConcurrentHashMap<String, Zone> zones = Zones.getZones();
+
+        for (Zone zone : zones.values()) {
+            if (zone.getRegion().getWorld() == null) {
+                continue;
+            }
+
+            String name = zone.getName().replace(".", "_");
+
+            ZoneArea newZone = new ZoneArea(
+                    name,
+                    zone.getRegion().getWorld(),
+                    zone.getRegion().getCorner1(),
+                    zone.getRegion().getCorner2()
+            );
+
+            loadedZones.put(name, newZone);
+        }
     }
 
     /**
-     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定します。
+     * Locationが属しているゾーン名を返す。
+     * どのゾーンにも属していない場合はnull。
      */
-    public boolean isInAnyZone(Location loc) {
-        return getZoneByLoc(loc) != null;
-    }
-
-    /**
-     * 指定されたロケーションが属しているゾーン名を返します。
-     * どのゾーンにも属していない場合は null を返します。
-     */
-    public String getZoneByLoc(Location loc) {
-        for (Map.Entry<String, ZoneArea> entry : loadedZones.entrySet()) {
-            if (entry.getValue().isInArea(loc)) {
-                return entry.getKey();
+    public String getZoneByLoc(Location location) {
+        for (ZoneArea zone : loadedZones.values()) {
+            if (zone.isInArea(location)) {
+                return zone.getName();
             }
         }
         return null;
     }
 
     /**
-     * AxAFKZone の zones フォルダ内にある .yml から
-     * 座標情報を読み込んでゾーンを登録します。
+     * プレイヤーが現在いるゾーン名を返す。
+     * どのゾーンにも属していない場合はnull。
      */
-    public void reloadAxAFKZones() {
-        loadedZones.clear();
+    public String getZoneByPlayer(UUID uuid) {
+        return playerZones.get(uuid);
+    }
 
-        Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
-        if (axPlugin == null) {
-            plugin.getLogger().warning(
-                    "AxAFKZone がサーバーに導入されていないか、有効化されていません。"
-            );
-            return;
+    /**
+     * プレイヤーの現在位置を調べ、
+     * ゾーンが変化した場合にその変化を返す。
+     */
+    public ZoneChange updatePlayerZone(Player player) {
+        UUID uuid = player.getUniqueId();
+
+        String before = playerZones.get(uuid);
+        String now = getZoneByLoc(player.getLocation());
+
+        if (Objects.equals(before, now)) {
+            return null;
         }
 
-        File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
-        if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
-            plugin.getLogger().warning(
-                    "AxAFKZoneのzonesフォルダが見つかりません。"
-            );
-            return;
+        if (now == null) {
+            playerZones.remove(uuid);
+        } else {
+            playerZones.put(uuid, now);
         }
 
-        for (File file : Objects.requireNonNull(afkZoneFolder.listFiles())) {
-            if (!file.getName().endsWith(".yml")) {
-                continue;
-            }
+        return new ZoneChange(before, now);
+    }
 
-            try {
-                YamlConfiguration config =
-                        YamlConfiguration.loadConfiguration(file);
+    /**
+     * プレイヤーを管理対象から削除します。
+     */
+    public void removePlayer(UUID uuid) {
+        playerZones.remove(uuid);
+    }
 
-                String locStr1 = config.getString("zone.location1");
-                String locStr2 = config.getString("zone.location2");
+    public boolean isInAnyZone(Location location) {
+        return getZoneByLoc(location) != null;
+    }
 
-                if (locStr1 == null || locStr2 == null) {
-                    continue;
-                }
+    public Collection<ZoneArea> getAllZones() {
+        return loadedZones.values();
+    }
 
-                String[] split1 = locStr1.split(";");
-                String[] split2 = locStr2.split(";");
+    /**
+     * ゾーン変更情報
+     *
+     * before = null, now != null → 進入
+     * before != null, now = null → 退出
+     * before != null, now != null → 別ゾーンへ移動
+     */
+    public record ZoneChange(String before, String now) {
 
-                String world = split1[0];
+        public boolean entered() {
+            return before == null && now != null;
+        }
 
-                double x1 = Double.parseDouble(split1[1]);
-                double y1 = Double.parseDouble(split1[2]);
-                double z1 = Double.parseDouble(split1[3]);
+        public boolean left() {
+            return before != null && now == null;
+        }
 
-                double x2 = Double.parseDouble(split2[1]);
-                double y2 = Double.parseDouble(split2[2]);
-                double z2 = Double.parseDouble(split2[3]);
-
-                ZoneArea area = new ZoneArea(
-                        world,
-                        Math.min(x1, x2),
-                        Math.max(x1, x2),
-                        Math.min(y1, y2),
-                        Math.max(y1, y2),
-                        Math.min(z1, z2),
-                        Math.max(z1, z2)
-                );
-
-                String zoneName = file.getName().replace(".yml", "");
-
-                loadedZones.put(zoneName, area);
-
-                plugin.getLogger().info(
-                        "放置ゾーンを自動登録しました: " + zoneName
-                );
-
-            } catch (Exception e) {
-                plugin.getLogger().severe(
-                        "ゾーンファイルの解析に失敗しました(書式違いなど): "
-                                + file.getName()
-                );
-            }
+        public boolean changedZone() {
+            return before != null
+                    && now != null
+                    && !before.equals(now);
         }
     }
 
     /**
-     * 読み込まれている全ゾーンを返します。
-     */
-    public Map<String, ZoneArea> getLoadedZones() {
-        return Map.copyOf(loadedZones);
-    }
-
-    /**
-     * ゾーンの立体範囲を表現・判定するデータクラス
+     * ゾーンの立体範囲
      */
     public static class ZoneArea {
 
+        private final String name;
         private final String world;
+
         private final double minX;
         private final double maxX;
         private final double minY;
@@ -142,38 +145,40 @@ public class ZoneManager {
         private final double maxZ;
 
         public ZoneArea(
-                String world,
-                double minX,
-                double maxX,
-                double minY,
-                double maxY,
-                double minZ,
-                double maxZ
+                String name,
+                World world,
+                Location loc1,
+                Location loc2
         ) {
-            this.world = world;
+            this.name = name;
+            this.world = world.getName();
 
-            this.minX = minX - 0.5;
-            this.maxX = maxX + 0.5;
+            this.minX = Math.min(loc1.getX(), loc2.getX());
+            this.maxX = Math.max(loc1.getX(), loc2.getX());
 
-            this.minY = minY - 0.5;
-            this.maxY = maxY + 0.5;
+            this.minY = Math.min(loc1.getY(), loc2.getY());
+            this.maxY = Math.max(loc1.getY(), loc2.getY());
 
-            this.minZ = minZ - 0.5;
-            this.maxZ = maxZ + 0.5;
+            this.minZ = Math.min(loc1.getZ(), loc2.getZ());
+            this.maxZ = Math.max(loc1.getZ(), loc2.getZ());
         }
 
-        public boolean isInArea(Location loc) {
-            if (loc.getWorld() == null) {
+        public String getName() {
+            return name;
+        }
+
+        public boolean isInArea(Location location) {
+            if (location.getWorld() == null) {
                 return false;
             }
 
-            return loc.getWorld().getName().equalsIgnoreCase(world)
-                    && loc.getX() >= minX
-                    && loc.getX() <= maxX
-                    && loc.getY() >= minY
-                    && loc.getY() <= maxY
-                    && loc.getZ() >= minZ
-                    && loc.getZ() <= maxZ;
+            return world.equalsIgnoreCase(location.getWorld().getName())
+                    && location.getX() >= minX
+                    && location.getX() <= maxX
+                    && location.getY() >= minY
+                    && location.getY() <= maxY
+                    && location.getZ() >= minZ
+                    && location.getZ() <= maxZ;
         }
     }
 }
