@@ -613,7 +613,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     }
 
     /**
-     * プレイヤーの移動イベントから、リアルタイムに放置ゾーンの出入りを監視・処理
+     * プレイヤーの移動イベントから、頭上のMOBの向きを同期する
      */
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
