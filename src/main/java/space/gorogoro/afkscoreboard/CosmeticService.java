@@ -93,14 +93,17 @@ final class CosmeticService implements Listener {
     private static final float NAME_TAG_LIFT = 0.25f;
 
     private final Map<UUID, Active> active = new HashMap<>();
+    private final ZoneManager zoneManager;
     private int weekClock;
     private boolean allowDismount;
 
-    CosmeticService(AFKScoreboard plugin) {
+    CosmeticService(AFKScoreboard plugin,ZoneManager zoneManager) {
         this.plugin = plugin;
         this.store = new CosmeticStore(plugin);
         this.tagKey = new NamespacedKey(plugin, "cosmetic");
         this.ownerKey = new NamespacedKey(plugin, "owner");
+
+        this.zoneManager = zoneManager;
     }
 
     void load() {
@@ -152,7 +155,7 @@ final class CosmeticService implements Listener {
         Set<UUID> online = new HashSet<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             online.add(player.getUniqueId());
-            if (plugin.isPlayerInAnyZone(player.getLocation())) {
+            if (zoneManager.isInAnyZone(player.getLocation())) {
                 store.addSecond(player.getUniqueId());
                 if (plugin.isHidden(player.getUniqueId()) || plugin.isConcealed(player)) {
                     clear(player);
@@ -207,7 +210,7 @@ final class CosmeticService implements Listener {
             store.markDirty();
             store.requestSave();
         }
-        grant.inZone = plugin.isPlayerInAnyZone(player.getLocation());
+        grant.inZone = zoneManager.isInAnyZone(player.getLocation());
         grant.hidden = plugin.isHidden(player.getUniqueId());
         grant.concealed = plugin.isConcealed(player);
         if (grant.inZone && !grant.hidden && !grant.concealed) {
@@ -265,7 +268,7 @@ final class CosmeticService implements Listener {
      * /afkhide・/afklook の切り替え直後に、次の 1 秒を待たずに見た目を合わせる。秒数は足さない。
      */
     void refresh(Player player) {
-        if (plugin.isPlayerInAnyZone(player.getLocation()) && !plugin.isHidden(player.getUniqueId()) && !plugin.isConcealed(player)) {
+        if (zoneManager.isInAnyZone(player.getLocation()) && !plugin.isHidden(player.getUniqueId()) && !plugin.isConcealed(player)) {
             sync(player);
         } else {
             clear(player);
@@ -339,7 +342,7 @@ final class CosmeticService implements Listener {
             if (player == null || !player.isOnline() || state.particle == null || plugin.isConcealed(player)) {
                 continue;
             }
-            if (!plugin.isPlayerInAnyZone(player.getLocation())) {
+            if (!zoneManager.isInAnyZone(player.getLocation())) {
                 continue;
             }
             spawnParticle(player, state.particle);
@@ -1146,7 +1149,7 @@ final class CosmeticService implements Listener {
         if (!event.getEntity().isValid()) {
             return;
         }
-        if (isOurs(event.getEntity()) && plugin.isPlayerInAnyZone(player.getLocation())) {
+        if (isOurs(event.getEntity()) && zoneManager.isInAnyZone(player.getLocation())) {
             event.setCancelled(true);
         }
     }

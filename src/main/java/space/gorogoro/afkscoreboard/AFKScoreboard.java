@@ -1,13 +1,12 @@
 package space.gorogoro.afkscoreboard;
 
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,16 +14,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
+import org.bukkit.scoreboard.*;
 import org.jspecify.annotations.NonNull;
 
 import java.io.File;
@@ -43,8 +34,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     private Scoreboard afkScoreboard;
     private Objective afkObjective;
 
-    // 読み込んだ各ゾーンの座標範囲データを保持するマップ
-    private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
     // プレイヤーの「現在の連続放置時間（秒）」を保持するマップ
     private final Map<UUID, Integer> currentSessionTimes = new HashMap<>();
@@ -73,6 +62,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     // ゾーン内だけの見た目。停止時に乗客を消す
     private CosmeticService cosmetics;
 
+    private ZoneManager zoneManager;
+
     // config.yml の書き込み専用スレッド（1本なので書き込みは必ず順番に行われる）
     private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "AFKScoreboard-Save"));
     // 書き込み待ちの config.yml の内容（null なら書き込み待ちなし）
@@ -82,6 +73,9 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     public void onEnable() {
         // config.ymlの保存・読み込み処理
         saveDefaultConfig();
+
+        zoneManager = new ZoneManager(this);
+
         loadWelcomedPlayers();
         loadHiddenPlayers();
         this.weeklyStore = new WeeklyStore(this);
@@ -103,8 +97,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
         this.afkObjective.numberFormat(NumberFormat.blank());
 
-        // AxAFKZone の zones フォルダから座標定義を自動読み込み
-        reloadAxAFKZones();
+        zoneManager.reloadAxAFKZones();
 
         // スコアボードの更新頻度（5秒ごと = 100ティックス）
         Bukkit.getScheduler().runTaskTimer(this, this::updateLeaderboard, 0L, 100L);
@@ -116,7 +109,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, this.weeklyStore::requestSave, 1200L, 1200L);
 
         // 見た目は別タスク。パーティクルは既定 3 秒、追従チェックは 1 秒。乗客なので座標の毎 tick 更新はしない
-        this.cosmetics = new CosmeticService(this);
+        this.cosmetics = new CosmeticService(this,zoneManager);
         this.cosmetics.load();
         this.cosmetics.removeStrayEntities();
         long particleInterval = getConfig().getLong("particle-interval-ticks");
@@ -133,7 +126,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
             // afkhide（非表示モード）になっていないプレイヤーのみ対象
-            if (!hiddenPlayers.contains(uuid) && isPlayerInAnyZone(player.getLocation())) {
+            if (!hiddenPlayers.contains(uuid) && zoneManager.isInAnyZone(player.getLocation())) {
                 currentSessionTimes.put(uuid, 0);
                 // スペクテイター・バニッシュ中はボードを出さない（連続放置は数える）
                 if (!isConcealed(player)) {
@@ -274,7 +267,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
         if (command.getName().equalsIgnoreCase("afkhide")) {
             // エリア内にいるかどうかの判定
-            boolean isInZone = isPlayerInAnyZone(player.getLocation());
+            boolean isInZone = zoneManager.isInAnyZone(player.getLocation());
 
             if (hiddenPlayers.contains(uuid)) {
                 // 非表示（除外）リストから削除 ＝ 通常モードに戻す
@@ -488,77 +481,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return false;
     }
 
-    /**
-     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
-     */
-    boolean isPlayerInAnyZone(Location loc) {
-        for (ZoneArea zone : loadedZones.values()) {
-            if (zone.isInArea(loc)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
-     */
-    public void reloadAxAFKZones() {
-        loadedZones.clear();
-
-        Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
-        if (axPlugin == null) {
-            getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
-            return;
-        }
-
-        File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
-        if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
-            getLogger().warning("AxAFKZoneのzonesフォルダが見つかりません。");
-            return;
-        }
-
-        for (File file : Objects.requireNonNull(afkZoneFolder.listFiles())) {
-            if (!file.getName().endsWith(".yml")) continue;
-
-            try {
-                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
-                String locStr1 = config.getString("zone.location1");
-                String locStr2 = config.getString("zone.location2");
-
-                if (locStr1 == null || locStr2 == null) continue;
-
-                String[] split1 = locStr1.split(";");
-                String[] split2 = locStr2.split(";");
-
-                String world = split1[0];
-
-                double x1 = Double.parseDouble(split1[1]);
-                double y1 = Double.parseDouble(split1[2]);
-                double z1 = Double.parseDouble(split1[3]);
-
-                double x2 = Double.parseDouble(split2[1]);
-                double y2 = Double.parseDouble(split2[2]);
-                double z2 = Double.parseDouble(split2[3]);
-
-                // 2つの座標から「最小(min)」と「最大(max)」を計算して立体範囲を登録
-                ZoneArea area = new ZoneArea(
-                        world,
-                        Math.min(x1, x2), Math.max(x1, x2),
-                        Math.min(y1, y2), Math.max(y1, y2),
-                        Math.min(z1, z2), Math.max(z1, z2)
-                );
-
-                String zoneName = file.getName().replace(".yml", "");
-                loadedZones.put(zoneName, area);
-                getLogger().info("放置ゾーンを自動登録しました: " + zoneName);
-
-            } catch (Exception e) {
-                getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
-            }
-        }
-    }
 
     /**
      * ランキングを計算してスコアボードを更新
@@ -574,7 +496,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             if (hiddenPlayers.contains(online.getUniqueId()) || isConcealed(online)) {
                 continue;
             }
-            if (!isPlayerInAnyZone(online.getLocation())) {
+            if (!zoneManager.isInAnyZone(online.getLocation())) {
                 continue;
             }
             sortedTop10.add(Map.entry(online.getUniqueId(), weeklyStore.getSeconds(online.getUniqueId())));
@@ -628,7 +550,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             weeklyCheckClock = 0;
             if (weeklyStore.rolloverIfNeeded()) {
                 for (Player online : Bukkit.getOnlinePlayers()) {
-                    if (isPlayerInAnyZone(online.getLocation())) {
+                    if (zoneManager.isInAnyZone(online.getLocation())) {
                         online.sendMessage("§e今週の放置ランキングがリセットされました");
                     }
                 }
@@ -636,7 +558,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!isPlayerInAnyZone(player.getLocation())) {
+            if (!zoneManager.isInAnyZone(player.getLocation())) {
                 continue;
             }
             // 週間累計は非表示中も残す。ボードに出すかどうかとは分ける
@@ -684,7 +606,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         UUID uuid = player.getUniqueId();
 
         // 現在いずれかの放置ゾーン内にいるかチェック
-        boolean isNowInAnyZone = isPlayerInAnyZone(player.getLocation());
+        boolean isNowInAnyZone = zoneManager.isInAnyZone(player.getLocation());
 
         // --- 進入と退出の処理ロジック ---
         if (isNowInAnyZone) {
@@ -757,7 +679,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
         // 変更点：ログイン時にすでにエリア内にいる場合の対策
         Player player = event.getPlayer();
-        if (isPlayerInAnyZone(player.getLocation()) && !isConcealed(player)) {
+        if (zoneManager.isInAnyZone(player.getLocation()) && !isConcealed(player)) {
             player.setScoreboard(afkScoreboard);
         }
     }
@@ -789,30 +711,4 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return days + "d" + hours + "h" + minutes + "m";
     }
 
-    /**
-     * ゾーンの立体範囲を表現・判定する内部データクラス
-     */
-    private static class ZoneArea {
-        private final String world;
-        private final double minX, maxX;
-        private final double minY, maxY;
-        private final double minZ, maxZ;
-
-        public ZoneArea(String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
-            this.world = world;
-            this.minX = minX - 0.5; this.maxX = maxX + 0.5;
-            this.minY = minY - 0.5; this.maxY = maxY + 0.5;
-            this.minZ = minZ - 0.5; this.maxZ = maxZ + 0.5;
-        }
-
-        public boolean isInArea(Location loc) {
-            if (loc.getWorld() == null) {
-                return false;
-            }
-            return loc.getWorld().getName().equalsIgnoreCase(world) &&
-                    loc.getX() >= minX && loc.getX() <= maxX &&
-                    loc.getY() >= minY && loc.getY() <= maxY &&
-                    loc.getZ() >= minZ && loc.getZ() <= maxZ;
-        }
-    }
 }
