@@ -74,7 +74,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // config.ymlの保存・読み込み処理
         saveDefaultConfig();
 
-        zoneManager = new ZoneManager(this);
+        zoneManager = new ZoneManager();
 
         loadWelcomedPlayers();
         loadHiddenPlayers();
@@ -558,30 +558,57 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!zoneManager.isInAnyZone(player.getLocation())) {
+            ZoneManager.ZoneChange change =
+                    zoneManager.updatePlayerZone(player);
+
+            if (change != null) {
+                if (change.before() != null) {
+                    onPlayerLeaveZone(player, change.before());
+                }
+
+                if (change.now() != null) {
+                    onPlayerEnterZone(player, change.now());
+                }
+            }
+
+            String zoneName = change != null
+                    ? change.now()
+                    : zoneManager.getZoneByPlayer(player.getUniqueId());
+
+            if (zoneName == null) {
                 continue;
             }
-            // 週間累計は非表示中も残す。ボードに出すかどうかとは分ける
+
+            // 週間累計
             weeklyStore.addSecond(player.getUniqueId());
 
-            // ゾーン内でスペクテイター・バニッシュを切り替えた人のボードを合わせる（他プラグインのボードには触らない）
             UUID uuid = player.getUniqueId();
-            boolean showingBoard = player.getScoreboard().equals(afkScoreboard);
+
+            boolean showingBoard =
+                    player.getScoreboard().equals(afkScoreboard);
+
             if (isConcealed(player)) {
                 if (showingBoard) {
-                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                    player.setScoreboard(
+                            Bukkit.getScoreboardManager().getMainScoreboard()
+                    );
                 }
+
                 concealedPlayers.add(uuid);
+
             } else if (concealedPlayers.remove(uuid) && !showingBoard) {
                 player.setScoreboard(afkScoreboard);
             }
 
-            // afkhide ユーザーは連続放置のカウントだけをスキップ（ボードの有無とは分離）
-            if (hiddenPlayers.contains(player.getUniqueId())) {
+            // afkhide中は連続放置を数えない
+            if (hiddenPlayers.contains(uuid)) {
                 continue;
             }
-            // スペクテイター・バニッシュ中でボードを出していなくても数える
-            currentSessionTimes.put(uuid, currentSessionTimes.getOrDefault(uuid, 0) + 1);
+
+            currentSessionTimes.put(
+                    uuid,
+                    currentSessionTimes.getOrDefault(uuid, 0) + 1
+            );
         }
     }
 
@@ -596,69 +623,14 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             cosmetics.syncRotation(event.getPlayer(), event.getTo());
         }
 
-        // ブロックの整数値の境界線を越えて移動したときだけ判定（負荷対策）
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-                event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        // 現在いずれかの放置ゾーン内にいるかチェック
-        boolean isNowInAnyZone = zoneManager.isInAnyZone(player.getLocation());
-
-        // --- 進入と退出の処理ロジック ---
-        if (isNowInAnyZone) {
-            // 変更点：afkhide中かどうかにかかわらず、エリア内に入ったらスコアボードを表示（スペクテイター・バニッシュ中は出さない）
-            if (!isConcealed(player) && !player.getScoreboard().equals(afkScoreboard)) {
-                player.setScoreboard(afkScoreboard);
-            }
-
-            // 初めていずれかの放置エリアに足を踏み入れたプレイヤーへの通知
-            if (!welcomedPlayers.contains(uuid)) {
-                welcomedPlayers.add(uuid);
-                // メッセージを送信
-                player.sendMessage("§b/afkhide §fで放置ランキングから自分を表示/非表示できます");
-                // 既読情報を config.yml へ保存（書き込みは専用スレッドで行う）
-                saveWelcomedPlayers();
-            }
-
-            // カウント用マップへの新規登録処理（通常モードのプレイヤーのみ）
-            if (!hiddenPlayers.contains(uuid) && !currentSessionTimes.containsKey(uuid)) {
-                int previousTime = 0;
-
-                // 回線落ち救済データが存在し、かつ5分以内であれば時間を復元
-                if (disconnectTimes.containsKey(uuid)) {
-                    long quitTime = disconnectTimes.remove(uuid);
-                    int savedTime = disconnectedSessionTimes.remove(uuid);
-
-                    if ((System.currentTimeMillis() - quitTime) <= RECOVERY_GRACE_PERIOD_MS) {
-                        previousTime = savedTime;
-                        player.sendMessage("§f回線落ちから5分以内に復帰したため、放置時間を引き継ぎました！");
-                    }
-                }
-                currentSessionTimes.put(uuid, previousTime);
-            }
-        } else {
-            // 変更点：エリア外に出たら、通常・afkhideモードに関係なく一律メインボードに戻す
-            if (player.getScoreboard().equals(afkScoreboard)) {
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            }
-            concealedPlayers.remove(uuid);
-
-            // 内部カウント対象だった場合はデータをリセット
-            if (currentSessionTimes.containsKey(uuid)) {
-                currentSessionTimes.remove(uuid);
-                disconnectedSessionTimes.remove(uuid);
-                disconnectTimes.remove(uuid);
-            }
-        }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
+
+        zoneManager.removePlayer(uuid);
+
         concealedPlayers.remove(uuid);
         if (currentSessionTimes.containsKey(uuid)) {
             disconnectedSessionTimes.put(uuid, currentSessionTimes.remove(uuid));
@@ -709,6 +681,66 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         if (hours == 0) return days + "d" + minutes + "m";
 
         return days + "d" + hours + "h" + minutes + "m";
+    }
+
+    private void onPlayerEnterZone(Player player, String zoneName) {
+
+        UUID uuid = player.getUniqueId();
+
+        if (!isConcealed(player)
+                && !player.getScoreboard().equals(afkScoreboard)) {
+            player.setScoreboard(afkScoreboard);
+        }
+
+        if (!welcomedPlayers.contains(uuid)) {
+            welcomedPlayers.add(uuid);
+
+            player.sendMessage(
+                    "§b/afkhide §fで放置ランキングから自分を表示/非表示できます"
+            );
+
+            saveWelcomedPlayers();
+        }
+
+        if (!hiddenPlayers.contains(uuid)
+                && !currentSessionTimes.containsKey(uuid)) {
+
+            int previousTime = 0;
+
+            if (disconnectTimes.containsKey(uuid)) {
+                long quitTime = disconnectTimes.remove(uuid);
+                int savedTime = disconnectedSessionTimes.remove(uuid);
+
+                if (System.currentTimeMillis() - quitTime
+                        <= RECOVERY_GRACE_PERIOD_MS) {
+
+                    previousTime = savedTime;
+
+                    player.sendMessage(
+                            "§f回線落ちから5分以内に復帰したため、放置時間を引き継ぎました！"
+                    );
+                }
+            }
+
+            currentSessionTimes.put(uuid, previousTime);
+        }
+    }
+
+    private void onPlayerLeaveZone(Player player, String zoneName) {
+
+        UUID uuid = player.getUniqueId();
+
+        if (player.getScoreboard().equals(afkScoreboard)) {
+            player.setScoreboard(
+                    Bukkit.getScoreboardManager().getMainScoreboard()
+            );
+        }
+
+        concealedPlayers.remove(uuid);
+
+        currentSessionTimes.remove(uuid);
+        disconnectedSessionTimes.remove(uuid);
+        disconnectTimes.remove(uuid);
     }
 
 }
