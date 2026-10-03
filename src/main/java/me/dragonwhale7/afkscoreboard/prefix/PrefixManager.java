@@ -40,14 +40,16 @@ public class PrefixManager {
                         team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
                     });
                 }
-                for(Player player : Bukkit.getOnlinePlayers()){
-                    changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
-                }
                 break;
             }
             case PrefixMode.tab:{
                 break;
             }
+
+
+        }
+        for(Player player : Bukkit.getOnlinePlayers()){
+            changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
         }
 
     }
@@ -134,7 +136,7 @@ public class PrefixManager {
                     break;
                 }
                 if(prefix!=null&&!prefix.key().isEmpty()){
-                    player.playerListName(Component.text(prefix.prefixText()).color(prefix.color()).decorate(TextDecoration.BOLD).append(player.playerListName()));
+                    player.playerListName(Component.text(prefix.prefixText()).color(prefix.color()).decorate(TextDecoration.BOLD).append(Component.text(player.getName())));
                 }else{
                     player.playerListName(Component.text(player.getName()));
                 }

@@ -250,7 +250,7 @@ public class PlayerDataManager {
     }
     public void addPlayerPrefix(UUID uuid,String prefix){
         playerData.get(uuid).prefixes.add(prefix);
-        saveValue(uuid,playerData.get(uuid).prefixes,"prefixes");
+        saveValue(uuid,List.of(playerData.get(uuid).prefixes),"prefixes");
     }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {

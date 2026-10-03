@@ -17,8 +17,8 @@ public final class PrefixRegistry {
 
     public void loadPrefixes(){
         Set<Prefix> prefixSet = prefixConfigManager.loadPrefixes();
-        if(prefixSet.isEmpty()){
-            AFKScoreboard.warn("No prefixes have been loaded");
+        if(prefixSet == null){
+            AFKScoreboard.warn("An error occurred while loading prefix.yml!");
             return;
         }
         prefixes.clear();

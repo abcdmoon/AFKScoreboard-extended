@@ -35,12 +35,15 @@ public class ConfigManager {
     }
 
     public PrefixMode loadPrefixMode(){
-        if(Arrays.stream(PrefixMode.values()).anyMatch(m->m.toString().equalsIgnoreCase(config.getString("prefix.mode")))){
-            return PrefixMode.valueOf(config.getString("PrefixMode"));
-        }else{
-            AFKScoreboard.warn("Prefix mode is invalid!");
-            return PrefixMode.team;
-        }
+        String value = config.getString("prefix-mode", "team");
+
+        return Arrays.stream(PrefixMode.values())
+                .filter(mode -> mode.name().equalsIgnoreCase(value))
+                .findFirst()
+                .orElseGet(() -> {
+                    AFKScoreboard.warn("Prefix mode is invalid: " + value);
+                    return PrefixMode.team;
+                });
     }
 
 

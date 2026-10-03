@@ -18,6 +18,9 @@ public class PrefixConfigManager {
         file = new File(plugin.getDataFolder(), "prefix.yml");
     }
 
+    /**
+     * @return 読み込みに異常があった場合nullを返す
+     */
     public Set<Prefix> loadPrefixes(){
         Set<Prefix> prefixes = new HashSet<>();
 
@@ -30,13 +33,13 @@ public class PrefixConfigManager {
             config.load(file);
         } catch (Exception e) {
             AFKScoreboard.warn("An error occurred while loading prefix.yml: " + e.getMessage());
-            return Set.of();
+            return null;
         }
 
         ConfigurationSection section = config.getConfigurationSection("prefixes");
 
         if (section == null) {
-            return Set.of();
+            return null;
         }
 
         for (String key : section.getKeys(false)) {

@@ -27,11 +27,6 @@ It may work if the conditions of using **Java 21** or earlier and **Paper 26.2**
 # Installation method
 Please place the .jar file in the Paper plugins folder.
 
-# Useage
-```
-/afkhide   放置ランキングから自分を表示/非表示できます
-```
-
 # Disclaimer
 Do not assume any responsibility by use. Please use it at your own risk.
 
@@ -42,12 +37,12 @@ Do not assume any responsibility by use. Please use it at your own risk.
 /afkhide or /afkscore hide   放置ランキングから自分を表示/非表示できます
 /afkscore highscore   プラグインが起動してから今までの自身の最高連続放置時間が確認できる
 /afkscore highscore rank   プラグインが起動してから今までの最高連続放置時間ランキング(オフラインプレイヤーも対象)が確認できる
-/afkscore role hide   肩書の表示を隠す
-/afkscore role <表示名>   表示できる肩書から表示する肩書を選ぶ
+/afkscore prefix hide   肩書の表示を隠す
+/afkscore prefix <表示名>   表示できる肩書から表示する肩書を選ぶ
 要OP
 /afkscore reload ゲーム内で放置エリアを編集などして変わったファイルを再読込する
 /afkscore highscore <Player>   任意のプレイヤーのハイスコアが確認できる
-/afkscore reloadrole   prefix.ymlの内容を読み込み直します
+/afkscore reloadprefix   prefix.ymlの内容を読み込み直します
 ```
 ## 仕様
 ・/afkhideをしても記録自体はとられ、表示すると密かに記録していた値が出るようになりました  
