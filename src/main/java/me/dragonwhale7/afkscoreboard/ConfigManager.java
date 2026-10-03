@@ -8,13 +8,12 @@ public class ConfigManager {
 
 
     private final AFKScoreboard plugin;
-    private final FileConfiguration config;
+    private FileConfiguration config;
 
     public enum PrefixMode {team,tab}
 
     public ConfigManager(AFKScoreboard plugin) {
         this.plugin = plugin;
-        config = plugin.getConfig();
         initialProcess();
         AFKScoreboard.addOnDisableTask(this::finalProcess);
 
@@ -24,6 +23,7 @@ public class ConfigManager {
 
     private void initialProcess(){
         plugin.saveDefaultConfig();
+        config = plugin.getConfig();
     }
 
     private void periodicProcess(){

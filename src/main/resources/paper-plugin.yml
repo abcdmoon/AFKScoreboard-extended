@@ -9,7 +9,7 @@ website: https://www.gorogoro.space/
 dependencies:
   server:
     AxAFKZone:
-      load: AFTER
+      load: BEFORE
       required: true
       join-classpath: true
 

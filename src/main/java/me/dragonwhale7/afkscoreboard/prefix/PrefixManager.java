@@ -5,6 +5,7 @@ import me.dragonwhale7.afkscoreboard.ConfigManager.PrefixMode;
 import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.PlayerDataManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -83,27 +84,26 @@ public class PrefixManager {
         if(prefixRegistry.getAllConditions("").contains(score)){
             for(Prefix prefix : prefixRegistry.getPrefixesByRequirement("",score)){
                 grantPrefix(uuid,prefix);
-                Player player = Bukkit.getPlayer(uuid);
-                if(player!=null){
-                    player.sendMessage(Component.text("あなたは称号 ").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text(" を獲得しました")));
-                }
             }
         }
 
         if(prefixRegistry.getAllConditions(zoneName).contains(score)){
             for(Prefix prefix : prefixRegistry.getPrefixesByRequirement(zoneName,score)){
                 grantPrefix(uuid,prefix);
-                Player player = Bukkit.getPlayer(uuid);
-                if(player!=null){
-                    player.sendMessage(Component.text("あなたは称号 ").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text(" を獲得しました")));
-                }
             }
         }
     }
 
     public void grantPrefix(UUID uuid, Prefix prefix){
+        if(playerDataManager.getPlayerPrefixes(uuid).contains(prefix.key())){
+            return;
+        }
         playerDataManager.addPlayerPrefix(uuid,prefix.key());
         changePrefix(uuid,prefix);
+        Player player = Bukkit.getPlayer(uuid);
+        if(player!=null){
+            player.sendMessage(Component.text("あなたは称号 ").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text(" を獲得しました")));
+        }
     }
 
     public void changePrefix(UUID uuid, Prefix prefix){
@@ -136,7 +136,7 @@ public class PrefixManager {
                     break;
                 }
                 if(prefix!=null&&!prefix.key().isEmpty()){
-                    player.playerListName(Component.text(prefix.prefixText()).color(prefix.color()).decorate(TextDecoration.BOLD).append(Component.text(player.getName())));
+                    player.playerListName(Component.text(prefix.prefixText()).color(prefix.color()).decorate(TextDecoration.BOLD).append(Component.text(player.getName()).color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD,false)));
                 }else{
                     player.playerListName(Component.text(player.getName()));
                 }

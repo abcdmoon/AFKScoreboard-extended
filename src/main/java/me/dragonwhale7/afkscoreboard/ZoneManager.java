@@ -36,13 +36,13 @@ public class ZoneManager {
 
         Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
         if (axPlugin == null) {
-            plugin.getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
+            AFKScoreboard.warn("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
             return false;
         }
 
         File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
         if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
-            plugin.getLogger().warning("AxAFKZoneのzonesフォルダが見つかりません。");
+            AFKScoreboard.warn("AxAFKZoneのzonesフォルダが見つかりません。");
             return false;
         }
         Map<String, ZoneArea> newZones = new HashMap<>();

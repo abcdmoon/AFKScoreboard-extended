@@ -6,6 +6,8 @@ import me.dragonwhale7.afkscoreboard.event.EventManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixConfigManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
