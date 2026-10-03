@@ -25,6 +25,8 @@ public class ZoneManager {
     // 読み込んだ各ゾーンの座標範囲データを保持するマップ
     private final Map<String, ZoneArea> loadedZones = new HashMap<>();
 
+    private final Map<UUID,String> playerZones = new HashMap<>();
+
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
