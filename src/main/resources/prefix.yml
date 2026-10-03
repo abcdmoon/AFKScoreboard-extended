@@ -1,8 +1,13 @@
 prefixes:
+  #称号のキー(重複不可) コマンドでの指定時にも用います
   goro:
+    #入手に必要な放置時間(秒)
     requireScore: 1800
+    #入手できる放置エリアの名前　空や項目なしだとどの放置エリアでも入手可能になります
     requireZones: ["example"]
+    #称号の表示内容
     prefixText: "ごろごろ "
+    #称号の表示色
     color: "gray"
   beginner:
     requireScore: 3600
