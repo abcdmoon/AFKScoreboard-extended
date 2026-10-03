@@ -1,9 +1,9 @@
-name: AFKScoreboard
+name: AFKScoreboard-Extended
 version: '${version}'
 main: me.dragonwhale7.afkscoreboard.AFKScoreboard
 api-version: '1.21.11'
 description: This plugin works with AxAFKZone to display a ranking scoreboard based on AFK time.
-author: abcdmoon
+author: kubotan,abcdmoon
 website: https://www.gorogoro.space/
 
 dependencies:
