@@ -3,7 +3,6 @@ package me.dragonwhale7.afkscoreboard.prefix;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

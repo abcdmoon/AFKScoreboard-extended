@@ -12,7 +12,6 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
 import me.dragonwhale7.afkscoreboard.PlayerDataManager;
 import me.dragonwhale7.afkscoreboard.prefix.Prefix;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
 import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;

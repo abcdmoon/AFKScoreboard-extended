@@ -2,11 +2,11 @@ package me.dragonwhale7.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PrefixConfigManager {
     private final AFKScoreboard plugin;
