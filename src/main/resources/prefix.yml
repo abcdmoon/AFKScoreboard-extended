@@ -1,7 +1,7 @@
 prefixes:
   goro:
     requireScore: 1800
-    requireZones: ["aiue"]
+    requireZones: ["example"]
     prefixText: "ごろごろ "
     color: "gray"
   beginner:
@@ -54,7 +54,7 @@ prefixes:
     color: "red"
   gorosaba:
     requireScore: 86400
-    prefixText: "【ごろ鯖大好き】"
+    prefixText: "【ごろ鯖の民】"
     color: "gold"
   spawnzumi:
     requireScore: 129600
