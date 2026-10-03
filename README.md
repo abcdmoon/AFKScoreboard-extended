@@ -1,4 +1,4 @@
-# AFKScoreboard
+# AFKScoreboard-Extended
 This project is a modified version of gorogoro-space/AFKScoreboard.
 
 This project is based on the original AFKScoreboard by gorogoro-space.
@@ -30,7 +30,7 @@ Please place the .jar file in the Paper plugins folder.
 # Disclaimer
 Do not assume any responsibility by use. Please use it at your own risk.
 
-# 上記から改変したこと
+# オリジナルからの改変
 ## コマンド
 ```
 権限必要なし
