@@ -11,6 +11,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import me.dragonwhale7.afkscoreboard.ZoneManager;
 import me.dragonwhale7.afkscoreboard.event.EventManager;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -19,10 +20,13 @@ public class ReloadExecuter {
 
     private final ZoneManager zoneManager;
     private final EventManager eventManager;
+    private final PrefixRegistry prefixRegistry;
 
-    public ReloadExecuter(ZoneManager zoneManager,EventManager eventManager) {
+
+    public ReloadExecuter(ZoneManager zoneManager, EventManager eventManager, PrefixRegistry  prefixRegistry) {
         this.zoneManager = zoneManager;
         this.eventManager = eventManager;
+        this.prefixRegistry = prefixRegistry;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(ReloadExecuter reloadExecuter) {
@@ -32,7 +36,7 @@ public class ReloadExecuter {
     }
 
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        if(zoneManager.reloadAxAFKZones(eventManager)){
+        if(zoneManager.reloadAxAFKZones(eventManager,prefixRegistry)){
             if(ctx.getSource().getSender() instanceof Player player) {
                 player.sendMessage(Component.text("放置エリアの情報を再読込しました"));
             }

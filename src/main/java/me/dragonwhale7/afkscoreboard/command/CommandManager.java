@@ -16,7 +16,7 @@ public class CommandManager {
 
     public static void registerCommands(Commands registrar, RankingManager rankingManager, ZoneManager zoneManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager, PrefixManager prefixManager, PrefixRegistry prefixRegistry, EventManager eventManager) {
         HideExecuter hideExecuter = new HideExecuter(rankingManager);
-        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager);
+        ReloadExecuter reloadExecuter = new ReloadExecuter(zoneManager,eventManager,prefixRegistry);
         HighScoreExecuter highScoreExecuter = new HighScoreExecuter(playerDataManager,rankingManager,zoneManager,gameScoreBoardManager);
         PrefixExecuter prefixExecuter = new PrefixExecuter(prefixManager,playerDataManager,prefixRegistry);
         ReloadPrefixExecuter reloadPrefixExecuter = new ReloadPrefixExecuter(prefixRegistry,prefixManager);

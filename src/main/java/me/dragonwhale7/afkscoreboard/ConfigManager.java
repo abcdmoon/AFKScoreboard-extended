@@ -1,19 +1,16 @@
 package me.dragonwhale7.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.prefix.Prefix;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Arrays;
 
 public class ConfigManager {
 
 
     private final AFKScoreboard plugin;
     private final FileConfiguration config;
+
+    public enum PrefixMode {team,tab}
 
     public ConfigManager(AFKScoreboard plugin) {
         this.plugin = plugin;
@@ -37,6 +34,14 @@ public class ConfigManager {
         plugin.saveConfig();
     }
 
+    public PrefixMode loadPrefixMode(){
+        if(Arrays.stream(PrefixMode.values()).anyMatch(m->m.toString().equalsIgnoreCase(config.getString("prefix.mode")))){
+            return PrefixMode.valueOf(config.getString("PrefixMode"));
+        }else{
+            AFKScoreboard.warn("Prefix mode is invalid!");
+            return PrefixMode.team;
+        }
+    }
 
 
 

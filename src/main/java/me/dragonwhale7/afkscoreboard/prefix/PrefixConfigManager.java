@@ -6,8 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class PrefixConfigManager {
     private final AFKScoreboard plugin;
@@ -49,7 +48,8 @@ public class PrefixConfigManager {
 
             Prefix prefix = new Prefix(
                     key,
-                    prefixSection.getInt("requireScore",0),
+                    prefixSection.getInt("requireScore"),
+                    prefixSection.getStringList("requireZones"),
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")
             );

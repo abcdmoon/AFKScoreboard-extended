@@ -45,7 +45,7 @@ public class PlayerDataManager {
         saveExecutor = Executors.newSingleThreadExecutor();
 
         reloadPlayerData();
-        AFKScoreboard.registerTaskTimer(this::savePlayerData, 0, 20*60);
+        AFKScoreboard.registerTaskTimer(this::savePlayerData, 0, 20*60*5);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
     private void onDisable(){
@@ -141,12 +141,13 @@ public class PlayerDataManager {
         }
         saveExecutor.execute(() -> {
             String yml = pendingYml.getAndSet(null);
+            Path tempPath = null;
             try {
                 file.getParentFile().mkdirs();
-                Path path = Files.createTempFile(file.getParentFile().toPath(),"playerdata",".tmp");
+                tempPath = Files.createTempFile(file.getParentFile().toPath(),"playerdata",".tmp");
                 // 一時ファイルへ書き込む
                 Files.writeString(
-                        path,
+                        tempPath,
                         yml,
                         StandardCharsets.UTF_8,
                         StandardOpenOption.WRITE,
@@ -155,7 +156,7 @@ public class PlayerDataManager {
 
                 // 元ファイルを原子的に置き換える
                 Files.move(
-                        path,
+                        tempPath,
                         file.toPath(),
                         StandardCopyOption.ATOMIC_MOVE,
                         StandardCopyOption.REPLACE_EXISTING
@@ -164,7 +165,15 @@ public class PlayerDataManager {
                 AFKScoreboard.warn("playerdata.yml の書き込みに失敗しました: " + e.getMessage());
                 AFKScoreboard.runTask(() -> isDirty = true);
             }finally {
-                new File(file.getParentFile(),"playerdata.tmp").delete();
+                if (tempPath != null) {
+                    try {
+                        Files.deleteIfExists(tempPath);
+                    } catch (IOException e) {
+                        AFKScoreboard.warn(
+                                "一時ファイルの削除に失敗しました: " + e.getMessage()
+                        );
+                    }
+                }
             }
         });
     }
@@ -190,9 +199,6 @@ public class PlayerDataManager {
     public void setInformed(UUID uuid, boolean isInformed){
         playerData.get(uuid).isInformed = isInformed;
         saveValue(uuid,isInformed,"isInformed");
-    }
-    public boolean isHiddenInRank(UUID uuid){
-        return playerData.get(uuid).isHiddenInRank;
     }
     public void setHiddenInRank(UUID uuid, boolean isHiddenInRank){
         playerData.get(uuid).isHiddenInRank = isHiddenInRank;

@@ -42,13 +42,13 @@ public class ScoreManager {
      * 1秒ごとに、ゾーンにいるプレイヤーの時間（連続）を加算
      */
     private void incrementTimeEverySecond() {
-        for(ZoneManager.ZoneArea area : zoneManager.getAllZones()){
-            for(UUID uuid : area.getAfkPlayers()){
+        for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
+            for(UUID uuid : zone.getAfkPlayers()){
                 int score = currentSessionTimes.getOrDefault(uuid,0)+1;
                 currentSessionTimes.put(uuid, score);
-                prefixManager.onScoreChange(uuid, score);
-                if(playerDataManager.getHighScore(uuid,area.getName())<score){
-                    playerDataManager.setHighScore(uuid,score,area.getName());
+                prefixManager.onScoreChange(uuid,zone.getName(), score);
+                if(playerDataManager.getHighScore(uuid,zone.getName())<score){
+                    playerDataManager.setHighScore(uuid,score,zone.getName());
                 }
             }
 

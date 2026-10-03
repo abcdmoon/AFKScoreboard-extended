@@ -1,3 +1,6 @@
-welcomed-players: []
-hidden-players: []
-prefix-hidden-players: []
+#prefix-mode 称号の表示形式を指定します
+# "team" バニラのスコアボードのチーム機能を用います チームを使用するシステムと競合し、不具合が起きる可能性があります
+# "tab" PaperAPIのPlayerListName機能を用います tab上でのみ表示され、tab表示を変えるプラグインと競合する可能性があります
+# "textdisplay" プレイヤーに乗るテキストディスプレイのパケットを送ります ネームタグの上にのみ称号が表示されます
+# "tab,textdisplay" tabとtextdisplayを用います
+prefix-mode: "team"

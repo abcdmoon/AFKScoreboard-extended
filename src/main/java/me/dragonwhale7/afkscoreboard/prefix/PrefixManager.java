@@ -1,6 +1,7 @@
 package me.dragonwhale7.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.ConfigManager;
+import me.dragonwhale7.afkscoreboard.ConfigManager.PrefixMode;
 import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
 import me.dragonwhale7.afkscoreboard.PlayerDataManager;
 import net.kyori.adventure.text.Component;
@@ -15,47 +16,80 @@ public class PrefixManager {
     private final PrefixRegistry prefixRegistry;
     private final GameScoreBoardManager gameScoreBoardManager;
     private final PlayerDataManager playerDataManager;
+    private final ConfigManager configManager;
+
+    private final PrefixMode mode;
 
 
-    public PrefixManager(GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, PlayerDataManager playerDataManager) {
+    public PrefixManager(GameScoreBoardManager gameScoreBoardManager, PrefixRegistry prefixRegistry, ConfigManager configManager,PlayerDataManager playerDataManager) {
         this.gameScoreBoardManager = gameScoreBoardManager;
+        this.configManager = configManager;
         this.playerDataManager = playerDataManager;
         this.prefixRegistry = prefixRegistry;
+        mode = configManager.loadPrefixMode();
         init();
     }
 
     private void init(){
-        for(Prefix prefix : prefixRegistry.getAllPrefixes()){
-            gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
-            gameScoreBoardManager.addTeamToAll(prefix.teamKey());
-            gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
-                team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
-            });
+        switch (mode){
+            case PrefixMode.team:{
+                for(Prefix prefix : prefixRegistry.getAllPrefixes()){
+                    gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
+                    gameScoreBoardManager.addTeamToAll(prefix.teamKey());
+                    gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
+                        team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
+                    });
+                }
+                for(Player player : Bukkit.getOnlinePlayers()){
+                    changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
+                }
+                break;
+            }
+            case PrefixMode.tab:{
+                break;
+            }
         }
-        for(Player player : Bukkit.getOnlinePlayers()){
-            changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
-        }
+
     }
 
 
     public void recreatePrefixes(Set<Prefix> oldPrefixes){
-        for(Prefix prefix : oldPrefixes){
-            gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
+        switch (mode){
+            case PrefixMode.team:{
+                for(Prefix prefix : oldPrefixes){
+                    gameScoreBoardManager.removeTeamFromAll(prefix.teamKey());
+                }
+                for(Prefix prefix : prefixRegistry.getAllPrefixes()){
+                    gameScoreBoardManager.addTeamToAll(prefix.teamKey());
+                    gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
+                        team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
+                    });
+                }
+                for(Player player : Bukkit.getOnlinePlayers()){
+                    changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
+                }
+                break;
+            }
+            case PrefixMode.tab:{
+                break;
+            }
         }
-        for(Prefix prefix : prefixRegistry.getAllPrefixes()){
-            gameScoreBoardManager.addTeamToAll(prefix.teamKey());
-            gameScoreBoardManager.modifyAllTeam(prefix.teamKey(),team->{
-                team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
-            });
-        }
-        for(Player player : Bukkit.getOnlinePlayers()){
-            changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
-        }
+
     }
 
-    public void onScoreChange(UUID uuid,int score){
-        if(prefixRegistry.getAllConditions().contains(score)){
-            for(Prefix prefix : prefixRegistry.getPrefixesByCondition(score)){
+    public void onScoreChange(UUID uuid,String zoneName,int score){
+        if(prefixRegistry.getAllConditions("").contains(score)){
+            for(Prefix prefix : prefixRegistry.getPrefixesByRequirement("",score)){
+                grantPrefix(uuid,prefix);
+                Player player = Bukkit.getPlayer(uuid);
+                if(player!=null){
+                    player.sendMessage(Component.text("あなたは称号 ").append(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color())).append(Component.text(" を獲得しました")));
+                }
+            }
+        }
+
+        if(prefixRegistry.getAllConditions(zoneName).contains(score)){
+            for(Prefix prefix : prefixRegistry.getPrefixesByRequirement(zoneName,score)){
                 grantPrefix(uuid,prefix);
                 Player player = Bukkit.getPlayer(uuid);
                 if(player!=null){
@@ -71,21 +105,44 @@ public class PrefixManager {
     }
 
     public void changePrefix(UUID uuid, Prefix prefix){
-        String name = Bukkit.getOfflinePlayer(uuid).getName();
-        if(name == null){
-            return;
-        }
-        if(playerDataManager.isHidingPrefix(uuid)){
-            gameScoreBoardManager.removePlayerFromAllTeam(name);
-            return;
-        }
-        if(prefix!=null&&!prefix.key().isEmpty()){
-            gameScoreBoardManager.addPlayerToAllTeam(name,prefix.teamKey());
+        switch (mode){
+            case PrefixMode.team:{
+                String name = Bukkit.getOfflinePlayer(uuid).getName();
+                if(name == null){
+                    return;
+                }
+                if(playerDataManager.isHidingPrefix(uuid)){
+                    gameScoreBoardManager.removePlayerFromAllTeam(name);
+                    return;
+                }
+                if(prefix!=null&&!prefix.key().isEmpty()){
+                    gameScoreBoardManager.addPlayerToAllTeam(name,prefix.teamKey());
 
-        }else{
-            gameScoreBoardManager.removePlayerFromAllTeam(name);
+                }else{
+                    gameScoreBoardManager.removePlayerFromAllTeam(name);
+                }
+                playerDataManager.setShowedPrefix(uuid,prefix==null?"":prefix.key());
+                break;
+            }
+            case PrefixMode.tab:{
+                Player player =Bukkit.getPlayer(uuid);
+                if(player==null){
+                    return;
+                }
+                if(playerDataManager.isHidingPrefix(uuid)){
+                    player.playerListName(Component.text(player.getName()));
+                    break;
+                }
+                if(prefix!=null&&!prefix.key().isEmpty()){
+                    player.playerListName(Component.text(prefix.prefixText()).color(prefix.color()).decorate(TextDecoration.BOLD).append(player.playerListName()));
+                }else{
+                    player.playerListName(Component.text(player.getName()));
+                }
+                playerDataManager.setShowedPrefix(uuid,prefix==null?"":prefix.key());
+                break;
+            }
         }
-        playerDataManager.setShowedPrefix(uuid,prefix==null?"":prefix.key());
+
     }
 
     public void onPlayerJoin(Player player){

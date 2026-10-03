@@ -1,6 +1,7 @@
 prefixes:
   goro:
     requireScore: 1800
+    requireZones: ["aiue"]
     prefixText: "ごろごろ "
     color: "gray"
   beginner:

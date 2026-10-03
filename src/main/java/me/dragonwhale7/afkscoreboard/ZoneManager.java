@@ -3,6 +3,7 @@ package me.dragonwhale7.afkscoreboard;
 import com.artillexstudios.axafkzone.zones.Zone;
 import com.artillexstudios.axafkzone.zones.Zones;
 import me.dragonwhale7.afkscoreboard.event.EventManager;
+import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -27,7 +28,7 @@ public class ZoneManager {
     /**
      * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
      */
-    public boolean reloadAxAFKZones(EventManager eventManager) {
+    public boolean reloadAxAFKZones(EventManager eventManager, PrefixRegistry prefixRegistry) {
         Map<String,Set<UUID>> oldAfkPlayers = new HashMap<>();
         for(Map.Entry<String,ZoneArea> entry : loadedZones.entrySet()) {
             oldAfkPlayers.put(entry.getKey(),entry.getValue().getAfkPlayers());
@@ -61,6 +62,7 @@ public class ZoneManager {
                     ,zone.getRegion().getWorld()
                     ,zone.getRegion().getCorner1()
                     ,zone.getRegion().getCorner2());
+
             for(ZoneArea zone1:newZones.values()){
                 boolean overlapX =
                         zone1.minX <= newZone.maxX &&
@@ -78,8 +80,14 @@ public class ZoneManager {
                     continue out;
                 }
             }
-            newZones.put(name,newZone);
 
+            newZones.put(name,newZone);
+        }
+
+        List<String> notFoundZoneNames = new ArrayList<>(prefixRegistry.getAllRequireZones().stream().filter(n -> !newZones.containsKey(n)).toList());
+        notFoundZoneNames.remove("");
+        if(!notFoundZoneNames.isEmpty()){
+            AFKScoreboard.warn("There are prefixes that require zones which don't exist!: "+notFoundZoneNames);
         }
 
         loadedZones.clear();
