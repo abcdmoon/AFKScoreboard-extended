@@ -156,11 +156,11 @@ public class ZoneManager {
             this.name = name;
             this.world = world.getName();
             this.minX = Math.min(loc1.getX(), loc2.getX());
-            this.maxX = Math.max(loc1.getX(), loc2.getX());
+            this.maxX = Math.max(loc1.getX(), loc2.getX())+1;
             this.minY = Math.min(loc1.getY(), loc2.getY());
-            this.maxY = Math.max(loc1.getY(), loc2.getY());
+            this.maxY = Math.max(loc1.getY(), loc2.getY())+1;
             this.minZ = Math.min(loc1.getZ(), loc2.getZ());
-            this.maxZ = Math.max(loc1.getZ(), loc2.getZ());
+            this.maxZ = Math.max(loc1.getZ(), loc2.getZ())+1;
             this.afkPlayers = new HashSet<>();
         }
 
