@@ -1,8 +1,11 @@
-package me.dragonwhale7.afkscoreboard;
+package space.gorogoro.afkscoreboard;
 
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
@@ -48,6 +51,23 @@ public class RankingManager {
     public void onPlayerEnterZone(Player player){
         gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
     }
+
+    /**
+     * スペクテイターかバニッシュ中か。該当する人には見た目・ランキング・本人のボードを出さない（秒数は数える）
+     * バニッシュは EssentialsX などが付けるメタデータ vanished で見る。EssentialsX は解除時に false を入れるので値で判定する
+     */
+    boolean isConcealed(Player player) {
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return true;
+        }
+        for (MetadataValue value : player.getMetadata("vanished")) {
+            if (value.asBoolean()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void onPlayerLeaveZone(Player player){
         gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);

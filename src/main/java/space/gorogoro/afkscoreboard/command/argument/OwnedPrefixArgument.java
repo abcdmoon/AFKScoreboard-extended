@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard.command.argument;
+package space.gorogoro.afkscoreboard.command.argument;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,9 +10,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import me.dragonwhale7.afkscoreboard.PlayerDataManager;
-import me.dragonwhale7.afkscoreboard.prefix.Prefix;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.prefix.Prefix;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;

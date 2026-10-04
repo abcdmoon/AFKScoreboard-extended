@@ -1,15 +1,15 @@
-package me.dragonwhale7.afkscoreboard.command;
+package space.gorogoro.afkscoreboard.command;
 
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.dragonwhale7.afkscoreboard.PlayerDataManager;
-import me.dragonwhale7.afkscoreboard.RankingManager;
-import me.dragonwhale7.afkscoreboard.ZoneManager;
-import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
-import me.dragonwhale7.afkscoreboard.event.EventManager;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.RankingManager;
+import space.gorogoro.afkscoreboard.ZoneManager;
+import space.gorogoro.afkscoreboard.GameScoreBoardManager;
+import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
 public class CommandManager {
     private CommandManager(){}

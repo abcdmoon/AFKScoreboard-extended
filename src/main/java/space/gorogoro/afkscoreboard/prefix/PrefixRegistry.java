@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard.prefix;
+package space.gorogoro.afkscoreboard.prefix;
 
 import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 

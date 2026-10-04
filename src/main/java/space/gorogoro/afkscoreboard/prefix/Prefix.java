@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard.prefix;
+package space.gorogoro.afkscoreboard.prefix;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 

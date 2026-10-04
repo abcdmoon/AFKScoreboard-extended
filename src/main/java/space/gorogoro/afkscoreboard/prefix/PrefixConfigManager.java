@@ -1,8 +1,8 @@
-package me.dragonwhale7.afkscoreboard.prefix;
+package space.gorogoro.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
 
 import java.io.File;
 import java.util.HashSet;

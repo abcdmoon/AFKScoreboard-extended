@@ -1,9 +1,11 @@
-package me.dragonwhale7.afkscoreboard;
+package space.gorogoro.afkscoreboard;
 
 import com.artillexstudios.axafkzone.zones.Zone;
 import com.artillexstudios.axafkzone.zones.Zones;
-import me.dragonwhale7.afkscoreboard.event.EventManager;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import org.bukkit.GameMode;
+import org.bukkit.metadata.MetadataValue;
+import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -15,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ZoneManager {
+
 
     private final AFKScoreboard plugin;
 
@@ -136,6 +139,7 @@ public class ZoneManager {
     public Collection<ZoneArea> getAllZones(){
         return loadedZones.values();
     }
+
 
     /**
      * ゾーンの立体範囲を表現・判定する内部データクラス

@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard;
+package space.gorogoro.afkscoreboard;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

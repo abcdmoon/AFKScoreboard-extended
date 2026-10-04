@@ -1,11 +1,10 @@
-package me.dragonwhale7.afkscoreboard;
+package space.gorogoro.afkscoreboard;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Arrays;
 
 public class ConfigManager {
-
 
     private final AFKScoreboard plugin;
     private FileConfiguration config;

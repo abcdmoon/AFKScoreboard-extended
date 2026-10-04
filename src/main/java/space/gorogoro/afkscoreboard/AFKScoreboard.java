@@ -1,5 +1,6 @@
 package space.gorogoro.afkscoreboard;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -10,6 +11,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -26,6 +28,11 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import org.jspecify.annotations.NonNull;
+import space.gorogoro.afkscoreboard.command.CommandManager;
+import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixConfigManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,28 +50,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     private Scoreboard afkScoreboard;
     private Objective afkObjective;
 
-    // 読み込んだ各ゾーンの座標範囲データを保持するマップ
-    private final Map<String, ZoneArea> loadedZones = new HashMap<>();
-
-    // プレイヤーの「現在の連続放置時間（秒）」を保持するマップ
-    private final Map<UUID, Integer> currentSessionTimes = new HashMap<>();
-
-    // ログアウトしたプレイヤーのデータを一時保存するマップ（UUID -> 放置秒数）
-    private final Map<UUID, Integer> disconnectedSessionTimes = new HashMap<>();
-    // ログアウトした時刻を保存するマップ（UUID -> エポックミリ秒）
-    private final Map<UUID, Long> disconnectTimes = new HashMap<>();
-
-    // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
-    private final Set<UUID> hiddenPlayers = new HashSet<>();
-
-    // 過去に一度でも放置ゾーンに入ったことがあるプレイヤーを記憶するセット
-    private final Set<UUID> welcomedPlayers = new HashSet<>();
-
-    // ゾーン内でスペクテイター・バニッシュ中のためボードを出していない人（戻ったときにボードを付け直す。メモリ上のみ）
-    private final Set<UUID> concealedPlayers = new HashSet<>();
-
-    // 救済猶予時間（5分 = 300,000ミリ秒）
-    private static final long RECOVERY_GRACE_PERIOD_MS = 5 * 60 * 1000L;
 
     // 今週の累計秒数（data.yml）。ボードに出すのは、今ゾーンにいる人だけ
     private WeeklyStore weeklyStore;
@@ -73,13 +58,43 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     // ゾーン内だけの見た目。停止時に乗客を消す
     private CosmeticService cosmetics;
 
-    // config.yml の書き込み専用スレッド（1本なので書き込みは必ず順番に行われる）
-    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> new Thread(r, "AFKScoreboard-Save"));
-    // 書き込み待ちの config.yml の内容（null なら書き込み待ちなし）
-    private final AtomicReference<String> pendingConfigYaml = new AtomicReference<>();
+    private static AFKScoreboard instance;
+
+    private ConfigManager configManager;
+    private EventManager eventManager;
+    private ZoneManager zoneManager;
+    private MessageManager messageManager;
+    private RankingManager rankingManager;
+    private ScoreManager scoreManager;
+    private PlayerDataManager playerDataManager;
+    private GameScoreBoardManager gameScoreBoardManager;
+    private PrefixRegistry prefixRegistry;
+    private PrefixManager prefixManager;
+    private PrefixConfigManager prefixConfigManager;
 
     @Override
     public void onEnable() {
+        instance = this;
+
+        configManager = new ConfigManager(this);
+        zoneManager = new ZoneManager(this);
+        playerDataManager = new PlayerDataManager(this);
+        prefixConfigManager = new PrefixConfigManager(this);
+        messageManager = new MessageManager(configManager,playerDataManager);
+        prefixRegistry = new PrefixRegistry(prefixConfigManager);
+        gameScoreBoardManager = new GameScoreBoardManager(prefixRegistry);
+        prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry,configManager, playerDataManager);
+        scoreManager = new ScoreManager(playerDataManager,prefixManager,zoneManager);
+        rankingManager = new RankingManager(configManager,scoreManager, playerDataManager,gameScoreBoardManager);
+        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,playerDataManager,prefixManager);
+        zoneManager.reloadAxAFKZones(eventManager,prefixRegistry);
+
+        getServer().getPluginManager().registerEvents(eventManager, this);
+
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, registrarEvent->{
+            CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
+        });
+
         // config.ymlの保存・読み込み処理
         saveDefaultConfig();
         loadWelcomedPlayers();
@@ -129,6 +144,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // 座っている間は PlayerMoveEvent が来ないので、3 tick ごとに足元ブロックの高さと頭上の MOB の向きを合わせる（向きを送る間隔と同じ）
         Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::tickSeated, 3L, 3L);
 
+
         // プラグイン起動時に、既にエリア内にいるプレイヤーを検知してカウントを開始する
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
@@ -153,6 +169,11 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
 
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(this.cosmetics, this);
+    }
+
+    private void update(){
+        eventManager.checkPlayerZone();
+        scoreManager.incrementTimeEverySecond();
     }
 
     @Override
@@ -472,21 +493,8 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return hiddenPlayers.contains(uuid);
     }
 
-    /**
-     * スペクテイターかバニッシュ中か。該当する人には見た目・ランキング・本人のボードを出さない（秒数は数える）
-     * バニッシュは EssentialsX などが付けるメタデータ vanished で見る。EssentialsX は解除時に false を入れるので値で判定する
-     */
-    boolean isConcealed(Player player) {
-        if (player.getGameMode() == GameMode.SPECTATOR) {
-            return true;
-        }
-        for (MetadataValue value : player.getMetadata("vanished")) {
-            if (value.asBoolean()) {
-                return true;
-            }
-        }
-        return false;
-    }
+
+
 
     /**
      * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
@@ -789,30 +797,53 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         return days + "d" + hours + "h" + minutes + "m";
     }
 
+    private final List<Runnable> onDisableTasks = new ArrayList<>();
+
     /**
-     * ゾーンの立体範囲を表現・判定する内部データクラス
+     * プラグインの機能終了時に実行するタスクを追加します
+     * @param runnable 呼び出されるタスク
      */
-    private static class ZoneArea {
-        private final String world;
-        private final double minX, maxX;
-        private final double minY, maxY;
-        private final double minZ, maxZ;
-
-        public ZoneArea(String world, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
-            this.world = world;
-            this.minX = minX - 0.5; this.maxX = maxX + 0.5;
-            this.minY = minY - 0.5; this.maxY = maxY + 0.5;
-            this.minZ = minZ - 0.5; this.maxZ = maxZ + 0.5;
-        }
-
-        public boolean isInArea(Location loc) {
-            if (loc.getWorld() == null) {
-                return false;
-            }
-            return loc.getWorld().getName().equalsIgnoreCase(world) &&
-                    loc.getX() >= minX && loc.getX() <= maxX &&
-                    loc.getY() >= minY && loc.getY() <= maxY &&
-                    loc.getZ() >= minZ && loc.getZ() <= maxZ;
-        }
+    public static void addOnDisableTask(Runnable runnable) {
+        instance.onDisableTasks.add(runnable);
     }
+
+    @Override
+    public void onDisable() {
+        for(Runnable runnable : onDisableTasks) {
+            try{
+                runnable.run();
+            }catch(Exception e){
+                warn(e.getMessage());
+            }
+        }
+        onDisableTasks.clear();
+
+        Bukkit.getScheduler().cancelTasks(this);
+        HandlerList.unregisterAll(this);
+
+    }
+
+    /**
+     * プラグイン名義でタスクを定期実行します
+     */
+    public static void registerTaskTimer(Runnable runnable, long delay, long period) {
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTaskTimer(instance,runnable,delay,period);
+    }
+
+    public static void registerTaskLater(Runnable runnable, long delay) {
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTaskLater(instance,runnable,delay);
+    }
+
+    public static void warn(String message){
+        if(instance==null){return;}
+        instance.getLogger().warning(message);
+    }
+
+    public static void runTask(Runnable runnable){
+        if(instance==null){return;}
+        Bukkit.getScheduler().runTask(instance,runnable);
+    }
+
 }

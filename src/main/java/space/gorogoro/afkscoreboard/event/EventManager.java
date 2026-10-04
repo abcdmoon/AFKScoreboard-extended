@@ -1,7 +1,8 @@
-package me.dragonwhale7.afkscoreboard.event;
+package space.gorogoro.afkscoreboard.event;
 
-import me.dragonwhale7.afkscoreboard.*;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
+import space.gorogoro.afkscoreboard.*;
+import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,11 +31,10 @@ public class EventManager implements Listener {
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
-        AFKScoreboard.registerTaskTimer(this::checkPlayerZone,0,20L);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
 
-    private void checkPlayerZone(){
+    public void checkPlayerZone(){
         for(Player p : Bukkit.getOnlinePlayers()){
             String before = zoneManager.getZoneByPlayer(p.getUniqueId());
             String now = zoneManager.getZoneByLoc(p.getLocation());

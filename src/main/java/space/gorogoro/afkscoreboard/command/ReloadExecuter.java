@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard.command;
+package space.gorogoro.afkscoreboard.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.Message;
@@ -9,9 +9,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
-import me.dragonwhale7.afkscoreboard.ZoneManager;
-import me.dragonwhale7.afkscoreboard.event.EventManager;
-import me.dragonwhale7.afkscoreboard.prefix.PrefixRegistry;
+import space.gorogoro.afkscoreboard.ZoneManager;
+import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;

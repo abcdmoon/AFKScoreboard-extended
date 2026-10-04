@@ -1,6 +1,7 @@
-package me.dragonwhale7.afkscoreboard;
+package space.gorogoro.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.prefix.PrefixManager;
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
+import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -35,13 +36,12 @@ public class ScoreManager {
     }
     private void init(){
         currentAFKPlayers.clear();
-        AFKScoreboard.registerTaskTimer(this::incrementTimeEverySecond,0,20L);
     }
 
     /**
      * 1秒ごとに、ゾーンにいるプレイヤーの時間（連続）を加算
      */
-    private void incrementTimeEverySecond() {
+    public void incrementTimeEverySecond() {
         for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
             for(UUID uuid : zone.getAfkPlayers()){
                 int score = currentSessionTimes.getOrDefault(uuid,0)+1;

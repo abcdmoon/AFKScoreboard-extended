@@ -1,9 +1,9 @@
-package me.dragonwhale7.afkscoreboard.prefix;
+package space.gorogoro.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.ConfigManager;
-import me.dragonwhale7.afkscoreboard.ConfigManager.PrefixMode;
-import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
-import me.dragonwhale7.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.ConfigManager;
+import space.gorogoro.afkscoreboard.ConfigManager.PrefixMode;
+import space.gorogoro.afkscoreboard.GameScoreBoardManager;
+import space.gorogoro.afkscoreboard.PlayerDataManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;

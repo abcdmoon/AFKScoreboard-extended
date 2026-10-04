@@ -1,4 +1,4 @@
-package me.dragonwhale7.afkscoreboard.command;
+package space.gorogoro.afkscoreboard.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.Message;
@@ -11,8 +11,8 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
-import me.dragonwhale7.afkscoreboard.*;
-import me.dragonwhale7.afkscoreboard.GameScoreBoardManager;
+import me.dragonwhale7.afkscoreboard.AFKScoreboard;
+import space.gorogoro.afkscoreboard.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
