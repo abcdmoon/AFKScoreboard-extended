@@ -1,0 +1,83 @@
+prefixes:
+  #称号のキー(重複不可) コマンドでの指定時にも用います
+  goro:
+    #入手に必要な放置時間(秒)
+    requireScore: 1800
+    #入手できる放置エリアの名前　空や項目なしだとどの放置エリアでも入手可能になります
+    requireZones: ["example"]
+    #称号の表示内容
+    prefixText: "ごろごろ "
+    #称号の表示色
+    color: "gray"
+  beginner:
+    requireScore: 3600
+    prefixText: "初心者卒業 "
+    color: "green"
+  slowlife:
+    requireScore: 5400
+    prefixText: "のんびりしてる"
+    color: "green"
+  spawn:
+    requireScore: 7200
+    prefixText: "スポーン好きの"
+    color: "aqua"
+  pcuser:
+    requireScore: 10800
+    prefixText: "【PCつけっぱ】"
+    color: "aqua"
+  minecraft:
+    requireScore: 14400
+    prefixText: "【マイクラ好き】"
+    color: "yellow"
+  hobby:
+    requireScore: 18000
+    prefixText: "【放置が趣味】"
+    color: "white"
+  chunkloader:
+    requireScore: 21600
+    prefixText: "チャンクローダー"
+    color: "dark_green"
+  figurine:
+    requireScore: 28800
+    prefixText: "【もはや置物】"
+    color: "yellow"
+  hasibirokou:
+    requireScore: 36000
+    prefixText: "ハシビロコウ"
+    color: "light_purple"
+  blockentity:
+    requireScore: 43200
+    prefixText: "BlockEntity"
+    color: "dark_aqua"
+  kaomoji:
+    requireScore: 54000
+    prefixText: "(｀・ω・´)"
+    color: "green"
+  hudou:
+    requireScore: 64800
+    prefixText: "【不動明王】"
+    color: "red"
+  gorosaba:
+    requireScore: 86400
+    prefixText: "【ごろ鯖の民】"
+    color: "gold"
+  spawnzumi:
+    requireScore: 129600
+    prefixText: "【スポーン住みの】"
+    color: "blue"
+  itumo:
+    requireScore: 172800
+    prefixText: "【いつ見てもいる】"
+    color: "aqua"
+  gorogoro:
+    requireScore: 259200
+    prefixText: "【ごろごろ】"
+    color: "yellow"
+  serverpet:
+    requireScore: 345600
+    prefixText: "鯖に飼われてる"
+    color: "gold"
+  gorogoro2:
+    requireScore: 432000
+    prefixText: "【ごろごろ】"
+    color: "dark_purple"

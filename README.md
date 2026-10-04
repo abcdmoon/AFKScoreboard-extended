@@ -12,6 +12,13 @@ AxAFKZone の放置ゾーンに滞在しているプレイヤーの連続放置�
 - Paper 1.21.11
 - Java 21
 - AxAFKZone(放置ゾーンの定義を読み込みます)
+# Dependencies
+This plugin works with AxAFKZone(https://github.com/Artillex-Studios/AxAFKZone) ver 1.13.0.  
+AxAFKZone is licensed under the MIT License.
+
+
+# I haven't tested whether it works, but...
+It may work if the conditions of using **Java 21** or earlier and **Paper 26.2** or earlier are met.
 
 # Installation method
 Please place the .jar file in the Paper plugins folder.
@@ -95,4 +102,32 @@ GitHub の自動 Watch 機能は 2025 年 5 月に廃止されたため、設定
 1. リポジトリのページ右上の **「Watch」** を押す
 2. **「Custom」** を選び、**Issues** と **Pull requests** にチェックを入れる
 
+
+
+# オリジナルからの改変
+## コマンド
+```
+権限必要なし
+/afkhide or /afkscore hide   放置ランキングから自分を表示/非表示できます
+/afkscore highscore   プラグインが起動してから今までの自身の最高連続放置時間が確認できる
+/afkscore highscore rank   プラグインが起動してから今までの最高連続放置時間ランキング(オフラインプレイヤーも対象)が確認できる
+/afkscore prefix hide   肩書の表示を隠す
+/afkscore prefix <表示名>   表示できる肩書から表示する肩書を選ぶ
+要OP
+/afkscore reload ゲーム内で放置エリアを編集などして変わったファイルを再読込する
+/afkscore highscore <Player>   任意のプレイヤーのハイスコアが確認できる
+/afkscore reloadprefix   prefix.ymlの内容を読み込み直します
+```
+## 仕様
+・/afkhideをしても記録自体はとられ、表示すると密かに記録していた値が出るようになりました  
+・領域が直方体であることを前提にコードを書き換えたためもし直方体以外の領域があると機能しません  
+・プレイヤー毎の最高連続放置時間が確認できるようになりました(playerdata.ymlに保存されます)  
+・放置のハイスコアに応じて頭の上に称号がつけられます  
+　prefix.ymlで指定できます  
+・BukkitのAPIに非同期で触れるのは非推奨とのことで、変更時プラグイン上のFileConfigurationインスタンスに反映  
+　5分毎及びプラグイン停止時にファイルに書き込む仕様としました
+
+## 注意事項
+・称号の表示には、マイクラバニラのチームを使う方式と、Tabのみの方式をconfigで指定できます  
+　それぞれの方式で、同じ方法を採用する他システムと競合し不具合を起こす可能性があります
 

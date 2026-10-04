@@ -1,0 +1,37 @@
+package me.dragonwhale7.afkscoreboard;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.entity.Player;
+
+public class MessageManager {
+
+    private final ConfigManager configManager;
+
+    private final PlayerDataManager playerDataManager;
+
+
+    public MessageManager(ConfigManager configManager,PlayerDataManager playerDataManager) {
+        this.configManager = configManager;
+        this.playerDataManager = playerDataManager;
+        init();
+    }
+
+    private void init(){
+    }
+
+    public void onPlayerEnterZone(Player player) {
+        // 放置エリアに足を踏み入れたプレイヤーへの通知
+
+        if (!playerDataManager.isInformed(player.getUniqueId())) {
+            playerDataManager.setInformed(player.getUniqueId(), true);
+
+            // メッセージを送信
+            player.sendMessage(Component.text("/afkscore hide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
+            player.sendMessage(Component.text("/afkscore prefix hide").color(NamedTextColor.AQUA).append(Component.text(" で自分の称号を表示/非表示できます").color(NamedTextColor.WHITE)));
+
+        }else{
+            //入ったことがある場合
+        }
+    }
+}

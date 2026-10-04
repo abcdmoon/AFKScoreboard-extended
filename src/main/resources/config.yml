@@ -4,6 +4,10 @@ week-start-day: MONDAY
 
 welcomed-players: []
 hidden-players: []
+#prefix-mode 称号の表示形式を指定します
+# "team" バニラのスコアボードのチーム機能を用います チームを使用するシステムと競合し、不具合が起きる可能性があります
+# "tab" PaperAPIのPlayerListName機能を用います tab上でのみ表示され、tab表示を変えるプラグインと競合する可能性があります
+prefix-mode: "team"
 
 # 見た目ボーナス。表示は放置ゾーンの中だけ。秒数と抽選は cosmetics.yml。
 # パーティクルの間隔（20 tick = 1 秒）。既定 60 = 3 秒。
