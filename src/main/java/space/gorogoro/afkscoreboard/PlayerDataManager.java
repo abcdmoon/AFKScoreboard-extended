@@ -3,7 +3,6 @@ package space.gorogoro.afkscoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -308,7 +307,6 @@ public class PlayerDataManager {
         }
 
         @NotNull
-        @Override
         public Map<String, Object> serialize() {
             return Map.of(
                     "isInformed",isInformed,

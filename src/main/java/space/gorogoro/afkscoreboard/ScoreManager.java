@@ -1,6 +1,5 @@
 package space.gorogoro.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.entity.Player;
 

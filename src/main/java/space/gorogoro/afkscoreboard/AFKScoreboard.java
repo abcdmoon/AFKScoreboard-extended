@@ -1,32 +1,18 @@
 package space.gorogoro.afkscoreboard;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
-
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
+import org.bukkit.scoreboard.*;
 import org.jspecify.annotations.NonNull;
 import space.gorogoro.afkscoreboard.command.CommandManager;
 import space.gorogoro.afkscoreboard.event.EventManager;
@@ -34,16 +20,7 @@ import space.gorogoro.afkscoreboard.prefix.PrefixConfigManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class AFKScoreboard extends JavaPlugin {
 
@@ -53,8 +30,7 @@ public class AFKScoreboard extends JavaPlugin {
 
     // 今週の累計秒数（data.yml）。ボードに出すのは、今ゾーンにいる人だけ
     private WeeklyStore weeklyStore;
-    // 週次リセットの確認は 60 秒に 1 回
-    private int weeklyCheckClock;
+
     // ゾーン内だけの見た目。停止時に乗客を消す
     private CosmeticService cosmetics;
 
@@ -95,7 +71,7 @@ public class AFKScoreboard extends JavaPlugin {
             CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
         });
 
-        this.weeklyStore = new WeeklyStore(this);
+        this.weeklyStore = new WeeklyStore(this,zoneManager);
         this.weeklyStore.load();
 
         // スコアボードの初期化
@@ -152,7 +128,7 @@ public class AFKScoreboard extends JavaPlugin {
     private void update(){
         eventManager.checkPlayerZone();
         scoreManager.incrementTimeEverySecond();
-        incrementTimeEverySecond();
+        weeklyStore.update();
     }
 
     private final List<Runnable> onDisableTasks = new ArrayList<>();
@@ -408,30 +384,6 @@ public class AFKScoreboard extends JavaPlugin {
 
             afkObjective.getScore(scoreLine).setScore(scoreValue--);
             rank++;
-        }
-    }
-
-    /**
-     * 1秒ごとに、ゾーンにいるプレイヤーの時間（連続）を加算
-     */
-    private void incrementTimeEverySecond() {
-        if (++weeklyCheckClock >= 60) {
-            weeklyCheckClock = 0;
-            if (weeklyStore.rolloverIfNeeded()) {
-                for (Player online : Bukkit.getOnlinePlayers()) {
-                    if (isPlayerInAnyZone(online.getLocation())) {
-                        online.sendMessage("§e今週の放置ランキングがリセットされました");
-                    }
-                }
-            }
-        }
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!isPlayerInAnyZone(player.getLocation())) {
-                continue;
-            }
-            // 週間累計は非表示中も残す。ボードに出すかどうかとは分ける
-            weeklyStore.addSecond(player.getUniqueId());
         }
     }
 

@@ -1,7 +1,6 @@
 package space.gorogoro.afkscoreboard;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;

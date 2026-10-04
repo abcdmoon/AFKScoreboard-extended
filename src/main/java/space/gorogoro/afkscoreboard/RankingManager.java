@@ -1,6 +1,5 @@
 package space.gorogoro.afkscoreboard;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;

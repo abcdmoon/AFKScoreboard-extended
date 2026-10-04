@@ -84,6 +84,8 @@ import java.util.function.Consumer;
 final class CosmeticService implements Listener {
 
     private final AFKScoreboard plugin;
+    private final ZoneManager zoneManager;
+    private final PlayerDataManager playerDataManager;
     private final CosmeticStore store;
     private final NamespacedKey tagKey;
     private final NamespacedKey ownerKey;
@@ -96,8 +98,10 @@ final class CosmeticService implements Listener {
     private int weekClock;
     private boolean allowDismount;
 
-    CosmeticService(AFKScoreboard plugin) {
+    CosmeticService(AFKScoreboard plugin,ZoneManager zoneManager,PlayerDataManager playerDataManager) {
         this.plugin = plugin;
+        this.zoneManager = zoneManager;
+        this.playerDataManager = playerDataManager;
         this.store = new CosmeticStore(plugin);
         this.tagKey = new NamespacedKey(plugin, "cosmetic");
         this.ownerKey = new NamespacedKey(plugin, "owner");
@@ -152,9 +156,9 @@ final class CosmeticService implements Listener {
         Set<UUID> online = new HashSet<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             online.add(player.getUniqueId());
-            if (plugin.isPlayerInAnyZone(player.getLocation())) {
+            if (zoneManager.getZoneByPlayer(player.getUniqueId()) != null) {
                 store.addSecond(player.getUniqueId());
-                if (plugin.isHidden(player.getUniqueId()) || plugin.isConcealed(player)) {
+                if (playerDataManager.isHiddenInRank(player.getUniqueId()) || playerDataManager.isConcealed(player.getUniqueId())) {
                     clear(player);
                 } else {
                     sync(player);
@@ -207,9 +211,9 @@ final class CosmeticService implements Listener {
             store.markDirty();
             store.requestSave();
         }
-        grant.inZone = plugin.isPlayerInAnyZone(player.getLocation());
-        grant.hidden = plugin.isHidden(player.getUniqueId());
-        grant.concealed = plugin.isConcealed(player);
+        grant.inZone = zoneManager.getZoneByPlayer(player.getUniqueId())!=null;
+        grant.hidden = playerDataManager.isHiddenInRank(player.getUniqueId());
+        grant.concealed = playerDataManager.isConcealed(player.getUniqueId());
         if (grant.inZone && !grant.hidden && !grant.concealed) {
             sync(player);
             Active state = active.get(player.getUniqueId());
@@ -265,7 +269,7 @@ final class CosmeticService implements Listener {
      * /afkhide・/afklook の切り替え直後に、次の 1 秒を待たずに見た目を合わせる。秒数は足さない。
      */
     void refresh(Player player) {
-        if (plugin.isPlayerInAnyZone(player.getLocation()) && !plugin.isHidden(player.getUniqueId()) && !plugin.isConcealed(player)) {
+        if (zoneManager.getZoneByPlayer(player.getUniqueId())!=null && !(playerDataManager.isHiddenInRank(player.getUniqueId())) && (!playerDataManager.isConcealed(player.getUniqueId()))) {
             sync(player);
         } else {
             clear(player);
@@ -336,10 +340,10 @@ final class CosmeticService implements Listener {
             Player player = Bukkit.getPlayer(entry.getKey());
             Active state = entry.getValue();
             // スペクテイター・バニッシュになった直後は、次の 1 秒で外れるまでの間も出さない
-            if (player == null || !player.isOnline() || state.particle == null || plugin.isConcealed(player)) {
+            if (player == null || !player.isOnline() || state.particle == null || playerDataManager.isConcealed(player.getUniqueId())) {
                 continue;
             }
-            if (!plugin.isPlayerInAnyZone(player.getLocation())) {
+            if (zoneManager.getZoneByPlayer(player.getUniqueId())==null) {
                 continue;
             }
             spawnParticle(player, state.particle);
@@ -1146,7 +1150,7 @@ final class CosmeticService implements Listener {
         if (!event.getEntity().isValid()) {
             return;
         }
-        if (isOurs(event.getEntity()) && plugin.isPlayerInAnyZone(player.getLocation())) {
+        if (isOurs(event.getEntity()) && zoneManager.getZoneByPlayer(event.getEntity().getUniqueId()) != null) {
             event.setCancelled(true);
         }
     }

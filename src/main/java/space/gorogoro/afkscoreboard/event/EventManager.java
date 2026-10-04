@@ -1,6 +1,5 @@
 package space.gorogoro.afkscoreboard.event;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
 import space.gorogoro.afkscoreboard.*;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
@@ -59,9 +58,6 @@ public class EventManager implements Listener {
                     onAfkPlayerToggleConcealed(uuid,now);
                 }
             }
-        }
-        for(Player p : zoneManager.get){
-
         }
     }
 

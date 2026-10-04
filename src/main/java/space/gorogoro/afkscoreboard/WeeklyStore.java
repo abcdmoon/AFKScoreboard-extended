@@ -1,5 +1,8 @@
 package space.gorogoro.afkscoreboard;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +35,15 @@ final class WeeklyStore {
         return thread;
     });
     private final AtomicReference<String> pendingYaml = new AtomicReference<>();
+    private final ZoneManager zoneManager;
+
 
     private String weekId = "";
     private boolean dirty;
 
-    WeeklyStore(AFKScoreboard plugin) {
+    WeeklyStore(AFKScoreboard plugin,ZoneManager zoneManager) {
         this.plugin = plugin;
+        this.zoneManager = zoneManager;
         this.file = new File(plugin.getDataFolder(), "data.yml");
     }
 
@@ -183,6 +189,27 @@ final class WeeklyStore {
             return DayOfWeek.valueOf(raw.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ignored) {
             return DayOfWeek.MONDAY;
+        }
+    }
+
+    private int weeklyCheckClock = 0;
+
+    public void update(){
+        if (++weeklyCheckClock >= 60) {
+            weeklyCheckClock = 0;
+            if (rolloverIfNeeded()) {
+                for (Player online : Bukkit.getOnlinePlayers()) {
+                    if (zoneManager.getZoneByPlayer(online.getUniqueId()) != null) {
+                        online.sendMessage("§e今週の放置ランキングがリセットされました");
+                    }
+                }
+            }
+        }
+
+        for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
+            for(UUID uuid:zone.getAfkPlayers()){
+                addSecond(uuid);
+            }
         }
     }
 }
