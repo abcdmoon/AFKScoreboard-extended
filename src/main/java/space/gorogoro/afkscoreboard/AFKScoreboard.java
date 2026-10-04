@@ -100,7 +100,7 @@ public class AFKScoreboard extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, this.weeklyStore::requestSave, 1200L, 1200L);
 
         // 見た目は別タスク。パーティクルは既定 3 秒、追従チェックは 1 秒。乗客なので座標の毎 tick 更新はしない
-        this.cosmetics = new CosmeticService(this);
+        this.cosmetics = new CosmeticService(this,zoneManager,playerDataManager);
         this.cosmetics.load();
         this.cosmetics.removeStrayEntities();
         long particleInterval = getConfig().getLong("particle-interval-ticks");
