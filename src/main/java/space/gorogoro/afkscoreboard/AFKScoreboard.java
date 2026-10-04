@@ -95,9 +95,6 @@ public class AFKScoreboard extends JavaPlugin {
             CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
         });
 
-        saveDefaultConfig();
-        loadWelcomedPlayers();
-        loadHiddenPlayers();
         this.weeklyStore = new WeeklyStore(this);
         this.weeklyStore.load();
 
@@ -406,7 +403,7 @@ public class AFKScoreboard extends JavaPlugin {
             }
             int sessionSeconds = entry.getValue();
 
-            String currentStr = formatTimeCompact(sessionSeconds);
+            String currentStr = Util.formatTimeCompact(sessionSeconds);
             String scoreLine = String.format("§7#%d §f%s §b%s", rank, playerName, currentStr);
 
             afkObjective.getScore(scoreLine).setScore(scoreValue--);
