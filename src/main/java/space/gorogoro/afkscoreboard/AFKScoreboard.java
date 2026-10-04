@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public class AFKScoreboard extends JavaPlugin implements Listener {
+public class AFKScoreboard extends JavaPlugin {
 
     private Scoreboard afkScoreboard;
     private Objective afkObjective;
@@ -95,7 +95,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
         });
 
-        // config.ymlの保存・読み込み処理
         saveDefaultConfig();
         loadWelcomedPlayers();
         loadHiddenPlayers();
@@ -118,14 +117,11 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
         this.afkObjective.numberFormat(NumberFormat.blank());
 
-        // AxAFKZone の zones フォルダから座標定義を自動読み込み
-        reloadAxAFKZones();
-
         // スコアボードの更新頻度（5秒ごと = 100ティックス）
         Bukkit.getScheduler().runTaskTimer(this, this::updateLeaderboard, 0L, 100L);
 
         // 滞在時間のカウントタスク（1秒ごと = 20ティックス）
-        Bukkit.getScheduler().runTaskTimer(this, this::incrementTimeEverySecond, 0L, 20L);
+        Bukkit.getScheduler().runTaskTimer(this, this::update, 0L, 20L);
 
         // 週間累計の保存（60秒ごと）。書き込み自体は専用スレッド
         Bukkit.getScheduler().runTaskTimer(this, this.weeklyStore::requestSave, 1200L, 1200L);
@@ -144,20 +140,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // 座っている間は PlayerMoveEvent が来ないので、3 tick ごとに足元ブロックの高さと頭上の MOB の向きを合わせる（向きを送る間隔と同じ）
         Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::tickSeated, 3L, 3L);
 
-
-        // プラグイン起動時に、既にエリア内にいるプレイヤーを検知してカウントを開始する
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            // afkhide（非表示モード）になっていないプレイヤーのみ対象
-            if (!hiddenPlayers.contains(uuid) && isPlayerInAnyZone(player.getLocation())) {
-                currentSessionTimes.put(uuid, 0);
-                // スペクテイター・バニッシュ中はボードを出さない（連続放置は数える）
-                if (!isConcealed(player)) {
-                    player.setScoreboard(afkScoreboard);
-                }
-            }
-        }
-
         PluginCommand debugCommand = getCommand("afkdebug");
         if (debugCommand != null) {
             debugCommand.setTabCompleter(this);
@@ -167,17 +149,39 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             lookCommand.setTabCompleter(this);
         }
 
-        getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(this.cosmetics, this);
     }
 
     private void update(){
         eventManager.checkPlayerZone();
         scoreManager.incrementTimeEverySecond();
+        incrementTimeEverySecond();
+    }
+
+    private final List<Runnable> onDisableTasks = new ArrayList<>();
+    /**
+     * プラグインの機能終了時に実行するタスクを追加します
+     * @param runnable 呼び出されるタスク
+     */
+    public static void addOnDisableTask(Runnable runnable) {
+        instance.onDisableTasks.add(runnable);
     }
 
     @Override
     public void onDisable() {
+        for(Runnable runnable : onDisableTasks) {
+            try{
+                runnable.run();
+            }catch(Exception e){
+                warn(e.getMessage());
+            }
+        }
+        onDisableTasks.clear();
+
+        Bukkit.getScheduler().cancelTasks(this);
+        HandlerList.unregisterAll(this);
+
+
         if (weeklyStore != null) {
             weeklyStore.shutdown();
         }
@@ -187,97 +191,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             cosmetics.shutdown();
         }
 
-        // サーバー終了時、既読プレイヤーデータをconfig.ymlに確実に保存
-        saveWelcomedPlayers();
-        saveHiddenPlayers();
-
-        // PlugManX などでアンロードされたとき、更新されないランキングボードが残らないようメインボードに戻す
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getScoreboard().equals(afkScoreboard)) {
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            }
-        }
-
-        // 書き込み待ちがすべて終わるまで待つ（サーバー終了時のみ、メインスレッドで待機する）
-        saveExecutor.shutdown();
-        try {
-            if (!saveExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
-                getLogger().severe("config.yml の書き込みが時間内に終わりませんでした。");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
         getLogger().info("The Plugin Has Been Disabled!");
-    }
-
-    /**
-     * 現在の config.yml の内容を専用スレッドで書き込む
-     * getConfig() へのアクセスはメインスレッドで行い、ファイルの書き込みだけを専用スレッドに任せる
-     * 書き込み待ちが残っている間に呼ばれた場合は、最新の内容で 1 回にまとめて書き込む
-     */
-    private void requestSaveConfig() {
-        String yaml = getConfig().saveToString();
-        if (pendingConfigYaml.getAndSet(yaml) != null) {
-            // すでに書き込み待ちがあるので、その書き込みで最新の内容が使われる
-            return;
-        }
-        File configFile = new File(getDataFolder(), "config.yml");
-        saveExecutor.execute(() -> {
-            String latestYaml = pendingConfigYaml.getAndSet(null);
-            try {
-                Files.writeString(configFile.toPath(), latestYaml, StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                getLogger().severe("config.yml の書き込みに失敗しました: " + e.getMessage());
-            }
-        });
-    }
-
-    /**
-     * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
-     */
-    private void loadWelcomedPlayers() {
-        welcomedPlayers.clear();
-        List<String> uuidStrings = getConfig().getStringList("welcomed-players");
-        for (String s : uuidStrings) {
-            try {
-                welcomedPlayers.add(UUID.fromString(s));
-            } catch (IllegalArgumentException ignored) {}
-        }
-    }
-
-    /**
-     * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
-     */
-    private void saveWelcomedPlayers() {
-        List<String> uuidStrings = welcomedPlayers.stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        getConfig().set("welcomed-players", uuidStrings);
-        requestSaveConfig();
-    }
-
-    /**
-     * config.yml から非表示プレイヤーのUUIDを読み込む
-     */
-    private void loadHiddenPlayers() {
-        hiddenPlayers.clear();
-        List<String> uuidStrings = getConfig().getStringList("hidden-players");
-        for (String s : uuidStrings) {
-            try {
-                hiddenPlayers.add(UUID.fromString(s));
-            } catch (IllegalArgumentException ignored) {}
-        }
-    }
-
-    /**
-     * 非表示プレイヤーのUUIDを config.yml へ保存する
-     */
-    private void saveHiddenPlayers() {
-        List<String> uuidStrings = hiddenPlayers.stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-        getConfig().set("hidden-players", uuidStrings);
-        requestSaveConfig();
     }
 
     /**
@@ -294,46 +208,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         UUID uuid = player.getUniqueId();
 
         if (command.getName().equalsIgnoreCase("afkhide")) {
-            // エリア内にいるかどうかの判定
-            boolean isInZone = isPlayerInAnyZone(player.getLocation());
-
-            if (hiddenPlayers.contains(uuid)) {
-                // 非表示（除外）リストから削除 ＝ 通常モードに戻す
-                hiddenPlayers.remove(uuid);
-
-                // config.yml へ保存する（書き込みは専用スレッドで行う）
-                saveHiddenPlayers();
-
-                player.sendMessage("§f放置ランキングにあなたを§a表示§fするようにしました");
-
-                // エリア内にいるなら、その場でカウントを開始しボードを表示
-                if (isInZone) {
-                    currentSessionTimes.put(uuid, 0);
-                    if (!isConcealed(player)) {
-                        player.setScoreboard(afkScoreboard);
-                    }
-                }
-            } else {
-                // 非表示（除外）リストに追加 ＝ 除外モードにする
-                hiddenPlayers.add(uuid);
-
-                // config.yml へ保存する（書き込みは専用スレッドで行う）
-                saveHiddenPlayers();
-
-                // 自身のカウントデータを破棄（ランキングから消す）
-                currentSessionTimes.remove(uuid);
-                disconnectedSessionTimes.remove(uuid);
-                disconnectTimes.remove(uuid);
-
-                player.sendMessage("§f放置ランキングからあなたを§a非表示§fにしました");
-
-                // 除外モードになってもエリア内にいるならスコアボードを表示したままにする
-                if (isInZone && !isConcealed(player)) {
-                    player.setScoreboard(afkScoreboard);
-                } else {
-                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-                }
-            }
             // 見た目ボーナスは非表示中は付けない。切り替えたらその場で合わせる
             if (cosmetics != null) {
                 cosmetics.refresh(player);
@@ -487,88 +361,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
     }
 
     /**
-     * /afkhide で非表示にしているか
-     */
-    boolean isHidden(UUID uuid) {
-        return hiddenPlayers.contains(uuid);
-    }
-
-
-
-
-    /**
-     * 指定されたロケーションがいずれかの放置ゾーン内にあるかを判定するヘルパー
-     */
-    boolean isPlayerInAnyZone(Location loc) {
-        for (ZoneArea zone : loadedZones.values()) {
-            if (zone.isInArea(loc)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * AxAFKZone の zones フォルダ内にある全 .yml から座標情報をパースして読み込む
-     */
-    public void reloadAxAFKZones() {
-        loadedZones.clear();
-
-        Plugin axPlugin = Bukkit.getPluginManager().getPlugin("AxAFKZone");
-        if (axPlugin == null) {
-            getLogger().warning("AxAFKZone がサーバーに導入されていないか、有効化されていません。");
-            return;
-        }
-
-        File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
-        if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
-            getLogger().warning("AxAFKZoneのzonesフォルダが見つかりません。");
-            return;
-        }
-
-        for (File file : Objects.requireNonNull(afkZoneFolder.listFiles())) {
-            if (!file.getName().endsWith(".yml")) continue;
-
-            try {
-                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-
-                String locStr1 = config.getString("zone.location1");
-                String locStr2 = config.getString("zone.location2");
-
-                if (locStr1 == null || locStr2 == null) continue;
-
-                String[] split1 = locStr1.split(";");
-                String[] split2 = locStr2.split(";");
-
-                String world = split1[0];
-
-                double x1 = Double.parseDouble(split1[1]);
-                double y1 = Double.parseDouble(split1[2]);
-                double z1 = Double.parseDouble(split1[3]);
-
-                double x2 = Double.parseDouble(split2[1]);
-                double y2 = Double.parseDouble(split2[2]);
-                double z2 = Double.parseDouble(split2[3]);
-
-                // 2つの座標から「最小(min)」と「最大(max)」を計算して立体範囲を登録
-                ZoneArea area = new ZoneArea(
-                        world,
-                        Math.min(x1, x2), Math.max(x1, x2),
-                        Math.min(y1, y2), Math.max(y1, y2),
-                        Math.min(z1, z2), Math.max(z1, z2)
-                );
-
-                String zoneName = file.getName().replace(".yml", "");
-                loadedZones.put(zoneName, area);
-                getLogger().info("放置ゾーンを自動登録しました: " + zoneName);
-
-            } catch (Exception e) {
-                getLogger().severe("ゾーンファイルの解析に失敗しました(書式違いなど): " + file.getName());
-            }
-        }
-    }
-
-    /**
      * ランキングを計算してスコアボードを更新
      */
     private void updateLeaderboard() {
@@ -579,12 +371,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
         // 今ゾーンにいて、ランキング表示がオンの人を、今週の累計で並べる
         List<Map.Entry<UUID, Integer>> sortedTop10 = new ArrayList<>();
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (hiddenPlayers.contains(online.getUniqueId()) || isConcealed(online)) {
-                continue;
-            }
-            if (!isPlayerInAnyZone(online.getLocation())) {
-                continue;
-            }
             sortedTop10.add(Map.entry(online.getUniqueId(), weeklyStore.getSeconds(online.getUniqueId())));
         }
         sortedTop10.sort(Map.Entry.<UUID, Integer>comparingByValue().reversed());
@@ -649,25 +435,6 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             }
             // 週間累計は非表示中も残す。ボードに出すかどうかとは分ける
             weeklyStore.addSecond(player.getUniqueId());
-
-            // ゾーン内でスペクテイター・バニッシュを切り替えた人のボードを合わせる（他プラグインのボードには触らない）
-            UUID uuid = player.getUniqueId();
-            boolean showingBoard = player.getScoreboard().equals(afkScoreboard);
-            if (isConcealed(player)) {
-                if (showingBoard) {
-                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-                }
-                concealedPlayers.add(uuid);
-            } else if (concealedPlayers.remove(uuid) && !showingBoard) {
-                player.setScoreboard(afkScoreboard);
-            }
-
-            // afkhide ユーザーは連続放置のカウントだけをスキップ（ボードの有無とは分離）
-            if (hiddenPlayers.contains(player.getUniqueId())) {
-                continue;
-            }
-            // スペクテイター・バニッシュ中でボードを出していなくても数える
-            currentSessionTimes.put(uuid, currentSessionTimes.getOrDefault(uuid, 0) + 1);
         }
     }
 
@@ -682,147 +449,7 @@ public class AFKScoreboard extends JavaPlugin implements Listener {
             cosmetics.syncRotation(event.getPlayer(), event.getTo());
         }
 
-        // ブロックの整数値の境界線を越えて移動したときだけ判定（負荷対策）
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-                event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        // 現在いずれかの放置ゾーン内にいるかチェック
-        boolean isNowInAnyZone = isPlayerInAnyZone(player.getLocation());
-
-        // --- 進入と退出の処理ロジック ---
-        if (isNowInAnyZone) {
-            // 変更点：afkhide中かどうかにかかわらず、エリア内に入ったらスコアボードを表示（スペクテイター・バニッシュ中は出さない）
-            if (!isConcealed(player) && !player.getScoreboard().equals(afkScoreboard)) {
-                player.setScoreboard(afkScoreboard);
-            }
-
-            // 初めていずれかの放置エリアに足を踏み入れたプレイヤーへの通知
-            if (!welcomedPlayers.contains(uuid)) {
-                welcomedPlayers.add(uuid);
-                // メッセージを送信
-                player.sendMessage("§b/afkhide §fで放置ランキングから自分を表示/非表示できます");
-                // 既読情報を config.yml へ保存（書き込みは専用スレッドで行う）
-                saveWelcomedPlayers();
-            }
-
-            // カウント用マップへの新規登録処理（通常モードのプレイヤーのみ）
-            if (!hiddenPlayers.contains(uuid) && !currentSessionTimes.containsKey(uuid)) {
-                int previousTime = 0;
-
-                // 回線落ち救済データが存在し、かつ5分以内であれば時間を復元
-                if (disconnectTimes.containsKey(uuid)) {
-                    long quitTime = disconnectTimes.remove(uuid);
-                    int savedTime = disconnectedSessionTimes.remove(uuid);
-
-                    if ((System.currentTimeMillis() - quitTime) <= RECOVERY_GRACE_PERIOD_MS) {
-                        previousTime = savedTime;
-                        player.sendMessage("§f回線落ちから5分以内に復帰したため、放置時間を引き継ぎました！");
-                    }
-                }
-                currentSessionTimes.put(uuid, previousTime);
-            }
-        } else {
-            // 変更点：エリア外に出たら、通常・afkhideモードに関係なく一律メインボードに戻す
-            if (player.getScoreboard().equals(afkScoreboard)) {
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            }
-            concealedPlayers.remove(uuid);
-
-            // 内部カウント対象だった場合はデータをリセット
-            if (currentSessionTimes.containsKey(uuid)) {
-                currentSessionTimes.remove(uuid);
-                disconnectedSessionTimes.remove(uuid);
-                disconnectTimes.remove(uuid);
-            }
-        }
     }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
-        concealedPlayers.remove(uuid);
-        if (currentSessionTimes.containsKey(uuid)) {
-            disconnectedSessionTimes.put(uuid, currentSessionTimes.remove(uuid));
-            disconnectTimes.put(uuid, System.currentTimeMillis());
-        }
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
-        if (disconnectTimes.containsKey(uuid)) {
-            long quitTime = disconnectTimes.get(uuid);
-            if ((System.currentTimeMillis() - quitTime) > RECOVERY_GRACE_PERIOD_MS) {
-                disconnectedSessionTimes.remove(uuid);
-                disconnectTimes.remove(uuid);
-            }
-        }
-
-        // 変更点：ログイン時にすでにエリア内にいる場合の対策
-        Player player = event.getPlayer();
-        if (isPlayerInAnyZone(player.getLocation()) && !isConcealed(player)) {
-            player.setScoreboard(afkScoreboard);
-        }
-    }
-
-    /**
-     * コンパクトな時間フォーマット
-     */
-    private String formatTimeCompact(int totalSeconds) {
-        if (totalSeconds < 60) return totalSeconds + "s";
-
-        int totalMinutes = totalSeconds / 60;
-        if (totalMinutes < 60) return totalMinutes + "m";
-
-        int totalHours = totalMinutes / 60;
-        int minutes = totalMinutes % 60;
-
-        if (totalHours < 24) {
-            if (minutes == 0) return totalHours + "h";
-            return totalHours + "h" + minutes + "m";
-        }
-
-        int days = totalHours / 24;
-        int hours = totalHours % 24;
-
-        if (hours == 0 && minutes == 0) return days + "d";
-        if (minutes == 0) return days + "d" + hours + "h";
-        if (hours == 0) return days + "d" + minutes + "m";
-
-        return days + "d" + hours + "h" + minutes + "m";
-    }
-
-    private final List<Runnable> onDisableTasks = new ArrayList<>();
-
-    /**
-     * プラグインの機能終了時に実行するタスクを追加します
-     * @param runnable 呼び出されるタスク
-     */
-    public static void addOnDisableTask(Runnable runnable) {
-        instance.onDisableTasks.add(runnable);
-    }
-
-    @Override
-    public void onDisable() {
-        for(Runnable runnable : onDisableTasks) {
-            try{
-                runnable.run();
-            }catch(Exception e){
-                warn(e.getMessage());
-            }
-        }
-        onDisableTasks.clear();
-
-        Bukkit.getScheduler().cancelTasks(this);
-        HandlerList.unregisterAll(this);
-
-    }
-
     /**
      * プラグイン名義でタスクを定期実行します
      */

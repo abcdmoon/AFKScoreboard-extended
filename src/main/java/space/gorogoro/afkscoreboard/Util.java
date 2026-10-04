@@ -1,8 +1,11 @@
 package space.gorogoro.afkscoreboard;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
+
+import java.util.UUID;
 
 public class Util {
     /**
@@ -36,7 +39,12 @@ public class Util {
      * スペクテイターかバニッシュ中か。該当する人には見た目・ランキング・本人のボードを出さない（秒数は数える）
      * バニッシュは EssentialsX などが付けるメタデータ vanished で見る。EssentialsX は解除時に false を入れるので値で判定する
      */
-    public static boolean isConcealed(Player player) {
+    public static boolean isConcealed(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null){
+            return false;
+        }
+
         if (player.getGameMode() == GameMode.SPECTATOR) {
             return true;
         }

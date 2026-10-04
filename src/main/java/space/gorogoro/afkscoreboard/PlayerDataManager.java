@@ -204,6 +204,9 @@ public class PlayerDataManager {
         playerData.get(uuid).isHiddenInRank = isHiddenInRank;
         saveValue(uuid,isHiddenInRank,"isHiddenInRank");
     }
+    public boolean isHiddenInRank(UUID uuid){
+        return playerData.get(uuid).isHiddenInRank;
+    }
     public Set<UUID> getHiddenInRankPlayers(){
         Set<UUID> hiddenInRankPlayers = new HashSet<>();
         for(UUID uuid : playerData.keySet()){
@@ -253,6 +256,13 @@ public class PlayerDataManager {
         saveValue(uuid,List.copyOf(playerData.get(uuid).prefixes),"prefixes");
     }
 
+    public boolean isConcealed(UUID uuid){
+        return playerData.get(uuid).isConcealed;
+    }
+    public void setConcealed(UUID uuid, boolean isConcealed){
+        playerData.get(uuid).isConcealed = isConcealed;
+    }
+
     public List<Map.Entry<UUID, Integer>> getSortedList() {
         List<Map.Entry<UUID, Integer>> list = new ArrayList<>();
         for(PlayerData playerData : playerData.values()){
@@ -263,7 +273,7 @@ public class PlayerDataManager {
                 .toList();
     }
 
-    private static class PlayerData implements ConfigurationSerializable {
+    private static class PlayerData {
 
         private final UUID uuid;
         private boolean isInformed;
@@ -272,6 +282,8 @@ public class PlayerDataManager {
         private final HashMap<String, Integer> highScores;
         private String showedPrefix;
         private final Set<String> prefixes;
+
+        private boolean isConcealed;
 
         public PlayerData(
                 UUID uuid,

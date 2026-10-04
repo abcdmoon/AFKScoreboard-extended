@@ -49,6 +49,22 @@ public class EventManager implements Listener {
         }
     }
 
+    public void checkPlayerState(){
+        for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
+            for(UUID uuid : zone.getAfkPlayers()){
+                boolean before = playerDataManager.isConcealed(uuid);
+                boolean now = Util.isConcealed(uuid);
+
+                if(before != now){
+                    onAfkPlayerToggleConcealed(uuid,now);
+                }
+            }
+        }
+        for(Player p : zoneManager.get){
+
+        }
+    }
+
     private void onDisable(){
         for(Player p : Bukkit.getOnlinePlayers()){
             if(zoneManager.getZoneByPlayer(p.getUniqueId()) != null){
@@ -104,6 +120,10 @@ public class EventManager implements Listener {
         zoneManager.onPlayerLeaveZone(p,zoneName);
         rankingManager.onPlayerLeaveZone(p);
         scoreManager.onPlayerLeaveZone(p);
+    }
+
+    private void onAfkPlayerToggleConcealed(UUID uuid, boolean isConcealed){
+
     }
 
 }
