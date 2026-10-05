@@ -7,7 +7,7 @@ import space.gorogoro.afkscoreboard.PlayerDataManager;
 import space.gorogoro.afkscoreboard.RankingManager;
 import space.gorogoro.afkscoreboard.ZoneManager;
 import space.gorogoro.afkscoreboard.GameScoreBoardManager;
-import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.EventManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 

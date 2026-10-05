@@ -10,7 +10,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import space.gorogoro.afkscoreboard.ZoneManager;
-import space.gorogoro.afkscoreboard.event.EventManager;
+import space.gorogoro.afkscoreboard.EventManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import space.gorogoro.afkscoreboard.event.EventManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
 import java.io.File;

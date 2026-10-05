@@ -1,6 +1,6 @@
-package space.gorogoro.afkscoreboard.event;
+package space.gorogoro.afkscoreboard;
 
-import space.gorogoro.afkscoreboard.*;
+import org.bukkit.event.player.PlayerMoveEvent;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -22,14 +22,18 @@ public class EventManager implements Listener {
     private final ScoreManager scoreManager;
     private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
+    private final CosmeticService cosmeticService;
 
-    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager,CosmeticService cosmeticService) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
+
+        this.cosmeticService = cosmeticService;
+
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
 
@@ -119,7 +123,12 @@ public class EventManager implements Listener {
     }
 
     private void onAfkPlayerToggleConcealed(UUID uuid, boolean isConcealed){
+        rankingManager.onAfkPlayerToggleConcealed(uuid,isConcealed);
+    }
 
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event){
+        cosmeticService.onPlayerMove(event);
     }
 
 }

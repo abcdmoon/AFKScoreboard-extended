@@ -61,6 +61,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
@@ -172,6 +173,15 @@ final class CosmeticService implements Listener {
                 clear(null, uuid);
             }
         }
+    }
+
+    void onPlayerMove(PlayerMoveEvent event) {
+        // 向きが変わったときだけ、頭上の MOB の向きを合わせる（MOB がいない人は Map を引いて抜ける）
+        if ((event.getFrom().getYaw() != event.getTo().getYaw()
+                || event.getFrom().getPitch() != event.getTo().getPitch())) {
+            syncRotation(event.getPlayer(), event.getTo());
+        }
+
     }
 
     /**

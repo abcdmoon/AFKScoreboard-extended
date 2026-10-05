@@ -17,6 +17,8 @@ public class RankingManager {
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
     private final Set<UUID> hiddenPlayers = new HashSet<>();
+    private final WeeklyStore weeklyStore;
+
     public boolean isHidden(UUID uuid) {
         return hiddenPlayers.contains(uuid);
     }
@@ -30,19 +32,19 @@ public class RankingManager {
         }
     }
 
-    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager) {
+    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager,WeeklyStore weeklyStore) {
         this.configManager = configManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
+
+        this.weeklyStore = weeklyStore;
 
         init();
     }
     private void init(){
         hiddenPlayers.clear();
         hiddenPlayers.addAll(playerDataManager.getHiddenInRankPlayers());
-
-        AFKScoreboard.registerTaskTimer(this::updateLeaderboard,0,100L);
     }
 
     public void onPlayerEnterZone(Player player){
@@ -69,9 +71,59 @@ public class RankingManager {
     /**
      * ランキングを計算してスコアボードを更新
      */
-    private void updateLeaderboard() {
+    public void updateLeaderboard() {
         Scoreboard afkScoreboard = gameScoreBoardManager.getScoreboard(GameScoreBoardManager.ScoreboardType.SCORE);
         Objective afkObjective = gameScoreBoardManager.getObjective(GameScoreBoardManager.ScoreboardType.SCORE);
+
+        for (String entry : afkScoreboard.getEntries()) {
+            afkScoreboard.resetScores(entry);
+        }
+
+        // 今ゾーンにいて、ランキング表示がオンの人を、今週の累計で並べる
+        List<Map.Entry<UUID, Integer>> sortedTop10 = new ArrayList<>();
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            sortedTop10.add(Map.entry(online.getUniqueId(), weeklyStore.getSeconds(online.getUniqueId())));
+        }
+        sortedTop10.sort(Map.Entry.<UUID, Integer>comparingByValue().reversed());
+        if (sortedTop10.size() > 10) {
+            sortedTop10 = sortedTop10.subList(0, 10);
+        }
+
+        // 初期値の動的計算: ヘッダー2行 ＋ ランクインしている人数
+        // 誰もおらず「誰も放置していません」の1行を表示する場合は「2行 + 1行 = 3」になります
+        int scoreValue = 2 + (sortedTop10.isEmpty() ? 1 : sortedTop10.size());
+
+        // ヘッダー部分の設定
+        afkObjective.getScore("§7位 プレイヤー §b今週の放置").setScore(scoreValue--);
+        afkObjective.getScore("§8----------------------").setScore(scoreValue--);
+
+        if (sortedTop10.isEmpty()) {
+            afkObjective.getScore("§7 現在、誰も放置していません").setScore(scoreValue--);
+            return;
+        }
+
+        int rank = 1;
+        for (Map.Entry<UUID, Integer> entry : sortedTop10) {
+            UUID uuid = entry.getKey();
+            Player player = Bukkit.getPlayer(uuid);
+
+            if (player == null || !player.isOnline()) {
+                continue;
+            }
+
+            String playerName = player.getName();
+            if (playerName.length() > 12) {
+                playerName = playerName.substring(0, 12);
+            }
+            int sessionSeconds = entry.getValue();
+
+            String currentStr = Util.formatTimeCompact(sessionSeconds);
+            String scoreLine = String.format("§7#%d §f%s §b%s", rank, playerName, currentStr);
+
+            afkObjective.getScore(scoreLine).setScore(scoreValue--);
+            rank++;
+        }
+        /*
         for (String entry : afkScoreboard.getEntries()) {
             afkScoreboard.resetScores(entry);
         }
@@ -117,6 +169,7 @@ public class RankingManager {
             afkObjective.getScore(scoreLine).setScore(scoreValue--);
             rank++;
         }
+         */
     }
 
     /**
