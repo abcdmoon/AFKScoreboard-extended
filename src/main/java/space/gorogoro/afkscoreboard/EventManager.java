@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 
 import java.util.Map;

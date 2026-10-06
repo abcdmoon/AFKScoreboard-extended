@@ -12,6 +12,9 @@ import org.jspecify.annotations.NonNull;
 import space.gorogoro.afkscoreboard.command.CommandManager;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticStore;
+import space.gorogoro.afkscoreboard.data.ConfigManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.WeeklyStore;
 import space.gorogoro.afkscoreboard.prefix.PrefixConfigManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
@@ -52,7 +55,6 @@ public class AFKScoreboard extends JavaPlugin {
         playerDataManager = new PlayerDataManager(this,configManager);
 
         this.weeklyStore = new WeeklyStore(this,zoneManager);
-        this.weeklyStore.load();
         // 見た目は別タスク。パーティクルは既定 3 秒、追従チェックは 1 秒。乗客なので座標の毎 tick 更新はしない
         this.cosmetics = new CosmeticService(this,zoneManager,playerDataManager);
         long particleInterval = getConfig().getLong("particle-interval-ticks");
@@ -67,7 +69,7 @@ public class AFKScoreboard extends JavaPlugin {
         prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry,configManager, playerDataManager);
         scoreManager = new ScoreManager(playerDataManager,prefixManager,zoneManager);
         rankingManager = new RankingManager(configManager,scoreManager, playerDataManager,gameScoreBoardManager,zoneManager,weeklyStore);
-        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,playerDataManager,prefixManager);
+        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,playerDataManager,prefixManager,cosmetics);
         zoneManager.reloadAxAFKZones(eventManager,prefixRegistry);
 
         getServer().getPluginManager().registerEvents(eventManager, this);

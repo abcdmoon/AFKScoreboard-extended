@@ -12,7 +12,7 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
-import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.RankingManager;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 

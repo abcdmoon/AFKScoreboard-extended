@@ -1,6 +1,7 @@
 package space.gorogoro.afkscoreboard.prefix;
 
-import me.dragonwhale7.afkscoreboard.AFKScoreboard;
+
+import space.gorogoro.afkscoreboard.AFKScoreboard;
 
 import java.util.*;
 

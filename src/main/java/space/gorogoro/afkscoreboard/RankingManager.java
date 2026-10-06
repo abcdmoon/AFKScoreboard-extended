@@ -5,6 +5,9 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import space.gorogoro.afkscoreboard.data.ConfigManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.WeeklyStore;
 
 import java.util.*;
 

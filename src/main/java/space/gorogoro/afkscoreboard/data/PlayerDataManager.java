@@ -1,10 +1,11 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.data;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
 
 import java.io.File;
 import java.io.IOException;

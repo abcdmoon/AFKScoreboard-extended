@@ -1,9 +1,9 @@
 package space.gorogoro.afkscoreboard.prefix;
 
-import space.gorogoro.afkscoreboard.ConfigManager;
-import space.gorogoro.afkscoreboard.ConfigManager.PrefixMode;
+import space.gorogoro.afkscoreboard.data.ConfigManager;
+import space.gorogoro.afkscoreboard.data.ConfigManager.PrefixMode;
 import space.gorogoro.afkscoreboard.GameScoreBoardManager;
-import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;

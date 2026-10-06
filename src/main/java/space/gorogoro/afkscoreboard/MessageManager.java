@@ -3,6 +3,8 @@ package space.gorogoro.afkscoreboard;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import space.gorogoro.afkscoreboard.data.ConfigManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 
 public class MessageManager {
 

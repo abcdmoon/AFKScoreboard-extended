@@ -1,6 +1,7 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.data;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +85,7 @@ public class ConfigManager {
     /**
      * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
      */
-    public Set<UUID> loadWelcomedPlayers() {
+    Set<UUID> loadWelcomedPlayers() {
         Set<UUID> welcomedPlayers = new HashSet<>();
         List<String> uuidStrings = plugin.getConfig().getStringList("welcomed-players");
         for (String s : uuidStrings) {
@@ -98,7 +99,7 @@ public class ConfigManager {
     /**
      * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
      */
-    public void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
+    void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
         List<String> uuidStrings = welcomedPlayers.stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
@@ -106,13 +107,13 @@ public class ConfigManager {
         requestSaveConfig();
     }
 
-    public void addWelcomedPlayer(UUID uuid){
+    void addWelcomedPlayer(UUID uuid){
         Set<UUID> welcomedPlayers = loadWelcomedPlayers();
         welcomedPlayers.add(uuid);
         saveWelcomedPlayers(welcomedPlayers);
     }
 
-    public void removeWelcomedPlayer(UUID uuid){
+    void removeWelcomedPlayer(UUID uuid){
         Set<UUID> welcomedPlayers = loadWelcomedPlayers();
         welcomedPlayers.remove(uuid);
         saveWelcomedPlayers(welcomedPlayers);
@@ -121,7 +122,7 @@ public class ConfigManager {
     /**
      * config.yml から非表示プレイヤーのUUIDを読み込む
      */
-    public Set<UUID> loadHiddenPlayers() {
+    Set<UUID> loadHiddenPlayers() {
         Set<UUID> hiddenPlayers = new HashSet<>();
         List<String> uuidStrings = plugin.getConfig().getStringList("hidden-players");
         for (String s : uuidStrings) {
@@ -135,7 +136,7 @@ public class ConfigManager {
     /**
      * 非表示プレイヤーのUUIDを config.yml へ保存する
      */
-    public void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
+    void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
         List<String> uuidStrings = hiddenPlayers.stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
@@ -143,13 +144,13 @@ public class ConfigManager {
         requestSaveConfig();
     }
 
-    public void addHiddenPlayer(UUID uuid) {
+    void addHiddenPlayer(UUID uuid) {
         Set<UUID> hiddenPlayers = loadHiddenPlayers();
         hiddenPlayers.add(uuid);
         saveHiddenPlayers(hiddenPlayers);
     }
 
-    public void removeHiddenPlayer(UUID uuid) {
+    void removeHiddenPlayer(UUID uuid) {
         Set<UUID> hiddenPlayers = loadHiddenPlayers();
         hiddenPlayers.remove(uuid);
         saveHiddenPlayers(hiddenPlayers);

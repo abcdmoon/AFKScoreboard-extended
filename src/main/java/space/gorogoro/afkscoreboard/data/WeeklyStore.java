@@ -1,7 +1,9 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.data;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
+import space.gorogoro.afkscoreboard.ZoneManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,10 +43,12 @@ public final class WeeklyStore {
     private String weekId = "";
     private boolean dirty;
 
-    WeeklyStore(AFKScoreboard plugin,ZoneManager zoneManager) {
+    public WeeklyStore(AFKScoreboard plugin,ZoneManager zoneManager) {
         this.plugin = plugin;
         this.zoneManager = zoneManager;
         this.file = new File(plugin.getDataFolder(), "data.yml");
+
+        load();
         AFKScoreboard.addOnDisableTask(this::shutdown);
     }
 
@@ -85,7 +89,7 @@ public final class WeeklyStore {
         }
     }
 
-    int getSeconds(UUID uuid) {
+    public int getSeconds(UUID uuid) {
         return seconds.getOrDefault(uuid, 0);
     }
 
@@ -117,7 +121,7 @@ public final class WeeklyStore {
      * メインスレッドで YAML を作り、ファイルへの書き込みだけを専用スレッドへ渡す。
      * 書き込み待ちがある間の変更は、次の保存で最新の内容にまとめる。
      */
-    void requestSave() {
+    public void requestSave() {
         if (!dirty) {
             return;
         }

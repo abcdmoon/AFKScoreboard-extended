@@ -3,7 +3,7 @@ package space.gorogoro.afkscoreboard.command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.RankingManager;
 import space.gorogoro.afkscoreboard.ZoneManager;
 import space.gorogoro.afkscoreboard.GameScoreBoardManager;

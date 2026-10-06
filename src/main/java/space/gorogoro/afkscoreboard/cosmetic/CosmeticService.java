@@ -21,7 +21,7 @@ import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import space.gorogoro.afkscoreboard.AFKScoreboard;
-import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.Util;
 import space.gorogoro.afkscoreboard.ZoneManager;
 
@@ -123,7 +123,7 @@ public final class CosmeticService implements Listener {
     }
 
     public void onPlayerQuit(UUID uuid) {
-        active.remove(uuid);
+        clear(uuid);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

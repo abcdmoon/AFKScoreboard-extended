@@ -101,10 +101,12 @@ public class ZoneManager {
 
     public void onPlayerEnterZone(Player player,String zoneName) {
         loadedZones.get(zoneName).addAfkPlayer(player.getUniqueId());
+        playerZones.put(player.getUniqueId(),zoneName);
     }
 
     public void onPlayerLeaveZone(Player player,String zoneName) {
         loadedZones.get(zoneName).removeAfkPlayer(player.getUniqueId());
+        playerZones.remove(player.getUniqueId());
     }
 
     /**
@@ -112,12 +114,7 @@ public class ZoneManager {
      * @return プレイヤーの所在ゾーンの名前 どこにも属していない場合 null
      */
     public String getZoneByPlayer(UUID uuid) {
-        for(ZoneArea area : loadedZones.values()){
-            if(area.isInArea(uuid)){
-                return area.getName();
-            }
-        }
-        return null;
+        return playerZones.get(uuid);
     }
 
     /**
