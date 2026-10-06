@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 
 import java.util.List;
+import java.util.Locale;
 
 class AfkDebugExecuter {
 
@@ -56,7 +57,7 @@ class AfkDebugExecuter {
                 throw new SimpleCommandExceptionType(message).create();
             }
 
-            switch (ctx.getArgument("option", String.class)) {
+            switch (ctx.getArgument("option", String.class).toLowerCase(Locale.ROOT)) {
                 case "particle", "30m", "30" -> sendDebugGrant(player, cosmetics.debugGrant(player, true, false, false));
                 case "block", "1h", "60" -> sendDebugGrant(player, cosmetics.debugGrant(player, false, true, false));
                 case "mount", "3h", "180" -> sendDebugGrant(player, cosmetics.debugGrant(player, false, false, true));

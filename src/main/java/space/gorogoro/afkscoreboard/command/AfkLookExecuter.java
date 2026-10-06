@@ -17,6 +17,7 @@ import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticStore;
 
 import java.util.List;
+import java.util.Locale;
 
 public class AfkLookExecuter {
     private final CosmeticService cosmetics;
@@ -59,7 +60,7 @@ public class AfkLookExecuter {
 
             List<CosmeticStore.Slot> slots;
             String label;
-            switch (ctx.getArgument("option", String.class)) {
+            switch (ctx.getArgument("option", String.class).toLowerCase(Locale.ROOT)) {
                 case "particle" -> {
                     slots = List.of(CosmeticStore.Slot.PARTICLE);
                     label = "パーティクル";
