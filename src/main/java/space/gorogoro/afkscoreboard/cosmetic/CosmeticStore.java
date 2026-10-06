@@ -1,7 +1,8 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.cosmetic;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * 見た目ボーナス用の今週の秒数と抽選結果。cosmetics.yml への書き込みだけを専用スレッドで行う。
  * 週間累計ランキングの data.yml とは別ファイル。
  */
-final class CosmeticStore {
+public final class CosmeticStore {
 
     private final AFKScoreboard plugin;
     private final File file;
@@ -58,8 +59,7 @@ final class CosmeticStore {
             return;
         }
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-        String storedWeek = yaml.getString("week-id");
-        weekId = storedWeek == null ? "" : storedWeek;
+        weekId = yaml.getString("week-id","");
         ConfigurationSection section = yaml.getConfigurationSection("players");
         if (section != null) {
             for (String key : section.getKeys(false)) {
@@ -274,7 +274,7 @@ final class CosmeticStore {
     /**
      * /afklook で切り替える見た目の種類
      */
-    enum Slot {
+    public enum Slot {
         PARTICLE("particle"),
         BLOCK("block"),
         MOUNT("mount");

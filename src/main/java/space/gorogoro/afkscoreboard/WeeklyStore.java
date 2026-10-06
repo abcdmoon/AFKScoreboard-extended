@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * 今週の放置秒数。判定はメモリ上で行い、data.yml への書き込みだけを専用スレッドで行う。
  */
-final class WeeklyStore {
+public final class WeeklyStore {
 
     private final AFKScoreboard plugin;
     private final File file;
@@ -45,6 +45,7 @@ final class WeeklyStore {
         this.plugin = plugin;
         this.zoneManager = zoneManager;
         this.file = new File(plugin.getDataFolder(), "data.yml");
+        AFKScoreboard.addOnDisableTask(this::shutdown);
     }
 
     void load() {

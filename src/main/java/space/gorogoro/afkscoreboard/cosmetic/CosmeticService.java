@@ -1,64 +1,17 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.cosmetic;
 
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.Keyed;
-import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
-import org.bukkit.Registry;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.type.HangingMoss;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.Axolotl;
-import org.bukkit.entity.Bee;
-import org.bukkit.entity.BlockDisplay;
-import org.bukkit.entity.Camel;
-import org.bukkit.entity.Cat;
-import org.bukkit.entity.Chicken;
-import org.bukkit.entity.Cow;
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Display;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fox;
-import org.bukkit.entity.Frog;
-import org.bukkit.entity.Goat;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Mob;
-import org.bukkit.entity.MushroomCow;
-import org.bukkit.entity.Panda;
-import org.bukkit.entity.Parrot;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.PolarBear;
-import org.bukkit.entity.PufferFish;
-import org.bukkit.entity.Rabbit;
-import org.bukkit.entity.Salmon;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Sittable;
-import org.bukkit.entity.Slime;
-import org.bukkit.entity.Sniffer;
-import org.bukkit.entity.TextDisplay;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Wolf;
-import org.bukkit.entity.ZombieNautilus;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.CreeperPowerEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDismountEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityMountEvent;
-import org.bukkit.event.entity.ExplosionPrimeEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -67,14 +20,11 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import space.gorogoro.afkscoreboard.AFKScoreboard;
+import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.ZoneManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
@@ -82,7 +32,7 @@ import java.util.function.Consumer;
  * ゾーン内だけの見た目。パーティクルは間隔を空け、頭上のブロックと MOB は乗客なので毎 tick 動かさない。
  * エンダードラゴンは入れない。
  */
-final class CosmeticService implements Listener {
+public final class CosmeticService implements Listener {
 
     private final AFKScoreboard plugin;
     private final ZoneManager zoneManager;
@@ -99,20 +49,24 @@ final class CosmeticService implements Listener {
     private int weekClock;
     private boolean allowDismount;
 
-    CosmeticService(AFKScoreboard plugin,ZoneManager zoneManager,PlayerDataManager playerDataManager) {
+    public CosmeticService(AFKScoreboard plugin,ZoneManager zoneManager,PlayerDataManager playerDataManager) {
         this.plugin = plugin;
         this.zoneManager = zoneManager;
         this.playerDataManager = playerDataManager;
         this.store = new CosmeticStore(plugin);
         this.tagKey = new NamespacedKey(plugin, "cosmetic");
         this.ownerKey = new NamespacedKey(plugin, "owner");
+
+        load();
+        removeStrayEntities();
+        AFKScoreboard.addOnDisableTask(this::shutdown);
     }
 
     void load() {
         store.load();
     }
 
-    void requestSave() {
+    public void requestSave() {
         store.requestSave();
     }
 
@@ -135,7 +89,7 @@ final class CosmeticService implements Listener {
         allowDismount = true;
         try {
             for (UUID uuid : new ArrayList<>(active.keySet())) {
-                clear(Bukkit.getPlayer(uuid), uuid);
+                clear(uuid);
             }
             removeStrayEntities();
         } finally {
@@ -147,48 +101,47 @@ final class CosmeticService implements Listener {
      * 1 秒に 1 回。ゾーン内の秒数を足し、見た目を合わせる。ゾーン外とログアウトでは消す。
      * /afkhide で非表示中の人とスペクテイター・バニッシュ中の人は、秒数だけ数えて見た目は付けない。
      */
-    void maintain() {
+    public void maintain() {
         if (++weekClock >= 60) {
             weekClock = 0;
             if (store.rolloverIfNeeded()) {
                 removeAll();
             }
         }
-        Set<UUID> online = new HashSet<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            online.add(player.getUniqueId());
-            if (zoneManager.getZoneByPlayer(player.getUniqueId()) != null) {
+
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            if(zoneManager.getZoneByPlayer(player.getUniqueId()) != null) {
                 store.addSecond(player.getUniqueId());
-                if (playerDataManager.isHiddenInRank(player.getUniqueId()) || playerDataManager.isConcealed(player.getUniqueId())) {
-                    clear(player);
-                } else {
-                    sync(player);
-                }
-            } else {
-                clear(player);
             }
-        }
-        for (UUID uuid : new ArrayList<>(active.keySet())) {
-            if (!online.contains(uuid)) {
-                clear(null, uuid);
-            }
+            sync(player);
         }
     }
 
-    void onPlayerMove(PlayerMoveEvent event) {
+    public void onPlayerEnterZone(UUID uuid) {
+
+    }
+
+    public void onPlayerLeaveZone(UUID uuid) {
+        clear(uuid);
+    }
+
+    public void onPlayerQuit(UUID uuid) {
+        active.remove(uuid);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
         // 向きが変わったときだけ、頭上の MOB の向きを合わせる（MOB がいない人は Map を引いて抜ける）
-        if ((event.getFrom().getYaw() != event.getTo().getYaw()
-                || event.getFrom().getPitch() != event.getTo().getPitch())) {
+        if (event.hasChangedOrientation()) {
             syncRotation(event.getPlayer(), event.getTo());
         }
-
     }
 
     /**
      * デバッグ付与。放置秒数は増やさない。未抽選の枠だけその場で決める。
      * ゾーン内ならすぐに出し、ゾーン外では入ったときに出す。
      */
-    DebugGrant debugGrant(Player player, boolean particle, boolean block, boolean mount) {
+    public DebugGrant debugGrant(Player player, boolean particle, boolean block, boolean mount) {
         CosmeticStore.Record record = store.record(player.getUniqueId());
         DebugGrant grant = new DebugGrant();
         boolean changed = false;
@@ -237,7 +190,7 @@ final class CosmeticService implements Listener {
     /**
      * /afklook reset。見た目をすべて外す。今週の放置秒数は残すので、条件を満たしている枠は次の 1 秒で引き直される。
      */
-    boolean debugClear(Player player) {
+    public boolean debugClear(Player player) {
         CosmeticStore.Record record = store.record(player.getUniqueId());
         boolean had = CosmeticKinds.ParticleKind.parse(record.particle) != null
                 || CosmeticKinds.BlockKind.parse(record.block) != null
@@ -250,7 +203,7 @@ final class CosmeticService implements Listener {
             store.markDirty();
             store.requestSave();
         }
-        clear(player);
+        clear(player.getUniqueId());
         return had;
     }
 
@@ -259,7 +212,7 @@ final class CosmeticService implements Listener {
      * 複数指定(all)のときは、1 つでも表示中なら全部を非表示に、全部非表示なら全部を表示にする。
      * @return 切り替え後に非表示なら true
      */
-    boolean toggleLook(Player player, List<CosmeticStore.Slot> slots) {
+    public boolean toggleLook(Player player, List<CosmeticStore.Slot> slots) {
         UUID uuid = player.getUniqueId();
         boolean anyOn = false;
         for (CosmeticStore.Slot slot : slots) {
@@ -278,11 +231,11 @@ final class CosmeticService implements Listener {
     /**
      * /afkhide・/afklook の切り替え直後に、次の 1 秒を待たずに見た目を合わせる。秒数は足さない。
      */
-    void refresh(Player player) {
+    public void refresh(Player player) {
         if (zoneManager.getZoneByPlayer(player.getUniqueId())!=null && !(playerDataManager.isHiddenInRank(player.getUniqueId())) && (!playerDataManager.isConcealed(player.getUniqueId()))) {
             sync(player);
         } else {
-            clear(player);
+            clear(player.getUniqueId());
         }
     }
 
@@ -315,7 +268,7 @@ final class CosmeticService implements Listener {
      * 足元のブロック(花びら、キノコと枯れ木の地面側)を座面の高さに上げ下げし、頭上の MOB の向きを合わせる。
      * 乗っている間は PlayerMoveEvent が来ないため。見るのは足元ブロックか頭上 MOB がある人だけ。
      */
-    void tickSeated() {
+    public void tickSeated() {
         for (Map.Entry<UUID, Active> entry : active.entrySet()) {
             Active state = entry.getValue();
             boolean hasFloor = !state.floorDisplays.isEmpty();
@@ -345,7 +298,7 @@ final class CosmeticService implements Listener {
         }
     }
 
-    void tickParticles() {
+    public void tickParticles() {
         for (Map.Entry<UUID, Active> entry : active.entrySet()) {
             Player player = Bukkit.getPlayer(entry.getKey());
             Active state = entry.getValue();
@@ -361,13 +314,20 @@ final class CosmeticService implements Listener {
     }
 
     private void sync(Player player) {
-        CosmeticStore.Record record = store.record(player.getUniqueId());
-        if (unlockIfNeeded(record)) {
+        UUID uuid = player.getUniqueId();
+        if(playerDataManager.isHiddenInRank(uuid)||playerDataManager.isConcealed(uuid)) {
+            clear(uuid);
+            return;
+        }
+
+        CosmeticStore.Record record = store.record(uuid);
+        if(unlockIfNeeded(record)){
             store.markDirty();
             store.requestSave();
         }
-        Active state = active.computeIfAbsent(player.getUniqueId(), ignored -> new Active());
-        UUID uuid = player.getUniqueId();
+
+        Active state = active.computeIfAbsent(uuid, ignored -> new Active());
+
         // /afklook で非表示にしている種類は、抽選結果は残したまま付けない
         CosmeticKinds.ParticleKind particle = store.isOff(uuid, CosmeticStore.Slot.PARTICLE)
                 ? null : CosmeticKinds.ParticleKind.parse(record.particle);
@@ -434,14 +394,7 @@ final class CosmeticService implements Listener {
         return value > 0 ? value : fallback;
     }
 
-    private void clear(Player player) {
-        if (player == null) {
-            return;
-        }
-        clear(player, player.getUniqueId());
-    }
-
-    private void clear(Player player, UUID uuid) {
+    private void clear(UUID uuid) {
         boolean outer = allowDismount;
         allowDismount = true;
         try {
@@ -451,6 +404,7 @@ final class CosmeticService implements Listener {
                 removeRider(state);
                 removeNameTag(state);
             }
+            Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
                 stripPassengers(player);
             }
@@ -1167,7 +1121,7 @@ final class CosmeticService implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        clear(event.getEntity());
+        clear(event.getEntity().getUniqueId());
     }
 
     private static final class Active {
@@ -1191,15 +1145,15 @@ final class CosmeticService implements Listener {
         }
     }
 
-    static final class DebugGrant {
-        String particle;
-        String block;
-        String mount;
-        boolean particleNew;
-        boolean blockNew;
-        boolean mountNew;
-        boolean inZone;
-        boolean hidden;
-        boolean concealed;
+    public static final class DebugGrant {
+        public String particle;
+        public String block;
+        public String mount;
+        public boolean particleNew;
+        public boolean blockNew;
+        public boolean mountNew;
+        public boolean inZone;
+        public boolean hidden;
+        public boolean concealed;
     }
 }

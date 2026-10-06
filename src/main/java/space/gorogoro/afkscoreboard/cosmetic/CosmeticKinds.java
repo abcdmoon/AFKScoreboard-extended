@@ -1,4 +1,4 @@
-package space.gorogoro.afkscoreboard;
+package space.gorogoro.afkscoreboard.cosmetic;
 
 import org.bukkit.Material;
 import org.bukkit.Particle;

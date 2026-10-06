@@ -16,39 +16,30 @@ public class RankingManager {
     private final GameScoreBoardManager gameScoreBoardManager;
 
     // ランキングから自分を非表示にしているプレイヤーのUUIDを保持するセット
-    private final Set<UUID> hiddenPlayers = new HashSet<>();
     private final WeeklyStore weeklyStore;
+    private final ZoneManager zoneManager;
 
-    public boolean isHidden(UUID uuid) {
-        return hiddenPlayers.contains(uuid);
-    }
     public void toggleHidden(UUID uuid) {
-        if(hiddenPlayers.contains(uuid)) {
-            hiddenPlayers.remove(uuid);
+        if(playerDataManager.isHiddenInRank(uuid)) {
             playerDataManager.setHiddenInRank(uuid, false);
         }else {
-            hiddenPlayers.add(uuid);
             playerDataManager.setHiddenInRank(uuid, true);
         }
     }
 
-    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager,WeeklyStore weeklyStore) {
+    public RankingManager(ConfigManager configManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, GameScoreBoardManager gameScoreBoardManager,ZoneManager zoneManager,WeeklyStore weeklyStore) {
         this.configManager = configManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.gameScoreBoardManager = gameScoreBoardManager;
+        this.zoneManager = zoneManager;
 
         this.weeklyStore = weeklyStore;
 
-        init();
-    }
-    private void init(){
-        hiddenPlayers.clear();
-        hiddenPlayers.addAll(playerDataManager.getHiddenInRankPlayers());
     }
 
     public void onPlayerEnterZone(Player player){
-        if(playerDataManager.isConcealed(player.getUniqueId())){
+        if(Util.isConcealed(player.getUniqueId())) {
             return;
         }
         gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
@@ -56,16 +47,6 @@ public class RankingManager {
 
     public void onPlayerLeaveZone(Player player){
         gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
-    }
-
-    public void onAfkPlayerToggleConcealed(UUID uuid, boolean isConcealed){
-        Player player = Bukkit.getPlayer(uuid);
-        if(player==null){return;}
-        if(isConcealed){
-            gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.MAIN);
-        }else {
-            gameScoreBoardManager.showScoreboard(player, GameScoreBoardManager.ScoreboardType.SCORE);
-        }
     }
 
     /**
@@ -79,10 +60,18 @@ public class RankingManager {
             afkScoreboard.resetScores(entry);
         }
 
-        // 今ゾーンにいて、ランキング表示がオンの人を、今週の累計で並べる
         List<Map.Entry<UUID, Integer>> sortedTop10 = new ArrayList<>();
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            sortedTop10.add(Map.entry(online.getUniqueId(), weeklyStore.getSeconds(online.getUniqueId())));
+        for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
+            for(UUID uuid : zone.getAfkPlayers()){
+                if(Util.isConcealed(uuid)) {
+                    continue;
+                }
+                gameScoreBoardManager.showScoreboard(Objects.requireNonNull(Bukkit.getPlayer(uuid)), GameScoreBoardManager.ScoreboardType.SCORE);
+                if(playerDataManager.isHiddenInRank(uuid)) {
+                    continue;
+                }
+                sortedTop10.add(Map.entry(uuid, weeklyStore.getSeconds(uuid)));
+            }
         }
         sortedTop10.sort(Map.Entry.<UUID, Integer>comparingByValue().reversed());
         if (sortedTop10.size() > 10) {
@@ -123,53 +112,7 @@ public class RankingManager {
             afkObjective.getScore(scoreLine).setScore(scoreValue--);
             rank++;
         }
-        /*
-        for (String entry : afkScoreboard.getEntries()) {
-            afkScoreboard.resetScores(entry);
-        }
 
-        // 現在放置中の上位10人を取得
-        List<Map.Entry<UUID, Integer>> scoreList = scoreManager.getSortedList();
-        List<Map.Entry<Player,Integer>> sortedPlayerTop10 = scoreList.stream()
-                .filter(e->(!isHidden(e.getKey()))&&!playerDataManager.isConcealed(e.getKey()))
-                .map(entry->{
-                    Player player = Bukkit.getPlayer(entry.getKey());
-                    if(player == null||!player.isOnline()) {
-                        return null;
-                    }else{
-                        return Map.entry(player,entry.getValue());
-                    }
-                })
-                .filter(Objects::nonNull)
-                .limit(10)
-                .toList();
-
-        // 初期値の動的計算: ヘッダー2行 ＋ ランクインしている人数
-        // 誰もおらず「誰も放置していません」の1行を表示する場合は「2行 + 1行 = 3」になります
-        int scoreValue = 2 + (sortedPlayerTop10.isEmpty() ? 1 : sortedPlayerTop10.size());
-
-        // ヘッダー部分の設定
-        afkObjective.getScore("§7位 プレイヤー §b連続放置時間").setScore(scoreValue--);
-        afkObjective.getScore("§8----------------------").setScore(scoreValue--);
-
-        if (sortedPlayerTop10.isEmpty()) {
-            afkObjective.getScore("§7 現在、誰も放置していません").setScore(scoreValue);
-            return;
-        }
-
-        int rank = 1;
-        for (Map.Entry<Player, Integer> entry : sortedPlayerTop10) {
-
-            String playerName = entry.getKey().getName();
-            int sessionSeconds = entry.getValue();
-
-            String currentStr = Util.formatTimeCompact(sessionSeconds);
-            String scoreLine = String.format("§7#%d §f%s §b%s", rank, playerName, currentStr);
-
-            afkObjective.getScore(scoreLine).setScore(scoreValue--);
-            rank++;
-        }
-         */
     }
 
     /**
@@ -185,7 +128,7 @@ public class RankingManager {
         // 現在放置中の上位10人を取得
         List<Map.Entry<UUID, Integer>> sortedTop10 = playerDataManager.getSortedList();
         sortedTop10 = sortedTop10.stream()
-                .filter(e->!isHidden(e.getKey()))
+                .filter(e->!playerDataManager.isHiddenInRank(e.getKey()))
                 .limit(10)
                 .toList();
 

@@ -1,13 +1,12 @@
 package space.gorogoro.afkscoreboard;
 
-import org.bukkit.event.player.PlayerMoveEvent;
-import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 
 import java.util.Map;
 import java.util.Objects;
@@ -22,17 +21,14 @@ public class EventManager implements Listener {
     private final ScoreManager scoreManager;
     private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
-    private final CosmeticService cosmeticService;
 
-    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager,CosmeticService cosmeticService) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
-
-        this.cosmeticService = cosmeticService;
 
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
@@ -47,19 +43,6 @@ public class EventManager implements Listener {
                 }
                 if(now!=null){
                     onPlayerEnterZone(p,now);
-                }
-            }
-        }
-    }
-
-    public void checkPlayerState(){
-        for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
-            for(UUID uuid : zone.getAfkPlayers()){
-                boolean before = playerDataManager.isConcealed(uuid);
-                boolean now = Util.isConcealed(uuid);
-
-                if(before != now){
-                    onAfkPlayerToggleConcealed(uuid,now);
                 }
             }
         }
@@ -122,13 +105,5 @@ public class EventManager implements Listener {
         scoreManager.onPlayerLeaveZone(p);
     }
 
-    private void onAfkPlayerToggleConcealed(UUID uuid, boolean isConcealed){
-        rankingManager.onAfkPlayerToggleConcealed(uuid,isConcealed);
-    }
-
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event){
-        cosmeticService.onPlayerMove(event);
-    }
 
 }

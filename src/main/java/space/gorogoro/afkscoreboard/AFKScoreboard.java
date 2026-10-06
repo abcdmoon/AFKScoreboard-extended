@@ -1,31 +1,27 @@
 package space.gorogoro.afkscoreboard;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import io.papermc.paper.scoreboard.numbers.NumberFormat;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.*;
 import org.jspecify.annotations.NonNull;
 import space.gorogoro.afkscoreboard.command.CommandManager;
+import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
+import space.gorogoro.afkscoreboard.cosmetic.CosmeticStore;
 import space.gorogoro.afkscoreboard.prefix.PrefixConfigManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 public class AFKScoreboard extends JavaPlugin {
-
-    private Scoreboard afkScoreboard;
-    private Objective afkObjective;
-
 
     // 今週の累計秒数（data.yml）。ボードに出すのは、今ゾーンにいる人だけ
     private WeeklyStore weeklyStore;
@@ -58,22 +54,20 @@ public class AFKScoreboard extends JavaPlugin {
         this.weeklyStore.load();
         // 見た目は別タスク。パーティクルは既定 3 秒、追従チェックは 1 秒。乗客なので座標の毎 tick 更新はしない
         this.cosmetics = new CosmeticService(this,zoneManager,playerDataManager);
-        this.cosmetics.load();
-        this.cosmetics.removeStrayEntities();
         long particleInterval = getConfig().getLong("particle-interval-ticks");
         if (particleInterval < 20L) {
             particleInterval = 60L;
         }
 
-        playerDataManager = new PlayerDataManager(this);
+        playerDataManager = new PlayerDataManager(this,configManager);
         prefixConfigManager = new PrefixConfigManager(this);
         messageManager = new MessageManager(configManager,playerDataManager);
         prefixRegistry = new PrefixRegistry(prefixConfigManager);
         gameScoreBoardManager = new GameScoreBoardManager(prefixRegistry);
         prefixManager = new PrefixManager(gameScoreBoardManager, prefixRegistry,configManager, playerDataManager);
         scoreManager = new ScoreManager(playerDataManager,prefixManager,zoneManager);
-        rankingManager = new RankingManager(configManager,scoreManager, playerDataManager,gameScoreBoardManager,weeklyStore);
-        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,playerDataManager,prefixManager,cosmetics);
+        rankingManager = new RankingManager(configManager,scoreManager, playerDataManager,gameScoreBoardManager,zoneManager,weeklyStore);
+        eventManager = new EventManager(zoneManager, messageManager, rankingManager, scoreManager,playerDataManager,prefixManager);
         zoneManager.reloadAxAFKZones(eventManager,prefixRegistry);
 
         getServer().getPluginManager().registerEvents(eventManager, this);
@@ -82,22 +76,6 @@ public class AFKScoreboard extends JavaPlugin {
             CommandManager.registerCommands(registrarEvent.registrar(),rankingManager,zoneManager, playerDataManager,gameScoreBoardManager,prefixManager,prefixRegistry,eventManager);
         });
 
-        // スコアボードの初期化
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        this.afkScoreboard = manager.getNewScoreboard();
-
-        // タイトル (Paper推奨の形式に修正)
-        this.afkObjective = afkScoreboard.registerNewObjective(
-                "afk_top10",
-                Criteria.DUMMY,
-                LegacyComponentSerializer.legacySection().deserialize("§e§l放置時間ランキング"),
-                RenderType.INTEGER
-        );
-        this.afkObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        // スコアのフォーマットを「空白（Blank）」に設定することで、右側の数字を完全に非表示
-        this.afkObjective.numberFormat(NumberFormat.blank());
-
         // スコアボードの更新頻度（5秒ごと = 100ティックス）
         Bukkit.getScheduler().runTaskTimer(this, this::updateFive, 0L, 100L);
 
@@ -105,11 +83,9 @@ public class AFKScoreboard extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, this::update, 0L, 20L);
 
         // 週間累計の保存（60秒ごと）。書き込み自体は専用スレッド
-        Bukkit.getScheduler().runTaskTimer(this, this.weeklyStore::requestSave, 1200L, 1200L);
+        Bukkit.getScheduler().runTaskTimer(this, this::saveData, 1200L, 1200L);
 
-        Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::tickParticles, particleInterval, particleInterval);
-        Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::maintain, 20L, 20L);
-        Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::requestSave, 1200L, 1200L);
+        Bukkit.getScheduler().runTaskTimer(this, this::tick, particleInterval, particleInterval);
         // 座っている間は PlayerMoveEvent が来ないので、3 tick ごとに足元ブロックの高さと頭上の MOB の向きを合わせる（向きを送る間隔と同じ）
         Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::tickSeated, 3L, 3L);
 
@@ -125,15 +101,26 @@ public class AFKScoreboard extends JavaPlugin {
         getServer().getPluginManager().registerEvents(this.cosmetics, this);
     }
 
+    private void tick(){
+        cosmetics.tickParticles();
+    }
+
     private void update(){
         eventManager.checkPlayerZone();
         scoreManager.incrementTimeEverySecond();
+
+        cosmetics.maintain();
         weeklyStore.update();
     }
 
     private void updateFive(){
         rankingManager.updateLeaderboard();
-        eventManager.checkPlayerState();
+    }
+
+    private void saveData(){
+        weeklyStore.requestSave();
+        cosmetics.requestSave();
+        playerDataManager.savePlayerData();
     }
 
     private final List<Runnable> onDisableTasks = new ArrayList<>();
@@ -158,16 +145,6 @@ public class AFKScoreboard extends JavaPlugin {
 
         Bukkit.getScheduler().cancelTasks(this);
         HandlerList.unregisterAll(this);
-
-
-        if (weeklyStore != null) {
-            weeklyStore.shutdown();
-        }
-
-        // PlugManX の再読み込みでも、頭上のブロックと MOB を残さない
-        if (cosmetics != null) {
-            cosmetics.shutdown();
-        }
 
         getLogger().info("The Plugin Has Been Disabled!");
     }
@@ -336,14 +313,6 @@ public class AFKScoreboard extends JavaPlugin {
             }
         }
         return matches;
-    }
-
-    /**
-     * プラグイン名義でタスクを定期実行します
-     */
-    public static void registerTaskTimer(Runnable runnable, long delay, long period) {
-        if(instance==null){return;}
-        Bukkit.getScheduler().runTaskTimer(instance,runnable,delay,period);
     }
 
     public static void registerTaskLater(Runnable runnable, long delay) {

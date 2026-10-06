@@ -29,22 +29,20 @@ public class PlayerDataManager {
     private final Set<UUID> errorUUIDs = new HashSet<>();
     private final File file;
     private final AFKScoreboard plugin;
-    private final ExecutorService saveExecutor;
+    private final ExecutorService saveExecutor =  Executors.newSingleThreadExecutor();
     private final AtomicReference<String> pendingYml = new AtomicReference<>();
     private YamlConfiguration config;
     private boolean isDirty = false;
 
-    public PlayerDataManager(AFKScoreboard plugin) {
+    public PlayerDataManager(AFKScoreboard plugin,ConfigManager configManager) {
         this.plugin = plugin;
 
         file = new File(plugin.getDataFolder(), "playerdata.yml");
         if ((!file.exists())||!file.isFile()) {
             plugin.saveResource("playerdata.yml", false);
         }
-        saveExecutor = Executors.newSingleThreadExecutor();
 
         reloadPlayerData();
-        AFKScoreboard.registerTaskTimer(this::savePlayerData, 0, 20*60*5);
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
     private void onDisable(){
@@ -129,7 +127,7 @@ public class PlayerDataManager {
         }
     }
 
-    private void savePlayerData() {
+    public void savePlayerData() {
         if(configError){return;}
         if(!isDirty){return;}
         isDirty = false;
@@ -197,11 +195,9 @@ public class PlayerDataManager {
     }
     public void setInformed(UUID uuid, boolean isInformed){
         playerData.get(uuid).isInformed = isInformed;
-        saveValue(uuid,isInformed,"isInformed");
     }
     public void setHiddenInRank(UUID uuid, boolean isHiddenInRank){
         playerData.get(uuid).isHiddenInRank = isHiddenInRank;
-        saveValue(uuid,isHiddenInRank,"isHiddenInRank");
     }
     public boolean isHiddenInRank(UUID uuid){
         return playerData.get(uuid).isHiddenInRank;
@@ -255,12 +251,6 @@ public class PlayerDataManager {
         saveValue(uuid,List.copyOf(playerData.get(uuid).prefixes),"prefixes");
     }
 
-    public boolean isConcealed(UUID uuid){
-        return playerData.get(uuid).isConcealed;
-    }
-    public void setConcealed(UUID uuid, boolean isConcealed){
-        playerData.get(uuid).isConcealed = isConcealed;
-    }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {
         List<Map.Entry<UUID, Integer>> list = new ArrayList<>();
