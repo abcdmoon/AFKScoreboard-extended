@@ -1104,14 +1104,14 @@ public final class CosmeticService implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDismount(EntityDismountEvent event) {
         // 安い判定を先に行い、PDC の読み取り(isOurs)は最後にする
-        if (allowDismount || !(event.getDismounted() instanceof Player player)) {
+        if (allowDismount || !(event.getDismounted() instanceof Player)) {
             return;
         }
         // remove 済みの乗客は必ず降ろす。止めると消えたまま乗り続け、毎 tick 降車処理が走る
         if (!event.getEntity().isValid()) {
             return;
         }
-        if (isOurs(event.getEntity()) && zoneManager.getZoneByPlayer(event.getEntity().getUniqueId()) != null) {
+        if (zoneManager.getZoneByPlayer(event.getDismounted().getUniqueId()) != null&&isOurs(event.getEntity())) {
             event.setCancelled(true);
         }
     }

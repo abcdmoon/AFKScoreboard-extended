@@ -96,14 +96,10 @@ public class ZoneManager {
         playerZones.clear();
         loadedZones.putAll(newZones);
 
-        for(Map.Entry<String,Set<UUID>> entry : oldAfkPlayers.entrySet()) {
-            ZoneArea zone = loadedZones.get(entry.getKey());
-            if(zone != null){
-                for(UUID uuid : entry.getValue()){
-                    zone.addAfkPlayer(uuid);
-                    playerZones.put(uuid,entry.getKey());
-                }
-            }
+        for(Player p : Bukkit.getOnlinePlayers()){
+            ZoneArea zone = loadedZones.get(getZoneByLoc(p.getLocation()));
+            zone.addAfkPlayer(p.getUniqueId());
+            playerZones.put(p.getUniqueId(),zone.getName());
         }
 
         eventManager.onZoneReload(oldAfkPlayers);

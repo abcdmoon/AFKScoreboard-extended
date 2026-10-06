@@ -68,14 +68,14 @@ public class PrefixManager {
                         team.prefix(Component.text(prefix.prefixText()).decorate(TextDecoration.BOLD).color(prefix.color()));
                     });
                 }
-                for(Player player : Bukkit.getOnlinePlayers()){
-                    changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
-                }
                 break;
             }
             case PrefixMode.tab:{
                 break;
             }
+        }
+        for(Player player : Bukkit.getOnlinePlayers()){
+            changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
         }
 
     }
