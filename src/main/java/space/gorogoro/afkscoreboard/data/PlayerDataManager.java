@@ -208,6 +208,7 @@ public class PlayerDataManager {
         }else{
             configManager.removeWelcomedPlayer(uuid);
         }
+        saveValue(uuid,isWelcomed,"isWelcomed");
     }
     public boolean isHiddenInRank(UUID uuid){
         return playerData.get(uuid).isHiddenInRank;
@@ -219,6 +220,7 @@ public class PlayerDataManager {
         }else{
             configManager.removeHiddenPlayer(uuid);
         }
+        saveValue(uuid,isHiddenInRank,"isHiddenInRank");
     }
     public boolean isHidingPrefix(UUID uuid){
         return playerData.get(uuid).isHidingPrefix;
