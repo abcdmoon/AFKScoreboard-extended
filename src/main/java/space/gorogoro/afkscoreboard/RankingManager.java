@@ -67,6 +67,7 @@ public class RankingManager {
         for(ZoneManager.ZoneArea zone : zoneManager.getAllZones()){
             for(UUID uuid : zone.getAfkPlayers()){
                 if(Util.isConcealed(uuid)) {
+                    gameScoreBoardManager.showScoreboard(Objects.requireNonNull(Bukkit.getPlayer(uuid)), GameScoreBoardManager.ScoreboardType.MAIN);
                     continue;
                 }
                 gameScoreBoardManager.showScoreboard(Objects.requireNonNull(Bukkit.getPlayer(uuid)), GameScoreBoardManager.ScoreboardType.SCORE);
