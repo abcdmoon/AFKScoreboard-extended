@@ -12,15 +12,21 @@ import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
+import space.gorogoro.afkscoreboard.PlayerDataManager;
 import space.gorogoro.afkscoreboard.RankingManager;
+import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 
 public class HideExecuter {
 
 
     private final RankingManager rankingManager;
+    private final PlayerDataManager playerDataManager;
+    private final CosmeticService cosmeticService;
 
-    HideExecuter(RankingManager rankingManager) {
+    HideExecuter(RankingManager rankingManager, PlayerDataManager playerDataManager, CosmeticService cosmeticService) {
         this.rankingManager = rankingManager;
+        this.playerDataManager = playerDataManager;
+        this.cosmeticService = cosmeticService;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(HideExecuter hideExecuter) {
@@ -37,7 +43,8 @@ public class HideExecuter {
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         if(ctx.getSource().getSender() instanceof Player player){
             rankingManager.toggleHidden(player.getUniqueId());
-            if(rankingManager.isHidden(player.getUniqueId())){
+            cosmeticService.refresh(player);
+            if(playerDataManager.isHiddenInRank(player.getUniqueId())){
                 player.sendMessage(Component.text("放置ランキングからあなたを").append(Component.text("非表示").color(NamedTextColor.GREEN)).append(Component.text("にしました")));
             }else{
                 player.sendMessage(Component.text("放置ランキングにあなたを").append(Component.text("表示").color(NamedTextColor.GREEN)).append(Component.text("するようにしました")));

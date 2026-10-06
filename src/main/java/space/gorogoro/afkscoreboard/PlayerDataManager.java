@@ -23,6 +23,7 @@ public class PlayerDataManager {
 
 
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
+    private final ConfigManager configManager;
     //元のファイルの読み込みに異常があった場合立つフラグ メモリ上では初期値から扱い、ファイルには書き込まない
     private boolean configError = false;
     //データが読み込めなかったUUID メモリ上では初期値から扱い、ファイルには書き込まない
@@ -36,6 +37,8 @@ public class PlayerDataManager {
 
     public PlayerDataManager(AFKScoreboard plugin,ConfigManager configManager) {
         this.plugin = plugin;
+
+        this.configManager = configManager;
 
         file = new File(plugin.getDataFolder(), "playerdata.yml");
         if ((!file.exists())||!file.isFile()) {
@@ -91,14 +94,18 @@ public class PlayerDataManager {
 
     private void loadPlayerData(UUID uuid) {
         ConfigurationSection section = config.getConfigurationSection(uuid.toString());
+
+        Set<UUID> hiddenPlayers = configManager.loadHiddenPlayers();
+        Set<UUID> welcomedPlayers = configManager.loadWelcomedPlayers();
+
         if(section == null) {
             PlayerData data = PlayerData.getDefault(uuid);
             config.set(uuid.toString(), data);
             playerData.put(uuid, data);
         }else{
             try{
-                boolean isInformed = section.getBoolean("isInformed");
-                boolean isHiddenInRank = section.getBoolean("isHiddenInRank");
+                boolean isWelcomed = welcomedPlayers.contains(uuid);
+                boolean isHiddenInRank = hiddenPlayers.contains(uuid);
                 boolean isHidingPrefix = section.getBoolean("isHidingPrefix");
 
                 ConfigurationSection highScoresSection = section.getConfigurationSection("highScores");
@@ -113,7 +120,7 @@ public class PlayerDataManager {
                 if(showedPrefix == null){showedPrefix = "";}
 
                 Set<String> prefixes = new HashSet<>(section.getStringList("prefixes"));
-                playerData.put(uuid,new PlayerData(uuid,isInformed,isHiddenInRank,isHidingPrefix,highScores,showedPrefix,prefixes));
+                playerData.put(uuid,new PlayerData(uuid,isWelcomed,isHiddenInRank,isHidingPrefix,highScores,showedPrefix,prefixes));
             }catch(Exception e){
                 String name = Bukkit.getOfflinePlayer(uuid).getName();
                 if(name==null){
@@ -190,26 +197,27 @@ public class PlayerDataManager {
         loadPlayerData(player.getUniqueId());
     }
 
-    public boolean isInformed(UUID uuid){
-        return playerData.get(uuid).isInformed;
+    public boolean isWelcomed(UUID uuid){
+        return playerData.get(uuid).isWelcomed;
     }
-    public void setInformed(UUID uuid, boolean isInformed){
-        playerData.get(uuid).isInformed = isInformed;
-    }
-    public void setHiddenInRank(UUID uuid, boolean isHiddenInRank){
-        playerData.get(uuid).isHiddenInRank = isHiddenInRank;
+    public void setWelcomed(UUID uuid, boolean isWelcomed){
+        playerData.get(uuid).isWelcomed = isWelcomed;
+        if(isWelcomed){
+            configManager.addWelcomedPlayer(uuid);
+        }else{
+            configManager.removeWelcomedPlayer(uuid);
+        }
     }
     public boolean isHiddenInRank(UUID uuid){
         return playerData.get(uuid).isHiddenInRank;
     }
-    public Set<UUID> getHiddenInRankPlayers(){
-        Set<UUID> hiddenInRankPlayers = new HashSet<>();
-        for(UUID uuid : playerData.keySet()){
-            if(playerData.get(uuid).isHiddenInRank){
-                hiddenInRankPlayers.add(uuid);
-            }
+    public void setHiddenInRank(UUID uuid, boolean isHiddenInRank){
+        playerData.get(uuid).isHiddenInRank = isHiddenInRank;
+        if(isHiddenInRank){
+            configManager.addHiddenPlayer(uuid);
+        }else{
+            configManager.removeHiddenPlayer(uuid);
         }
-        return hiddenInRankPlayers;
     }
     public boolean isHidingPrefix(UUID uuid){
         return playerData.get(uuid).isHidingPrefix;
@@ -265,18 +273,16 @@ public class PlayerDataManager {
     private static class PlayerData {
 
         private final UUID uuid;
-        private boolean isInformed;
+        private boolean isWelcomed;
         private boolean isHiddenInRank;
         private boolean isHidingPrefix;
         private final HashMap<String, Integer> highScores;
         private String showedPrefix;
         private final Set<String> prefixes;
 
-        private boolean isConcealed;
-
         public PlayerData(
                 UUID uuid,
-                boolean isInformed,
+                boolean isWelcomed,
                 boolean isHiddenInRank,
                 boolean isHidingPrefix,
                 Map<String,Integer> highScores,
@@ -284,7 +290,7 @@ public class PlayerDataManager {
                 Set<String> prefixes
         ) {
             this.uuid = uuid;
-            this.isInformed = isInformed;
+            this.isWelcomed = isWelcomed;
             this.isHiddenInRank = isHiddenInRank;
             this.isHidingPrefix = isHidingPrefix;
             this.highScores = new HashMap<>(highScores);
@@ -299,7 +305,7 @@ public class PlayerDataManager {
         @NotNull
         public Map<String, Object> serialize() {
             return Map.of(
-                    "isInformed",isInformed,
+                    "isWelcomed", isWelcomed,
                     "isHiddenInRank",isHiddenInRank,
                     "isHidingPrefix",isHidingPrefix,
                     "highScores",highScores,

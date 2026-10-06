@@ -20,8 +20,6 @@ public class ScoreManager {
     private final Map<UUID, Integer> disconnectedSessionTimes = new HashMap<>();
     // ログアウトした時刻を保存するマップ（UUID -> エポックミリ秒）
     private final Map<UUID, Long> disconnectTimes = new HashMap<>();
-    //領域内のプレイヤーのセット
-    private final Set<UUID> currentAFKPlayers = new HashSet<>();
 
     private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
@@ -31,10 +29,6 @@ public class ScoreManager {
         this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
         this.zoneManager = zoneManager;
-        init();
-    }
-    private void init(){
-        currentAFKPlayers.clear();
     }
 
     /**
@@ -66,12 +60,10 @@ public class ScoreManager {
             }
             disconnectTimes.remove(uuid);
         }
-        currentAFKPlayers.add(uuid);
         currentSessionTimes.putIfAbsent(uuid, 0);
 
     }
     public void onPlayerLeaveZone(Player player){
-        currentAFKPlayers.remove(player.getUniqueId());
         currentSessionTimes.remove(player.getUniqueId());
     }
 
@@ -92,9 +84,9 @@ public class ScoreManager {
 
      */
 
-    public void onPlayerDisconnect(Player player){
+    public void preparePlayerDisconnect(Player player){
         UUID uuid = player.getUniqueId();
-        Integer sessionTime = removeAFKPlayer(uuid);
+        Integer sessionTime = currentSessionTimes.remove(uuid);
 
         if (sessionTime != null) {
             disconnectedSessionTimes.put(uuid, sessionTime);
@@ -102,14 +94,6 @@ public class ScoreManager {
         }
     }
 
-    /**
-     *
-     * @return プレイヤーの現在の放置記録 記録がない場合 null
-     */
-    private Integer removeAFKPlayer(UUID uuid){
-        currentAFKPlayers.remove(uuid);
-        return currentSessionTimes.remove(uuid);
-    }
 
     public List<Map.Entry<UUID, Integer>> getSortedList() {
         return currentSessionTimes.entrySet().stream()

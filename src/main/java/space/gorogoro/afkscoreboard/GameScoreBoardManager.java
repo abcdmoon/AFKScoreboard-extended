@@ -105,7 +105,11 @@ public class GameScoreBoardManager {
     }
 
     public void showScoreboard(Player player, ScoreboardType type) {
-        player.setScoreboard(getScoreboard(type));
+        if(player.getScoreboard().equals(mainScoreboard)
+        || player.getScoreboard().equals(afkScoreboard)
+        || player.getScoreboard().equals(highScoreScoreboard)){
+            player.setScoreboard(getScoreboard(type));
+        }
     }
 
     public void addTeamToAll(String key) {

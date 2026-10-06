@@ -22,6 +22,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import space.gorogoro.afkscoreboard.AFKScoreboard;
 import space.gorogoro.afkscoreboard.PlayerDataManager;
+import space.gorogoro.afkscoreboard.Util;
 import space.gorogoro.afkscoreboard.ZoneManager;
 
 import java.util.*;
@@ -117,10 +118,6 @@ public final class CosmeticService implements Listener {
         }
     }
 
-    public void onPlayerEnterZone(UUID uuid) {
-
-    }
-
     public void onPlayerLeaveZone(UUID uuid) {
         clear(uuid);
     }
@@ -176,7 +173,7 @@ public final class CosmeticService implements Listener {
         }
         grant.inZone = zoneManager.getZoneByPlayer(player.getUniqueId())!=null;
         grant.hidden = playerDataManager.isHiddenInRank(player.getUniqueId());
-        grant.concealed = playerDataManager.isConcealed(player.getUniqueId());
+        grant.concealed = Util.isConcealed(player.getUniqueId());
         if (grant.inZone && !grant.hidden && !grant.concealed) {
             sync(player);
             Active state = active.get(player.getUniqueId());
@@ -232,7 +229,7 @@ public final class CosmeticService implements Listener {
      * /afkhide・/afklook の切り替え直後に、次の 1 秒を待たずに見た目を合わせる。秒数は足さない。
      */
     public void refresh(Player player) {
-        if (zoneManager.getZoneByPlayer(player.getUniqueId())!=null && !(playerDataManager.isHiddenInRank(player.getUniqueId())) && (!playerDataManager.isConcealed(player.getUniqueId()))) {
+        if (zoneManager.getZoneByPlayer(player.getUniqueId())!=null && !(playerDataManager.isHiddenInRank(player.getUniqueId())) && (!Util.isConcealed(player.getUniqueId()))) {
             sync(player);
         } else {
             clear(player.getUniqueId());
@@ -303,7 +300,7 @@ public final class CosmeticService implements Listener {
             Player player = Bukkit.getPlayer(entry.getKey());
             Active state = entry.getValue();
             // スペクテイター・バニッシュになった直後は、次の 1 秒で外れるまでの間も出さない
-            if (player == null || !player.isOnline() || state.particle == null || playerDataManager.isConcealed(player.getUniqueId())) {
+            if (player == null || !player.isOnline() || state.particle == null || Util.isConcealed(player.getUniqueId())) {
                 continue;
             }
             if (zoneManager.getZoneByPlayer(player.getUniqueId())==null) {
@@ -315,7 +312,7 @@ public final class CosmeticService implements Listener {
 
     private void sync(Player player) {
         UUID uuid = player.getUniqueId();
-        if(playerDataManager.isHiddenInRank(uuid)||playerDataManager.isConcealed(uuid)) {
+        if(playerDataManager.isHiddenInRank(uuid)||Util.isConcealed(uuid)) {
             clear(uuid);
             return;
         }

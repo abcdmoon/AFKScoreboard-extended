@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,15 @@ public class ConfigManager {
     }
 
     private void finalProcess(){
-
+        requestSaveConfig();
+        saveExecutor.shutdown();
+        try {
+            if (!saveExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                AFKScoreboard.warn("config.ymlの書き込みが時間内に終わりませんでした");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public PrefixMode loadPrefixMode(){
@@ -75,7 +84,7 @@ public class ConfigManager {
     /**
      * config.yml からメッセージ既読プレイヤーのUUIDを読み込む
      */
-    private Set<UUID> loadWelcomedPlayers() {
+    public Set<UUID> loadWelcomedPlayers() {
         Set<UUID> welcomedPlayers = new HashSet<>();
         List<String> uuidStrings = plugin.getConfig().getStringList("welcomed-players");
         for (String s : uuidStrings) {
@@ -89,7 +98,7 @@ public class ConfigManager {
     /**
      * メッセージ既読プレイヤーのUUIDを config.yml へ保存する
      */
-    private void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
+    public void saveWelcomedPlayers(Set<UUID> welcomedPlayers) {
         List<String> uuidStrings = welcomedPlayers.stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
@@ -97,10 +106,22 @@ public class ConfigManager {
         requestSaveConfig();
     }
 
+    public void addWelcomedPlayer(UUID uuid){
+        Set<UUID> welcomedPlayers = loadWelcomedPlayers();
+        welcomedPlayers.add(uuid);
+        saveWelcomedPlayers(welcomedPlayers);
+    }
+
+    public void removeWelcomedPlayer(UUID uuid){
+        Set<UUID> welcomedPlayers = loadWelcomedPlayers();
+        welcomedPlayers.remove(uuid);
+        saveWelcomedPlayers(welcomedPlayers);
+    }
+
     /**
      * config.yml から非表示プレイヤーのUUIDを読み込む
      */
-    private Set<UUID> loadHiddenPlayers() {
+    public Set<UUID> loadHiddenPlayers() {
         Set<UUID> hiddenPlayers = new HashSet<>();
         List<String> uuidStrings = plugin.getConfig().getStringList("hidden-players");
         for (String s : uuidStrings) {
@@ -114,7 +135,7 @@ public class ConfigManager {
     /**
      * 非表示プレイヤーのUUIDを config.yml へ保存する
      */
-    private void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
+    public void saveHiddenPlayers(Set<UUID> hiddenPlayers) {
         List<String> uuidStrings = hiddenPlayers.stream()
                 .map(UUID::toString)
                 .collect(Collectors.toList());
@@ -122,4 +143,15 @@ public class ConfigManager {
         requestSaveConfig();
     }
 
+    public void addHiddenPlayer(UUID uuid) {
+        Set<UUID> hiddenPlayers = loadHiddenPlayers();
+        hiddenPlayers.add(uuid);
+        saveHiddenPlayers(hiddenPlayers);
+    }
+
+    public void removeHiddenPlayer(UUID uuid) {
+        Set<UUID> hiddenPlayers = loadHiddenPlayers();
+        hiddenPlayers.remove(uuid);
+        saveHiddenPlayers(hiddenPlayers);
+    }
 }

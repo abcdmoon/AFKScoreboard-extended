@@ -23,8 +23,8 @@ public class MessageManager {
     public void onPlayerEnterZone(Player player) {
         // 放置エリアに足を踏み入れたプレイヤーへの通知
 
-        if (!playerDataManager.isInformed(player.getUniqueId())) {
-            playerDataManager.setInformed(player.getUniqueId(), true);
+        if (!playerDataManager.isWelcomed(player.getUniqueId())) {
+            playerDataManager.setWelcomed(player.getUniqueId(), true);
 
             // メッセージを送信
             player.sendMessage(Component.text("/afkscore hide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));

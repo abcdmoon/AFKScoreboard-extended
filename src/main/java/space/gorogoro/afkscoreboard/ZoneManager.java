@@ -181,6 +181,10 @@ public class ZoneManager {
         private void removeAfkPlayer(UUID uuid) {
             afkPlayers.remove(uuid);
         }
+
+        /**
+         * @return ゾーン内にいるオンラインのプレイヤーらを返す
+         */
         public Set<UUID> getAfkPlayers() {
             return Set.copyOf(afkPlayers);
         }

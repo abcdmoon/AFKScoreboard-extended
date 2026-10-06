@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 import space.gorogoro.afkscoreboard.prefix.PrefixManager;
 
 import java.util.Map;
@@ -21,14 +22,17 @@ public class EventManager implements Listener {
     private final ScoreManager scoreManager;
     private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
+    private final CosmeticService cosmeticService;
 
-    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager,PlayerDataManager playerDataManager,PrefixManager prefixManager) {
+    public EventManager(ZoneManager zoneManager, MessageManager messageManager, RankingManager rankingManager, ScoreManager scoreManager, PlayerDataManager playerDataManager, PrefixManager prefixManager, CosmeticService cosmeticService) {
         this.zoneManager = zoneManager;
         this.messageManager = messageManager;
         this.rankingManager = rankingManager;
         this.scoreManager = scoreManager;
         this.playerDataManager = playerDataManager;
         this.prefixManager = prefixManager;
+
+        this.cosmeticService = cosmeticService;
 
         AFKScoreboard.addOnDisableTask(this::onDisable);
     }
@@ -64,10 +68,11 @@ public class EventManager implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
-        scoreManager.onPlayerDisconnect(e.getPlayer());
+        scoreManager.preparePlayerDisconnect(e.getPlayer());
         if(zoneManager.getZoneByPlayer(e.getPlayer().getUniqueId()) != null) {
             onPlayerLeaveZone(e.getPlayer(), zoneManager.getZoneByPlayer(e.getPlayer().getUniqueId()));
         }
+        cosmeticService.onPlayerQuit(e.getPlayer().getUniqueId());
     }
 
     public void onZoneReload(Map<String, Set<UUID>> oldAfkPlayers){
@@ -103,6 +108,7 @@ public class EventManager implements Listener {
         zoneManager.onPlayerLeaveZone(p,zoneName);
         rankingManager.onPlayerLeaveZone(p);
         scoreManager.onPlayerLeaveZone(p);
+        cosmeticService.onPlayerLeaveZone(p.getUniqueId());
     }
 
 

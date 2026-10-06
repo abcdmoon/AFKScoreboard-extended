@@ -49,6 +49,7 @@ public class AFKScoreboard extends JavaPlugin {
 
         configManager = new ConfigManager(this);
         zoneManager = new ZoneManager(this);
+        playerDataManager = new PlayerDataManager(this,configManager);
 
         this.weeklyStore = new WeeklyStore(this,zoneManager);
         this.weeklyStore.load();
@@ -59,7 +60,6 @@ public class AFKScoreboard extends JavaPlugin {
             particleInterval = 60L;
         }
 
-        playerDataManager = new PlayerDataManager(this,configManager);
         prefixConfigManager = new PrefixConfigManager(this);
         messageManager = new MessageManager(configManager,playerDataManager);
         prefixRegistry = new PrefixRegistry(prefixConfigManager);
@@ -161,14 +161,6 @@ public class AFKScoreboard extends JavaPlugin {
         }
 
         UUID uuid = player.getUniqueId();
-
-        if (command.getName().equalsIgnoreCase("afkhide")) {
-            // 見た目ボーナスは非表示中は付けない。切り替えたらその場で合わせる
-            if (cosmetics != null) {
-                cosmetics.refresh(player);
-            }
-            return true;
-        }
 
         if (command.getName().equalsIgnoreCase("afkdebug")) {
             return handleDebugCommand(player, args);
