@@ -21,9 +21,9 @@ import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import space.gorogoro.afkscoreboard.AFKScoreboard;
-import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.Util;
 import space.gorogoro.afkscoreboard.ZoneManager;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -113,8 +113,8 @@ public final class CosmeticService implements Listener {
         for(Player player : Bukkit.getOnlinePlayers()) {
             if(zoneManager.getZoneByPlayer(player.getUniqueId()) != null) {
                 store.addSecond(player.getUniqueId());
+                sync(player);
             }
-            sync(player);
         }
     }
 
@@ -1033,13 +1033,23 @@ public final class CosmeticService implements Listener {
     }
 
     private boolean isOurs(Entity entity) {
-        Byte mark = entity.getPersistentDataContainer().get(tagKey, PersistentDataType.BYTE);
-        return mark != null && mark == (byte) 1;
+        if(entity.getPersistentDataContainer().has(tagKey, PersistentDataType.BYTE)) {
+            Byte mark = entity.getPersistentDataContainer().get(tagKey, PersistentDataType.BYTE);
+            return mark != null && mark == (byte) 1;
+        }
+        return false;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
         if (isOurs(event.getEntity())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if(isOurs(event.getDamager())) {
             event.setCancelled(true);
         }
     }
