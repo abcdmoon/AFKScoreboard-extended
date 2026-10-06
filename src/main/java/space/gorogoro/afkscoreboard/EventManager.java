@@ -89,6 +89,7 @@ public class EventManager implements Listener {
                 if(before!=null){
                     rankingManager.onPlayerLeaveZone(p);
                     scoreManager.onPlayerLeaveZone(p);
+                    cosmeticService.onPlayerLeaveZone(p.getUniqueId());
                 }
                 if(now!=null){
                     onPlayerEnterZone(p,now);

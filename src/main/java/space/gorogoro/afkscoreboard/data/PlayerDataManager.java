@@ -73,6 +73,9 @@ public class PlayerDataManager {
         playerData.clear();
         errorUUIDs.clear();
 
+        Set<UUID> hiddenPlayers = configManager.loadHiddenPlayers();
+        Set<UUID> welcomedPlayers = configManager.loadWelcomedPlayers();
+
         for (String key : config.getKeys(false)) {
             UUID uuid;
             try {
@@ -81,23 +84,24 @@ public class PlayerDataManager {
                 AFKScoreboard.warn("無効なUUIDのデータをスキップしました:" + key);
                 continue;
             }
-            loadPlayerData(uuid);
+            loadPlayerData(uuid, hiddenPlayers, welcomedPlayers);
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uuid = player.getUniqueId();
 
             if (!playerData.containsKey(uuid)) {
-                loadPlayerData(uuid);
+                loadPlayerData(uuid, hiddenPlayers, welcomedPlayers);
             }
         }
     }
 
     private void loadPlayerData(UUID uuid) {
-        ConfigurationSection section = config.getConfigurationSection(uuid.toString());
+        loadPlayerData(uuid,configManager.loadHiddenPlayers(),configManager.loadWelcomedPlayers());
+    }
 
-        Set<UUID> hiddenPlayers = configManager.loadHiddenPlayers();
-        Set<UUID> welcomedPlayers = configManager.loadWelcomedPlayers();
+    private void loadPlayerData(UUID uuid,Set<UUID> hiddenPlayers,Set<UUID> welcomedPlayers) {
+        ConfigurationSection section = config.getConfigurationSection(uuid.toString());
 
         if(section == null) {
             PlayerData data = PlayerData.getDefault(uuid);

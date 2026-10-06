@@ -29,8 +29,8 @@ public class MessageManager {
             playerDataManager.setWelcomed(player.getUniqueId(), true);
 
             // メッセージを送信
-            player.sendMessage(Component.text("/afkscore hide").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
-            player.sendMessage(Component.text("/afkscore prefix hide").color(NamedTextColor.AQUA).append(Component.text(" で自分の称号を表示/非表示できます").color(NamedTextColor.WHITE)));
+            player.sendMessage(Component.text("/afkscore hidescore").color(NamedTextColor.AQUA).append(Component.text(" で放置ランキングから自分を表示/非表示できます").color(NamedTextColor.WHITE)));
+            player.sendMessage(Component.text("/afkscore hideprefix").color(NamedTextColor.AQUA).append(Component.text(" で自分の称号を表示/非表示できます").color(NamedTextColor.WHITE)));
 
         }else{
             //入ったことがある場合

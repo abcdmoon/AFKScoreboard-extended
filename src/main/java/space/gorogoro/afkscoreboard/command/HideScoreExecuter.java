@@ -16,28 +16,28 @@ import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 import space.gorogoro.afkscoreboard.RankingManager;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 
-public class HideExecuter {
+public class HideScoreExecuter {
 
 
     private final RankingManager rankingManager;
     private final PlayerDataManager playerDataManager;
     private final CosmeticService cosmeticService;
 
-    HideExecuter(RankingManager rankingManager, PlayerDataManager playerDataManager, CosmeticService cosmeticService) {
+    HideScoreExecuter(RankingManager rankingManager, PlayerDataManager playerDataManager, CosmeticService cosmeticService) {
         this.rankingManager = rankingManager;
         this.playerDataManager = playerDataManager;
         this.cosmeticService = cosmeticService;
     }
 
-    static LiteralArgumentBuilder<CommandSourceStack> create(HideExecuter hideExecuter) {
-        return Commands.literal("hide").executes(hideExecuter::execute);
+    static LiteralArgumentBuilder<CommandSourceStack> create(HideScoreExecuter hideScoreExecuter) {
+        return Commands.literal("hidescore").executes(hideScoreExecuter::execute);
     }
 
     /**
      * 既存プラグインと同様のコマンドの実装を返す
      */
-    static LiteralArgumentBuilder<CommandSourceStack> oldCreate(HideExecuter hideExecuter) {
-        return Commands.literal("afkhide").executes(hideExecuter::execute);
+    static LiteralArgumentBuilder<CommandSourceStack> oldCreate(HideScoreExecuter hideScoreExecuter) {
+        return Commands.literal("afkhide").executes(hideScoreExecuter::execute);
     }
 
     private int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

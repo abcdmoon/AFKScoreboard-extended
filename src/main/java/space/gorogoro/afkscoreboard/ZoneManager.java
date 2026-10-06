@@ -93,6 +93,7 @@ public class ZoneManager {
         }
 
         loadedZones.clear();
+        playerZones.clear();
         loadedZones.putAll(newZones);
 
         eventManager.onZoneReload(oldAfkPlayers);
@@ -153,6 +154,7 @@ public class ZoneManager {
         public ZoneArea(String name, World world,Location loc1, Location loc2) {
             this.name = name;
             this.world = world.getName();
+            //ブロック座標の関係で正に+1すると境界がAxAFKZoneと一致します
             this.minX = Math.min(loc1.getX(), loc2.getX());
             this.maxX = Math.max(loc1.getX(), loc2.getX())+1;
             this.minY = Math.min(loc1.getY(), loc2.getY());

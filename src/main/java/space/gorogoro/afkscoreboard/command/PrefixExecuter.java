@@ -21,22 +21,18 @@ import org.bukkit.entity.Player;
 
 public class PrefixExecuter {
 
-    private final PrefixRegistry prefixRegistry;
     private final PlayerDataManager playerDataManager;
     private final PrefixManager prefixManager;
 
-    public PrefixExecuter(PrefixManager prefixManager, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry) {
+    public PrefixExecuter(PrefixManager prefixManager, PlayerDataManager playerDataManager) {
         this.prefixManager = prefixManager;
         this.playerDataManager = playerDataManager;
-        this.prefixRegistry = prefixRegistry;
     }
 
     static LiteralArgumentBuilder<CommandSourceStack> create(PrefixExecuter prefixExecuter, PlayerDataManager playerDataManager, PrefixRegistry prefixRegistry) {
         return Commands.literal("prefix")
                 .then(Commands.argument("text",new OwnedPrefixArgument(playerDataManager,prefixRegistry))
-                        .executes(prefixExecuter::showPrefix))
-                .then(Commands.literal("hide")
-                        .executes(prefixExecuter::hidePrefix));
+                        .executes(prefixExecuter::showPrefix));
     }
 
     private int showPrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
@@ -51,23 +47,6 @@ public class PrefixExecuter {
                 final Message message = MessageComponentSerializer.message().serialize(Component.text("その称号は所持していません").color(NamedTextColor.RED));
                 throw new SimpleCommandExceptionType(message).create();
             }
-            return Command.SINGLE_SUCCESS;
-        }else {
-            final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
-            throw new SimpleCommandExceptionType(message).create();
-        }
-    }
-
-    private int hidePrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        if(ctx.getSource().getSender() instanceof Player player){
-            if(!playerDataManager.isHidingPrefix(player.getUniqueId())){
-                playerDataManager.setHidingPrefix(player.getUniqueId(),true);
-                player.sendMessage(Component.text("あなたの称号を").append(Component.text("非表示").color(NamedTextColor.GREEN)).append(Component.text("にしました")));
-            }else{
-                playerDataManager.setHidingPrefix(player.getUniqueId(),false);
-                player.sendMessage(Component.text("あなたの称号を").append(Component.text("表示").color(NamedTextColor.GREEN)).append(Component.text("するようにしました")));
-            }
-            prefixManager.changePrefix(player.getUniqueId(),prefixRegistry.getPrefix(playerDataManager.getShowedPrefix(player.getUniqueId())));
             return Command.SINGLE_SUCCESS;
         }else {
             final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
