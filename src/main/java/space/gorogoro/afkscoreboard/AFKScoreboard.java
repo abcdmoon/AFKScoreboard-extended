@@ -2,7 +2,6 @@ package space.gorogoro.afkscoreboard;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Bukkit;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import space.gorogoro.afkscoreboard.command.CommandManager;
@@ -83,15 +82,6 @@ public class AFKScoreboard extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, this::tick, particleInterval, particleInterval);
         // 座っている間は PlayerMoveEvent が来ないので、3 tick ごとに足元ブロックの高さと頭上の MOB の向きを合わせる（向きを送る間隔と同じ）
         Bukkit.getScheduler().runTaskTimer(this, this.cosmetics::tickSeated, 3L, 3L);
-
-        PluginCommand debugCommand = getCommand("afkdebug");
-        if (debugCommand != null) {
-            debugCommand.setTabCompleter(this);
-        }
-        PluginCommand lookCommand = getCommand("afklook");
-        if (lookCommand != null) {
-            lookCommand.setTabCompleter(this);
-        }
 
         getServer().getPluginManager().registerEvents(this.cosmetics, this);
     }

@@ -16,7 +16,6 @@ import org.bukkit.entity.Player;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 
 import java.util.List;
-import java.util.Locale;
 
 class AfkDebugExecuter {
 
@@ -27,7 +26,7 @@ class AfkDebugExecuter {
 
     static LiteralArgumentBuilder<CommandSourceStack> create(AfkDebugExecuter afkDebugExecuter) {
         return Commands.literal("afkdebug")
-                .requires(ctx->ctx.getSender().isOp())
+                .requires(ctx->ctx.getSender().hasPermission("afkscoreboard.debug"))
                 .then(Commands.argument("option",StringArgumentType.word())
                         .suggests((ctx,builder)->{
                             List.of("particle", "block", "mount", "all").forEach(builder::suggest);
@@ -36,9 +35,9 @@ class AfkDebugExecuter {
                         .executes(afkDebugExecuter::handleDebugCommand))
                 .executes(ctx->{
                     if(ctx.getSource().getSender() instanceof Player player){
-                        player.sendMessage("§f/afklook <particle|block|mount|all|reset>");
-                        player.sendMessage("§7見た目を種類ごとに表示/非表示にします。§7particle §fパーティクル  §7block §fブロック  §7mount §f頭MOB  §7all §fすべて");
-                        player.sendMessage("§7reset §f見た目をすべて外す（条件を満たしている見た目はすぐに引き直されます）");
+                        player.sendMessage("§f/afkdebug <particle|block|mount|all>");
+                        player.sendMessage("§7particle §f30分のパーティクル  §7block §f1時間のブロック  §7mount §f3時間の頭MOB  §7all §f3つまとめて");
+                        player.sendMessage("§7外すときは /afklook reset");
                         return 0;
                     }else {
                         final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
@@ -63,7 +62,7 @@ class AfkDebugExecuter {
                 case "mount", "3h", "180" -> sendDebugGrant(player, cosmetics.debugGrant(player, false, false, true));
                 case "all" -> sendDebugGrant(player, cosmetics.debugGrant(player, true, true, true));
                 default ->{
-                    final Message message = MessageComponentSerializer.message().serialize(Component.text("このコマンドはプレイヤーのみ実行できます。").color(NamedTextColor.RED));
+                    final Message message = MessageComponentSerializer.message().serialize(Component.text("無効なオプションです").color(NamedTextColor.RED));
                     throw new SimpleCommandExceptionType(message).create();
                 }
             }

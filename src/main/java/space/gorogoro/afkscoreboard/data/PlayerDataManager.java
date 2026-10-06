@@ -3,6 +3,7 @@ package space.gorogoro.afkscoreboard.data;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import space.gorogoro.afkscoreboard.AFKScoreboard;
@@ -104,7 +105,7 @@ public class PlayerDataManager {
         ConfigurationSection section = config.getConfigurationSection(uuid.toString());
 
         if(section == null) {
-            PlayerData data = PlayerData.getDefault(uuid);
+            PlayerData data = PlayerData.getDefault(uuid,welcomedPlayers.contains(uuid),hiddenPlayers.contains(uuid));
             config.set(uuid.toString(), data);
             playerData.put(uuid, data);
         }else{
@@ -133,7 +134,7 @@ public class PlayerDataManager {
                 }else{
                     AFKScoreboard.warn(name+"("+uuid+")のデータの読み込みに失敗しました: "+e.getMessage());
                 }
-                playerData.put(uuid,PlayerData.getDefault(uuid));
+                playerData.put(uuid,PlayerData.getDefault(uuid,welcomedPlayers.contains(uuid),hiddenPlayers.contains(uuid)));
                 errorUUIDs.add(uuid);
             }
         }
@@ -277,7 +278,7 @@ public class PlayerDataManager {
                 .toList();
     }
 
-    private static class PlayerData {
+    private static class PlayerData implements ConfigurationSerializable {
 
         private final UUID uuid;
         private boolean isWelcomed;
@@ -305,10 +306,11 @@ public class PlayerDataManager {
             this.prefixes = new HashSet<>(prefixes);
         }
 
-        public static PlayerData getDefault(UUID uuid) {
-            return new PlayerData(uuid,false,false,false,Map.of(),"",Set.of());
+        public static PlayerData getDefault(UUID uuid,boolean isWelcomed,boolean isHiddenInRank) {
+            return new PlayerData(uuid,isWelcomed,isHiddenInRank,false,Map.of(),"",Set.of());
         }
 
+        @Override
         @NotNull
         public Map<String, Object> serialize() {
             return Map.of(

@@ -10,12 +10,12 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import space.gorogoro.afkscoreboard.data.PlayerDataManager;
-import space.gorogoro.afkscoreboard.prefix.Prefix;
-import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import space.gorogoro.afkscoreboard.data.PlayerDataManager;
+import space.gorogoro.afkscoreboard.prefix.Prefix;
+import space.gorogoro.afkscoreboard.prefix.PrefixRegistry;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;

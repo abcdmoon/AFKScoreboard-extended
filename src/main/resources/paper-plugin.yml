@@ -6,6 +6,11 @@ description: This plugin works with AxAFKZone to display a ranking scoreboard ba
 author: kubotan
 website: https://www.gorogoro.space/
 
+permissions:
+  afkscoreboard.debug:
+    description: 見た目ボーナスを待たずに付与する
+    default: op
+
 dependencies:
   server:
     AxAFKZone:

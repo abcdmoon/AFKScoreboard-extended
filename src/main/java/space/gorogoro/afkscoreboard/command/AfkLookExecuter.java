@@ -17,7 +17,6 @@ import space.gorogoro.afkscoreboard.cosmetic.CosmeticService;
 import space.gorogoro.afkscoreboard.cosmetic.CosmeticStore;
 
 import java.util.List;
-import java.util.Locale;
 
 public class AfkLookExecuter {
     private final CosmeticService cosmetics;
