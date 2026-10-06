@@ -68,15 +68,15 @@ public class ZoneManager {
             for(ZoneArea zone1:newZones.values()){
                 boolean overlapX =
                         zone1.minX <= newZone.maxX &&
-                                zone1.maxX >= newZone.minX;
+                                zone1.maxX > newZone.minX;
 
                 boolean overlapY =
                         zone1.minY <= newZone.maxY &&
-                                zone1.maxY >= newZone.minY;
+                                zone1.maxY > newZone.minY;
 
                 boolean overlapZ =
                         zone1.minZ <= newZone.maxZ &&
-                                zone1.maxZ >= newZone.minZ;
+                                zone1.maxZ > newZone.minZ;
                 if(newZone.world.equals(zone1.world)&&overlapX && overlapY && overlapZ){
                     AFKScoreboard.warn("The area of "+newZone.name+" is overlapping");
                     continue out;
@@ -97,9 +97,12 @@ public class ZoneManager {
         loadedZones.putAll(newZones);
 
         for(Player p : Bukkit.getOnlinePlayers()){
-            ZoneArea zone = loadedZones.get(getZoneByLoc(p.getLocation()));
-            zone.addAfkPlayer(p.getUniqueId());
-            playerZones.put(p.getUniqueId(),zone.getName());
+            String zoneName = getZoneByLoc(p.getLocation());
+            if(zoneName!=null){
+                ZoneArea zone = loadedZones.get(zoneName);
+                zone.addAfkPlayer(p.getUniqueId());
+                playerZones.put(p.getUniqueId(),zone.getName());
+            }
         }
 
         eventManager.onZoneReload(oldAfkPlayers);

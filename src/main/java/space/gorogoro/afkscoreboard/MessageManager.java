@@ -8,13 +8,10 @@ import space.gorogoro.afkscoreboard.data.PlayerDataManager;
 
 public class MessageManager {
 
-    private final ConfigManager configManager;
-
     private final PlayerDataManager playerDataManager;
 
 
-    public MessageManager(ConfigManager configManager,PlayerDataManager playerDataManager) {
-        this.configManager = configManager;
+    public MessageManager(PlayerDataManager playerDataManager) {
         this.playerDataManager = playerDataManager;
         init();
     }

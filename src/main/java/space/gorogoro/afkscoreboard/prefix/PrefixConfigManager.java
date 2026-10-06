@@ -52,7 +52,7 @@ public class PrefixConfigManager {
             Prefix prefix = new Prefix(
                     key,
                     prefixSection.getInt("requireScore"),
-                    prefixSection.getStringList("requireZones"),
+                    prefixSection.getStringList("requireZones").stream().map(s->s.replace(".","_")).toList(),
                     prefixSection.getString("prefixText", ""),
                     prefixSection.getString("color", "white")
             );
