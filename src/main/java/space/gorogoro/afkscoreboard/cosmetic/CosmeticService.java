@@ -1033,11 +1033,7 @@ public final class CosmeticService implements Listener {
     }
 
     private boolean isOurs(Entity entity) {
-        if(entity.getPersistentDataContainer().has(tagKey, PersistentDataType.BYTE)) {
-            Byte mark = entity.getPersistentDataContainer().get(tagKey, PersistentDataType.BYTE);
-            return mark != null && mark == (byte) 1;
-        }
-        return false;
+        return entity.getPersistentDataContainer().has(tagKey, PersistentDataType.BYTE);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
