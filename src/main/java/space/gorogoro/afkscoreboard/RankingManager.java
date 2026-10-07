@@ -138,7 +138,7 @@ public class RankingManager {
         // 現在放置中の上位10人を取得
         List<Map.Entry<UUID, Integer>> sortedTop10 = playerDataManager.getSortedList();
         sortedTop10 = sortedTop10.stream()
-                .filter(e->!playerDataManager.isHiddenInRank(e.getKey()))
+                .filter(e->(!playerDataManager.isHiddenInRank(e.getKey()))&&e.getValue() > 0)
                 .limit(10)
                 .toList();
 

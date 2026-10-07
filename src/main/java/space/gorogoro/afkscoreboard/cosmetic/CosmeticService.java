@@ -1043,7 +1043,7 @@ public final class CosmeticService implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if(isOurs(event.getDamager())) {
             event.setCancelled(true);

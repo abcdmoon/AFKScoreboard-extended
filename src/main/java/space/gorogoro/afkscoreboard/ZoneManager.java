@@ -42,11 +42,6 @@ public class ZoneManager {
             return false;
         }
 
-        File afkZoneFolder = new File(axPlugin.getDataFolder(), "zones");
-        if (!afkZoneFolder.exists() || afkZoneFolder.listFiles() == null) {
-            AFKScoreboard.warn("AxAFKZoneのzonesフォルダが見つかりません。");
-            return false;
-        }
         Map<String, ZoneArea> newZones = new HashMap<>();
         ConcurrentHashMap<String, Zone> zones = Zones.getZones();
         out:for(Zone zone : zones.values()) {
